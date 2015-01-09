@@ -20,26 +20,26 @@ class TemplateUsecase(object):
     '''
 
 
-    def __init__(self, task_id, override_task):        
+    def __init__(self, task_id, task_config_load_from_JSON):        
         '''
         Constructor
         :param task_id: Eindeutige ID des auszuführenden Tasks, stammt aus TB_IMPORTE_GEODB.task_id
-        :param override_task: soll die Task-Konfiguration neu generiert werden (TRUE) oder nicht (FALSE)
+        :param task_config_load_from_JSON: soll die Task-Konfiguration neu generiert werden (TRUE) oder nicht (FALSE)
         '''
         self.task_id = int(task_id)
-        self.override_task = override_task
+        self.task_config_load_from_JSON = task_config_load_from_JSON
         
         # Allgemeine und task-spezifische Konfiguration initialisieren
         self.general_config = self.__init_generalconfig()
-        self.taskconfig = self.__init_taskconfig()
+        self.task_config = self.__init_taskconfig()
         
         # Logger initialisieren
         self.logger = self.__init_logging()
         
-        self.logger.info("Usecase " + self.name + " initialisiert.")
-        self.logger.info("Task-Id: " + str(self.task_id))
-        self.logger.info("Task-Directory: " + self.taskconfig['task_directory'])
-        self.logger.info("Log-File: " + self.taskconfig['log_file'])
+        self.logger.info(u"Usecase " + self.name + " initialisiert.")
+        self.logger.info(u"Task-Id: " + unicode(self.task_id))
+        self.logger.info(u"Task-Directory: " + self.task_config['task_directory'])
+        self.logger.info(u"Log-File: " + self.task_config['log_file'])
     
     def __create_loghandler_file(self, filename):
         '''
@@ -49,7 +49,7 @@ class TemplateUsecase(object):
         
         file_formatter = logging.Formatter('%(asctime)s: %(message)s', '%Y-%m-%d %H:%M:%S')
         
-        h = logging.FileHandler(filename)
+        h = logging.FileHandler(filename, encoding="UTF-8")
         h.setLevel(logging.DEBUG)
         h.setFormatter(file_formatter)
         
@@ -83,7 +83,7 @@ class TemplateUsecase(object):
         logger.handlers = []
         
         logger.addHandler(self.__create_loghandler_arcgis())
-        logger.addHandler(self.__create_loghandler_file(self.taskconfig['log_file']))
+        logger.addHandler(self.__create_loghandler_file(self.task_config['log_file']))
         
         return logger
     
@@ -113,8 +113,11 @@ class TemplateUsecase(object):
         '''
         d = {}
         d['task_id'] = self.task_id
+        d['task_config_load_from_JSON'] = self.task_config_load_from_JSON
         
         task_dir = os.path.join(self.general_config['task_verzeichnis'], str(self.task_id))
+        
+        task_config_file = os.path.join(task_dir, str(self.task_id) + ".json")
 
         log_file_name = str(self.task_id) + ".log"
         log_file = os.path.join(task_dir, log_file_name)
@@ -134,16 +137,17 @@ class TemplateUsecase(object):
                 
         d['task_directory'] = task_dir
         d['log_file'] = log_file
+        d['task_config_file'] = task_config_file
         
         return d
     
     def __init_generalconfig(self):
         '''
         liest die zentrale Konfigurationsdatei in ein ConfigObj-Objet ein.
-        Diesen kann wie ein Dictionary gelesen werden.
+        Dieser kann wie ein Dictionary gelesen werden.
         '''
         config_filename = self.__get_general_configfile_from_envvar()
-        config_file = configobj.ConfigObj(config_filename)
+        config_file = configobj.ConfigObj(config_filename, encoding="UTF-8")
         
         return config_file
         
