@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from .TemplateFunction import TemplateFunction
 '''
 Created on 09.01.2015
