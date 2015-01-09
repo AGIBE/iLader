@@ -24,17 +24,24 @@ class Generierung(TemplateFunction):
         :param logger: vom Usecase initialisierter logger (logging.logger)
         :param task_config: Vom Usecase initialisierte task_config (Dictionary)
         '''
+        #TODO: hier gibt's noch was zu tun
         self.name = u"Generierung"
-        
         TemplateFunction.__init__(self, logger, task_config)
         
         self.logger = logger
         self.task_config = task_config
-                
-        self.__load_task_config()
-                
-        self.__execute()
-        self.logger.info(u"Task-Config nach execute: " + str(self.task_config))
+
+        # Wenn die JSON-Datei existiert und der Parameter task_config_load_from_JSON True ist,
+        # wird die Task-Config aus der JSON-Datei geladen. In diesem Fall wird die eigentliche
+        # Generierungsfunktion nicht ausgeführt.
+        if os.path.exists(self.task_config['task_config_file']) and self.task_config['task_config_load_from_JSON']:
+            self.__load_task_config()
+            # Dieser Wert muss explizit auf True gesetzt werden, da er im JSON-File
+            # auch auf False sein könnte.
+            self.task_config['task_config_load_from_JSON'] = True
+            self.finish()
+        else:
+            self.__execute()
         
     def __execute(self):
         '''
@@ -50,16 +57,12 @@ class Generierung(TemplateFunction):
        
     def __load_task_config(self):
         '''
-        Lädt die Task-Config aus der JSON-Datei, sofern sie existiert
-        und der task_override-Parameter True ist.
+        Lädt die Task-Config aus der JSON-Datei.
         '''
         js = ""
-        task_config_file = self.task_config['task_config_file']
-        if os.path.exists(task_config_file):
-            if self.task_config['task_config_load_from_JSON']:
-                f = open(task_config_file, "r")
-                js = json.load(f)
-                f.close
+        f = open(self.task_config['task_config_file'], "r")
+        js = json.load(f)
+        f.close
                 
         if len(js) > 0:
                 # die Variable js darf nicht einfach self.task_config
