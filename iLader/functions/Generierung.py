@@ -45,11 +45,7 @@ class Generierung(TemplateFunction):
             self.task_config['ausgefuehrte_funktionen'] = []
 
         
-        
-        if not self.name in self.task_config['ausgefuehrte_funktionen']:
-            self.task_config['ausgefuehrte_funktionen'].append(self.name)
-        
-        self.write_task_config()
+        self.finish()
       
        
     def __load_task_config(self):

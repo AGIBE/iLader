@@ -29,6 +29,21 @@ class TemplateFunction(object):
         #self.write_task_config()
     
     def write_task_config(self):
+        '''
+        schreibt die aktuelle task_config in ein JSON-File.
+        '''
         f = open(self.task_config['task_config_file'], "w")
         json.dump(self.task_config, f, indent=4)
         f.close()
+        
+    def finish(self):
+        '''
+        erledigt Arbeiten, die am Schluss jeder Funktion gemacht werden müssen:
+        - Task-Config in JSON-File schreiben
+        - Die ausgeführte Funktion in der Task-Config als ausgeführt eintragen
+        '''
+        if not self.name in self.task_config['ausgefuehrte_funktionen']:
+            self.task_config['ausgefuehrte_funktionen'].append(self.name)
+        
+        self.write_task_config()
+        

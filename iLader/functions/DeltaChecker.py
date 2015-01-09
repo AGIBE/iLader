@@ -34,8 +34,5 @@ class DeltaChecker(TemplateFunction):
         
         self.logger.info(u"Die Funktion " + self.name + u" arbeitet vor sich hin")
         
-        
-        if not self.name in self.task_config['ausgefuehrte_funktionen']:
-            self.task_config['ausgefuehrte_funktionen'].append(self.name)
-
-        self.write_task_config()
+       
+        self.finish()
