@@ -26,7 +26,7 @@ class TemplateUsecase(object):
         :param task_id: Eindeutige ID des auszuführenden Tasks, stammt aus TB_IMPORTE_GEODB.task_id
         :param override_task: soll die Task-Konfiguration neu generiert werden (TRUE) oder nicht (FALSE)
         '''
-        self.task_id = task_id
+        self.task_id = int(task_id)
         self.override_task = override_task
         
         # Allgemeine und task-spezifische Konfiguration initialisieren
@@ -35,6 +35,11 @@ class TemplateUsecase(object):
         
         # Logger initialisieren
         self.logger = self.__init_logging()
+        
+        self.logger.info("Usecase " + self.name + " initialisiert.")
+        self.logger.info("Task-Id: " + str(self.task_id))
+        self.logger.info("Task-Directory: " + self.taskconfig['task_directory'])
+        self.logger.info("Log-File: " + self.taskconfig['log_file'])
     
     def __create_loghandler_file(self, filename):
         '''

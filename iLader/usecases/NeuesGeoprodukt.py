@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from .TemplateUsecase import TemplateUsecase
+import iLader.functions
 '''
 Created on 09.01.2015
 
@@ -8,7 +9,7 @@ Created on 09.01.2015
 
 class NeuesGeoprodukt(TemplateUsecase):
     '''
-    classdocs
+    Usecase für den Import eines neuen Geoprodukts (s. Detailspezifikation)
     '''
 
 
@@ -16,7 +17,7 @@ class NeuesGeoprodukt(TemplateUsecase):
         '''
         Constructor
         '''
-        TemplateUsecase.__init__(self, task_id, override_task)
         self.name = "NeuesGeoprodukt"
+        TemplateUsecase.__init__(self, task_id, override_task)
         
-        self.logger.info("Usecase " + self.name + " ist initialisiert")
+        self.logger.info("Start der Funktionsausführung")
