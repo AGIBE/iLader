@@ -24,7 +24,6 @@ class Generierung(TemplateFunction):
         :param logger: vom Usecase initialisierter logger (logging.logger)
         :param task_config: Vom Usecase initialisierte task_config (Dictionary)
         '''
-        #TODO: hier gibt's noch was zu tun
         self.name = u"Generierung"
         TemplateFunction.__init__(self, logger, task_config)
         
