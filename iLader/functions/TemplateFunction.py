@@ -25,15 +25,6 @@ class TemplateFunction(object):
         self.logger = logger
         self.task_config = task_config
         
-        self.logger.info(u"Task-Config wird rausgeschrieben (" + self.task_config['task_config_file'] + ")")
-        
-        # Die aktuelle Funktion wird zu Beginn der Funktionsausführung
-        # (deshalb im Konstruktor) aus der Liste der ausgeführten
-        # entfernt. Sie wird erst am Schluss wieder eingefügt.
-        if self.task_config.has_key("ausgefuehrte_funktionen"):
-            if self.name in self.task_config['ausgefuehrte_funktionen']:
-                self.task_config['ausgefuehrte_funktionen'].remove(self.name)
-    
     def write_task_config(self):
         '''
         schreibt die aktuelle task_config in ein JSON-File.
@@ -41,6 +32,15 @@ class TemplateFunction(object):
         f = open(self.task_config['task_config_file'], "w")
         json.dump(self.task_config, f, indent=4)
         f.close()
+        
+    def start(self):
+        # Die aktuelle Funktion wird zu Beginn der Funktionsausführung
+        # (deshalb im Konstruktor) aus der Liste der ausgeführten
+        # entfernt. Sie wird erst am Schluss wieder eingefügt.
+        if self.task_config.has_key("ausgefuehrte_funktionen"):
+            if self.name in self.task_config['ausgefuehrte_funktionen']:
+                self.task_config['ausgefuehrte_funktionen'].remove(self.name)
+        
         
     def finish(self):
         '''

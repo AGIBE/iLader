@@ -24,6 +24,7 @@ class KopieVek3Neu(TemplateFunction):
             self.logger.info(u"Funktion " + self.name + u" wird ausgelassen.")
         else:
             self.logger.info(u"Funktion " + self.name + u" wird ausgeführt.")
+            self.start()
             self.__execute()
         
 
