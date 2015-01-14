@@ -47,7 +47,7 @@ class TemplateUsecase(object):
         :param filename: Name (inkl. Pfad) des Logfiles 
         '''
         
-        file_formatter = logging.Formatter('%(asctime)s: %(message)s', '%Y-%m-%d %H:%M:%S')
+        file_formatter = logging.Formatter('%(asctime)s.%(msecs)d|%(levelname)s|%(message)s', '%Y-%m-%d %H:%M:%S')
         
         h = logging.FileHandler(filename, encoding="UTF-8")
         h.setLevel(logging.DEBUG)
