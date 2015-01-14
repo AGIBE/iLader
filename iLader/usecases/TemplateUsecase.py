@@ -93,7 +93,7 @@ class TemplateUsecase(object):
         GEODBEXPORTHOME und gibt dann den vollständigen Pfad (inkl. Dateiname)
         der Konfigurationsdatei zurück.
         '''
-        config_directory = os.environ['GEODBEXPORTHOME']
+        config_directory = os.environ['GEODBIMPORTHOME']
         config_filename = "config.ini"
         
         config_file = os.path.join(config_directory, config_filename)
