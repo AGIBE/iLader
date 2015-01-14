@@ -18,7 +18,7 @@ class Generierung(TemplateFunction):
     '''
 
 
-    def __init__(self, logger, task_config):
+    def __init__(self, logger, task_config, general_config):
         '''
         Constructor
         :param logger: vom Usecase initialisierter logger (logging.logger)
@@ -29,6 +29,7 @@ class Generierung(TemplateFunction):
         
         self.logger = logger
         self.task_config = task_config
+        self.general_config = general_config
 
         # Wenn die JSON-Datei existiert und der Parameter task_config_load_from_JSON True ist,
         # wird die Task-Config aus der JSON-Datei geladen. In diesem Fall wird die eigentliche

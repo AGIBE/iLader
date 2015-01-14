@@ -25,7 +25,7 @@ class NeuesGeoprodukt(TemplateUsecase):
         self.logger.info(u"Start der Funktionsausführung")
         
         self.logger.info(u"Funktion Generierung")
-        f1 = iLader.functions.Generierung(self.logger, self.task_config)
+        f1 = iLader.functions.Generierung(self.logger, self.task_config, self.general_config)
         
         self.logger.info(u"Funktion CheckscriptNormierung")
         f2 = iLader.functions.CheckscriptNormierung(self.logger, self.task_config)
