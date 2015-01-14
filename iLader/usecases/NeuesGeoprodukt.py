@@ -24,11 +24,55 @@ class NeuesGeoprodukt(TemplateUsecase):
         
         self.logger.info(u"Start der Funktionsausführung")
         
-        self.logger.info(u"Funktion Generierung")
-        f1 = iLader.functions.Generierung(self.logger, self.task_config, self.general_config)
+        f = iLader.functions.Generierung(self.logger, self.task_config, self.general_config)
+        self.logger.info(u"Funktion " + f.name + u" wurde ausgeführt")
         
-        self.logger.info(u"Funktion CheckscriptNormierung")
-        f2 = iLader.functions.CheckscriptNormierung(self.logger, self.task_config)
+        f = iLader.functions.CheckscriptNormierung(self.logger, self.task_config)
+        self.logger.info(u"Funktion " + f.name + u" wurde ausgeführt")
         
-        self.logger.info(u"Funktion DeltaChecker")
-        f3 = iLader.functions.DeltaChecker(self.logger, self.task_config)
+        f = iLader.functions.QAFramework(self.logger, self.task_config)
+        self.logger.info(u"Funktion " + f.name + u" wurde ausgeführt")
+        
+        f = iLader.functions.QSStatus(self.logger, self.task_config)
+        self.logger.info(u"Funktion " + f.name + u" wurde ausgeführt")
+        
+        f = iLader.functions.GPOrdner(self.logger, self.task_config)
+        self.logger.info(u"Funktion " + f.name + u" wurde ausgeführt")
+        
+        f = iLader.functions.Begleitdaten(self.logger, self.task_config)
+        self.logger.info(u"Funktion " + f.name + u" wurde ausgeführt")
+        
+        f = iLader.functions.Fonts(self.logger, self.task_config)
+        self.logger.info(u"Funktion " + f.name + u" wurde ausgeführt")
+        
+        f = iLader.functions.Styles(self.logger, self.task_config)
+        self.logger.info(u"Funktion " + f.name + u" wurde ausgeführt")
+        
+        f = iLader.functions.Zusatzdaten(self.logger, self.task_config)
+        self.logger.info(u"Funktion " + f.name + u" wurde ausgeführt")
+        
+        f = iLader.functions.KopieVek2Neu(self.logger, self.task_config)
+        self.logger.info(u"Funktion " + f.name + u" wurde ausgeführt")
+        
+        f = iLader.functions.IndicesVek2(self.logger, self.task_config)
+        self.logger.info(u"Funktion " + f.name + u" wurde ausgeführt")
+        
+        f = iLader.functions.KopieVek3Neu(self.logger, self.task_config)
+        self.logger.info(u"Funktion " + f.name + u" wurde ausgeführt")
+        
+        f = iLader.functions.IndicesVek3(self.logger, self.task_config)
+        self.logger.info(u"Funktion " + f.name + u" wurde ausgeführt")
+        
+        f = iLader.functions.AktuellerZeitstand(self.logger, self.task_config)
+        self.logger.info(u"Funktion " + f.name + u" wurde ausgeführt")
+        
+        f = iLader.functions.ZeitstandStatus(self.logger, self.task_config)
+        self.logger.info(u"Funktion " + f.name + u" wurde ausgeführt")
+        
+        f = iLader.functions.ImportStatus(self.logger, self.task_config)
+        self.logger.info(u"Funktion " + f.name + u" wurde ausgeführt")
+        
+        f = iLader.functions.ImportArchiv(self.logger, self.task_config)
+        self.logger.info(u"Funktion " + f.name + u" wurde ausgeführt")
+        
+        self.logger.info(u"Usecase " + self.name + u"abgeschlossen")
