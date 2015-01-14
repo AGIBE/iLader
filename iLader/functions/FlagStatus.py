@@ -8,7 +8,7 @@ from .TemplateFunction import TemplateFunction
 
 class FlagStatus(TemplateFunction):
     '''
-    Führt die Qualitätschecks mit dem QA-Framework aus
+    Setzt den Flag-Status in TB_FLAG
     '''
 
     def __init__(self, logger, task_config):

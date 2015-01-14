@@ -8,7 +8,7 @@ from .TemplateFunction import TemplateFunction
 
 class KopieVek1Ersatz(TemplateFunction):
     '''
-    Führt die Qualitätschecks mit dem QA-Framework aus
+    Kopiert die Ebenen und Tabellen nach Vek1, bestehende Objekte werden ersetzt.
     '''
 
     def __init__(self, logger, task_config):

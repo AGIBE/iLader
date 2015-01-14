@@ -8,7 +8,7 @@ from .TemplateFunction import TemplateFunction
 
 class QSBenachrichtigung(TemplateFunction):
     '''
-    Führt die Qualitätschecks mit dem QA-Framework aus
+    Sendet eine Benachrichtigung, wenn der QS-Status nicht ok ist
     '''
 
     def __init__(self, logger, task_config):

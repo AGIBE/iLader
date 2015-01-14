@@ -8,7 +8,7 @@ from .TemplateFunction import TemplateFunction
 
 class ZeitstandStatus(TemplateFunction):
     '''
-    Führt die Qualitätschecks mit dem QA-Framework aus
+    Setzt den Zeitstands-Status (Tabelle TB_GEOPRODUKT_ZEISTAND)
     '''
 
     def __init__(self, logger, task_config):

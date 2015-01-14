@@ -8,7 +8,7 @@ from .TemplateFunction import TemplateFunction
 
 class Begleitdaten(TemplateFunction):
     '''
-    Führt die Qualitätschecks mit dem QA-Framework aus
+    Kopiert die Begleitdaten
     '''
 
     def __init__(self, logger, task_config):

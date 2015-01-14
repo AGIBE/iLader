@@ -8,7 +8,7 @@ from .TemplateFunction import TemplateFunction
 
 class QSStatus(TemplateFunction):
     '''
-    Führt die Qualitätschecks mit dem QA-Framework aus
+    Berechnet den QS-Status und schreibt ihn in die Tabelle TB_IMPORTE_GEODB
     '''
 
     def __init__(self, logger, task_config):

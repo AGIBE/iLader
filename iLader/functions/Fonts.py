@@ -8,7 +8,7 @@ from .TemplateFunction import TemplateFunction
 
 class Fonts(TemplateFunction):
     '''
-    Führt die Qualitätschecks mit dem QA-Framework aus
+    Kopiert die Fonts
     '''
 
     def __init__(self, logger, task_config):

@@ -8,7 +8,7 @@ from .TemplateFunction import TemplateFunction
 
 class Zusatzdaten(TemplateFunction):
     '''
-    Führt die Qualitätschecks mit dem QA-Framework aus
+    Kopiert die Zusatzdaten
     '''
 
     def __init__(self, logger, task_config):

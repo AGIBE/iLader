@@ -8,7 +8,7 @@ from .TemplateFunction import TemplateFunction
 
 class ImportArchiv(TemplateFunction):
     '''
-    Führt die Qualitätschecks mit dem QA-Framework aus
+    Archiviert das Log-File sowie das Task-Config-JSON
     '''
 
     def __init__(self, logger, task_config):

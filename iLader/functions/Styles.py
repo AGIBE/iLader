@@ -8,7 +8,7 @@ from .TemplateFunction import TemplateFunction
 
 class Styles(TemplateFunction):
     '''
-    Führt die Qualitätschecks mit dem QA-Framework aus
+    Kopiert die Styles.
     '''
 
     def __init__(self, logger, task_config):

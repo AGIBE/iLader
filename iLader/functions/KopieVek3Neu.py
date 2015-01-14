@@ -8,7 +8,7 @@ from .TemplateFunction import TemplateFunction
 
 class KopieVek3Neu(TemplateFunction):
     '''
-    Führt die Qualitätschecks mit dem QA-Framework aus
+    Kopiert die Ebenen und Tabellen nach Vek3
     '''
 
     def __init__(self, logger, task_config):

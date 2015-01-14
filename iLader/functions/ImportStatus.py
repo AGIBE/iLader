@@ -8,7 +8,7 @@ from .TemplateFunction import TemplateFunction
 
 class ImportStatus(TemplateFunction):
     '''
-    Führt die Qualitätschecks mit dem QA-Framework aus
+    Setzt den Import-Status in TB_IMPORTE_GEODB
     '''
 
     def __init__(self, logger, task_config):

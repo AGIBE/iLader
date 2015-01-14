@@ -8,7 +8,7 @@ from .TemplateFunction import TemplateFunction
 
 class TransferVek1(TemplateFunction):
     '''
-    Führt die Qualitätschecks mit dem QA-Framework aus
+    Kopiert die Transferstruktur nach Vek1, bestehende Objekt werden ersetzt.
     '''
 
     def __init__(self, logger, task_config):

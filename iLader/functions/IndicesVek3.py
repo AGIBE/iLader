@@ -8,7 +8,7 @@ from .TemplateFunction import TemplateFunction
 
 class IndicesVek3(TemplateFunction):
     '''
-    Führt die Qualitätschecks mit dem QA-Framework aus
+    Setzt die Indices auf Vek3
     '''
 
     def __init__(self, logger, task_config):

@@ -8,7 +8,7 @@ from .TemplateFunction import TemplateFunction
 
 class GPOrdner(TemplateFunction):
     '''
-    Führt die Qualitätschecks mit dem QA-Framework aus
+    Erstellt den Geoprodukt-Ordner neu
     '''
 
     def __init__(self, logger, task_config):
