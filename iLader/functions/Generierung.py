@@ -58,7 +58,6 @@ class Generierung(TemplateFunction):
         '''
         Lädt die Task-Config aus der JSON-Datei.
         '''
-        js = ""
         f = open(self.task_config['task_config_file'], "r")
         js = json.load(f)
         f.close
