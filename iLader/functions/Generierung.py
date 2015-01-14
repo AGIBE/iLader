@@ -51,6 +51,7 @@ class Generierung(TemplateFunction):
         if not self.task_config.has_key("ausgefuehrte_funktionen"):
             self.task_config['ausgefuehrte_funktionen'] = []
 
+        self.task_config['GPR'] = "AVR"
         
         self.finish()
       

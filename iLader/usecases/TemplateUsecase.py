@@ -90,7 +90,7 @@ class TemplateUsecase(object):
     def __get_general_configfile_from_envvar(self):
         '''
         Holt den Pfad zur Konfigurationsdatei aus der Umgebungsvariable
-        GEODBEXPORTHOME und gibt dann den vollständigen Pfad (inkl. Dateiname)
+        GEODBIMPORTHOME und gibt dann den vollständigen Pfad (inkl. Dateiname)
         der Konfigurationsdatei zurück.
         '''
         config_directory = os.environ['GEODBIMPORTHOME']
