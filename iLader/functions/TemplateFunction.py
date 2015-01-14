@@ -26,8 +26,12 @@ class TemplateFunction(object):
         self.task_config = task_config
         
         self.logger.info(u"Task-Config wird rausgeschrieben (" + self.task_config['task_config_file'] + ")")
-        #TODO: die aktuelle Funktion aus der task-config entfernen ("ausgefuehrte Funktionen")
-        #self.write_task_config()
+        
+        # Die aktuelle Funktion wird zu Beginn der Funktionsausführung
+        # (deshalb im Konstruktor) aus der Liste der ausgeführten
+        # entfernt. Sie wird erst am Schluss wieder eingefügt.
+        if self.name in self.task_config['ausgefuehrte_funktionen']:
+            self.task_config['ausgefuehrte_funktionen'].remove(self.name)
     
     def write_task_config(self):
         '''
