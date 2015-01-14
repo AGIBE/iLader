@@ -16,6 +16,7 @@ from .KopieVek2Ersatz import KopieVek2Ersatz
 from .IndicesVek2 import IndicesVek2
 from .KopieVek1Ersatz import KopieVek1Ersatz
 from .KopieVek3Neu import KopieVek3Neu
+from .IndicesVek3 import IndicesVek3
 from .KopieVek3Ersatz import KopieVek3Ersatz
 from .TransferVek2 import TransferVek2
 from .TransferVek1 import TransferVek1
