@@ -100,11 +100,20 @@ class TemplateUsecase(object):
         
         return config_file
     
-    def __create_task_dir(self):
+    def __create_task_dir(self, task_dir, log_file, archive_log_file):
         '''
         Erzeugt das Logfile (inkl. des Taskverzeichnisses). Wenn das Logfile schon existiert,
         wird das bestehende Logfile umbenannt.
+        :param task_dir: Taskverzeichnis
+        :param log_file: Dateiname des Logfiles
+        :param archive_log_file: Name des umbenannten Logfiles
         '''
+        if not os.path.exists(task_dir):
+            print task_dir
+            os.makedirs(task_dir)
+        else:
+            if os.path.exists(log_file):
+                os.rename(log_file, archive_log_file)
     
     def __init_taskconfig(self):
         '''
@@ -128,12 +137,7 @@ class TemplateUsecase(object):
         
         # Task-Verzeichnis erstellen, falls es noch nicht existiert
         # Falls es existiert, das dort liegende Log-File umbenennen
-        if not os.path.exists(task_dir):
-            print task_dir
-            os.makedirs(task_dir)
-        else:
-            if os.path.exists(log_file):
-                os.rename(log_file, archive_log_file)
+        self.__create_task_dir(task_dir, log_file, archive_log_file)
                 
         d['task_directory'] = task_dir
         d['log_file'] = log_file
