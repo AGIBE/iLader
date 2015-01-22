@@ -4,6 +4,7 @@ Created on 09.01.2015
 
 @author: Peter Schär
 '''
+from __future__ import absolute_import, division, print_function, unicode_literals
 import logging
 import iLader.helpers
 import os
@@ -109,7 +110,6 @@ class TemplateUsecase(object):
         :param archive_log_file: Name des umbenannten Logfiles
         '''
         if not os.path.exists(task_dir):
-            print task_dir
             os.makedirs(task_dir)
         else:
             if os.path.exists(log_file):
@@ -145,6 +145,19 @@ class TemplateUsecase(object):
         
         return d
     
+    def __decrypt_passwords(self, section, key):
+        '''
+        Entschlüsselt sämtliche Passworte in der zentralen
+        Konfigurationsdatei. Wird aus der ConfigObj.walk-Funktion
+        aus aufgerufen. Deshalb sind section und key als
+        Parameter obligatorisch.
+        :param section: ConfigObj.Section-Objekt
+        :param key: aktueller Schlüssel
+        '''
+        if key == "password":
+            section[key] = "UNVERSCHLUESSELT"
+        
+    
     def __init_generalconfig(self):
         '''
         liest die zentrale Konfigurationsdatei in ein ConfigObj-Objet ein.
@@ -152,6 +165,12 @@ class TemplateUsecase(object):
         '''
         config_filename = self.__get_general_configfile_from_envvar()
         config_file = configobj.ConfigObj(config_filename, encoding="UTF-8")
+        
+        # Die Walk-Funktion geht rekursiv durch alle
+        # Sections und Untersections der Config und 
+        # ruft für jeden Key die angegebene Funktion
+        # auf
+        config_file.walk(self.__decrypt_passwords)
         
         return config_file
         

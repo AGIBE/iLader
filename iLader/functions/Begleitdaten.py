@@ -4,6 +4,7 @@ Created on 14.01.2015
 
 @author: Peter Schär
 '''
+from __future__ import absolute_import, division, print_function, unicode_literals
 from .TemplateFunction import TemplateFunction
 
 class Begleitdaten(TemplateFunction):
