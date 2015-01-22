@@ -20,7 +20,6 @@ class TemplateUsecase(object):
     geteilt wird.
     '''
 
-
     def __init__(self, task_id, task_config_load_from_JSON):        
         '''
         Constructor
@@ -152,11 +151,17 @@ class TemplateUsecase(object):
         aus aufgerufen. Deshalb sind section und key als
         Parameter obligatorisch.
         :param section: ConfigObj.Section-Objekt
-        :param key: aktueller Schlüssel
+        :param key: aktueller Schlüssel im ConfigObj-Objekt
         '''
-        if key == "password":
-            section[key] = "UNVERSCHLUESSELT"
+        # Hilfsklasse für die Entschlüsselung
+        crypter = iLader.helpers.Crypter()
         
+        # Annahme: alle Keys, die "password" heissen, enthalten zu entschlüsselnde Passwörter
+        if key == "password":
+            encrypted_password = section[key]
+            decrypted_password = crypter.decrypt(encrypted_password)
+            # Wert in der Config ersetzen
+            section[key] = decrypted_password
     
     def __init_generalconfig(self):
         '''
