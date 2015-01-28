@@ -6,6 +6,7 @@ Created on 14.01.2015
 '''
 from __future__ import absolute_import, division, print_function, unicode_literals
 from .TemplateFunction import TemplateFunction
+import shutil
 
 class Begleitdaten(TemplateFunction):
     '''
@@ -27,14 +28,26 @@ class Begleitdaten(TemplateFunction):
             self.logger.info(u"Funktion " + self.name + u" wird ausgeführt.")
             self.start()
             self.__execute()
-        
-
+            
     def __execute(self):
         '''
-        Führt den eigentlichen Funktionsablauf aus
+        Führt den eigentlichen Funktionsablauf aus.
+        shutil.filecopy überschreibt Files, die am Ziel bereits
+        existieren. Also muss dies auch nicht vorgängig geprüft
+        werden. Ob die Files alle vorhanden sind, wird in der
+        Funktion CheckscriptNormierung bereits überprüft.
         '''
+        # Legenden
+        self.logger.info("Legendenfiles kopieren")
+        for legende in self.task_config["legende"]:
+            self.logger.info("Legende " + legende["name"] + " wird kopiert.")
+            shutil.copyfile(legende["quelle"], legende["ziel"])
         
-        self.logger.info(u"Die Funktion " + self.name + u" arbeitet vor sich hin")
+        # MXDs
+        self.logger.info("MXD-Files kopieren")
+        for mxd in self.task_config["mxd"]:
+            self.logger.info(mxd["name"] + " wird kopiert.")
+            shutil.copyfile(legende["quelle"], legende["ziel"])
         
        
         self.finish()

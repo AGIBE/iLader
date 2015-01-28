@@ -30,8 +30,10 @@ class NeuesGeoprodukt(TemplateUsecase):
 
         auszufuehrende_funktionen = [
                      iLader.functions.CheckscriptNormierung,
+                     iLader.functions.DeltaChecker,
                      iLader.functions.QAFramework,
                      iLader.functions.QSStatus,
+                     iLader.functions.QSBenachrichtigung,
                      iLader.functions.GPOrdner,
                      iLader.functions.Begleitdaten,
                      iLader.functions.Fonts,
