@@ -43,8 +43,7 @@ class Generierung(TemplateFunction):
             self.task_config['task_config_load_from_JSON'] = True
             self.finish()
         else:
-            self.__execute()
-        
+            self.__execute()        
        
 
     def __db_connect(self, instance, usergroup, sql_name):
@@ -68,7 +67,7 @@ class Generierung(TemplateFunction):
         #TODO: Tabelle tb_importe_geodb erstellen
         #TODO: self.sql_dd_importe = "select * from geodb_dd.tb_importe_geodb"
         #TODO: self.__db_connect('dd_connection', self.sql_dd_importe)
-        self.gzs_objectid = '157675'
+        self.gzs_objectid = '99531'
 
     
     def __get_gpr_info(self):
@@ -78,6 +77,7 @@ class Generierung(TemplateFunction):
             self.gpr = row[0].decode('cp1252')
             self.jahr = str(row[1]).decode('cp1252')
             self.version = str(row[2]).decode('cp1252')
+            self.version = self.version.zfill(2)
             self.zeitstand = self.jahr + "_" + self.version
             self.rolle_freigabe = row[3].decode('cp1252')
     
@@ -85,12 +85,15 @@ class Generierung(TemplateFunction):
         self.sql_dd_ebe = "SELECT a.gpr_bezeichnung, c.ebe_bezeichnung, b.gzs_jahr, b.gzs_version, g.dat_bezeichnung_de from geodb_dd.tb_ebene_zeitstand d join geodb_dd.tb_ebene c on d.ebe_objectid = c.ebe_objectid join geodb_dd.tb_geoprodukt_zeitstand b on d.gzs_objectid = b.gzs_objectid join geodb_dd.tb_geoprodukt a on b.gpr_objectid = a.gpr_objectid join geodb_dd.tb_datentyp g on c.dat_objectid = g.dat_objectid where b.gzs_objectid = '" + self.gzs_objectid + "'"   
         self.__db_connect('team', 'geodb_dd', self.sql_dd_ebe)
         for row in self.result:
-            ebeDict = {}
+            self.logger.info(row)
+            ebeVecDict = {}
+            ebeRasDict = {}
             gpr = row[0].decode('cp1252')
             ebe = row[1].decode('cp1252')
             jahr = str(row[2]).decode('cp1252')
             version = str(row[3]).decode('cp1252')
-            datentyp = row[4].decode('cp1252')
+            version = version.zfill(2)
+            datentyp = row[4].decode('cp1252')            
             zeitstand = jahr + "_" + version
             gpr_ebe = str(gpr) + "_" + str(ebe)
             quelle_schema_gpr_ebe = self.schema_norm + "_" + gpr_ebe
@@ -100,13 +103,35 @@ class Generierung(TemplateFunction):
             ziel_vek1 = os.path.join(self.sde_conn_vek1, ziel_schema_gpr_ebe)
             ziel_vek2 = os.path.join(self.sde_conn_vek2, ziel_schema_gpr_ebe)
             ziel_vek3 = os.path.join(self.sde_conn_vek3, ziel_schema_gpr_ebe_zs)
-            ebeDict['datentyp']= datentyp
-            ebeDict['gpr_ebe'] = gpr_ebe
-            ebeDict['quelle'] = quelle
-            ebeDict['ziel_vek1'] = ziel_vek1
-            ebeDict['ziel_vek2'] = ziel_vek2
-            ebeDict['ziel_vek3'] = ziel_vek3
-            self.ebeList.append(ebeDict)
+            ziel_ras1_akt = os.path.join(self.sde_conn_ras1, ziel_schema_gpr_ebe) 
+            ziel_ras1_zs = os.path.join(self.sde_conn_ras1, ziel_schema_gpr_ebe_zs)
+            ziel_ras2 = os.path.join(self.sde_conn_ras2, ziel_schema_gpr_ebe)
+            if datentyp != 'Rastermosaik' and datentyp != 'Rasterkatalog':
+                ebeVecDict['datentyp']= datentyp
+                ebeVecDict['gpr_ebe'] = gpr_ebe
+                ebeVecDict['quelle'] = quelle
+                ebeVecDict['ziel_vek1'] = ziel_vek1
+                ebeVecDict['ziel_vek2'] = ziel_vek2
+                ebeVecDict['ziel_vek3'] = ziel_vek3
+                self.ebeVecList.append(ebeVecDict)            
+            elif datentyp == 'Rastermosaik': # später Rasterdataset
+                ebeRasDict['datentyp'] = datentyp
+                ebeRasDict['gpr_ebe'] = gpr_ebe
+                ebeRasDict['quelle'] = quelle
+                ebeRasDict['ziel_ras1']= ziel_ras1_akt
+                ebeRasDict['ziel_ras1_zs']= ziel_ras1_zs
+                self.ebeRasList.append(ebeRasDict)
+            elif datentyp == 'Mosaicdataset': # TODO neuer Datentyp MosaicDataset einfügen (hier Rasterkatalog nur zu Testzwecken
+                #TODOself.sql_raster_properties = "SELECT * from gdbp.raster_xy a where a.gpr = SWISSI"
+                self.__db_connect('work', 'gdbp', self.sql_raster_properties)
+                ebeRasDict['datentyp'] = datentyp
+                ebeRasDict['gpr_ebe'] = gpr_ebe
+                #TODO: Quelle von MosaicDatasets festlegen (in erweiterten Tabellen gdbp.info_rastermosaic ebeRasDict['quelle'] = u'noch offen' / 
+                # MD: ebeRasDict['quelle'] = os.path.join(self.general_config['quelle_begleitdaten_work'], self.general_config['raster']['quelle_rasterkacheln'], self.general_config['raster']['raster_md'])
+                # RD: ebeRasDict['quelle'] = os.path.join(self.general_config['quelle_begleitdaten_work'], self.general_config['raster']['quelle_rasterkacheln'], self.general_config['raster']['raster_rd'])
+                ebeRasDict['ziel_ras2'] = ziel_ras2
+                self.ebeRasList.append(ebeRasDict)          
+                
         
             
     def __get_wtb_dd(self):
@@ -136,8 +161,7 @@ class Generierung(TemplateFunction):
             wtbDict['ziel_vek1'] = ziel_vek1
             wtbDict['ziel_vek2'] = ziel_vek2
             wtbDict['ziel_vek3'] = ziel_vek3
-            self.ebeList.append(wtbDict)
-              
+            self.ebeVecList.append(wtbDict)             
                 
     def __execute(self):
         '''
@@ -152,21 +176,25 @@ class Generierung(TemplateFunction):
         self.sde_conn_vek1 = os.path.join(self.sde_connection_directory, 'vek1.sde')
         self.sde_conn_vek2 = os.path.join(self.sde_connection_directory, 'vek2.sde')
         self.sde_conn_vek3 = os.path.join(self.sde_connection_directory, 'vek3.sde')
+        self.sde_conn_ras1 = os.path.join(self.sde_connection_directory, 'ras1.sde')
+        self.sde_conn_ras2 = os.path.join(self.sde_connection_directory, 'ras2.sde')
         self.sde_conn_norm = os.path.join(self.sde_connection_directory, 'norm.sde')
         self.schema_geodb = self.general_config['users']['geodb']['schema']
         self.schema_norm = self.general_config['users']['norm']['schema']
        
-        self.ebeList = []               
+        self.ebeVecList = []
+        self.ebeRasList = []               
         self.__get_importe_dd()
         self.__get_gpr_info()
         self.__get_ebe_dd()
         self.__get_wtb_dd()
-        self.task_config['vektor_ebenen']= self.ebeList
         self.task_config['gpr'] = self.gpr
         self.task_config['zeitstand'] = self.zeitstand
         self.task_config['zeitstand_jahr'] = self.jahr
         self.task_config['zeitstand_version'] = self.version
         self.task_config['rolle'] = self.rolle_freigabe
+        self.task_config['vektor_ebenen']= self.ebeVecList
+        self.task_config['raster_ebenen']= self.ebeRasList
         self.finish()  
        
     def __load_task_config(self):
