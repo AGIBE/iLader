@@ -6,6 +6,7 @@ Created on 14.01.2015
 '''
 from __future__ import absolute_import, division, print_function, unicode_literals
 from .TemplateFunction import TemplateFunction
+import shutil
 
 class Fonts(TemplateFunction):
     '''
@@ -31,10 +32,20 @@ class Fonts(TemplateFunction):
 
     def __execute(self):
         '''
-        Führt den eigentlichen Funktionsablauf aus
+        Führt den eigentlichen Funktionsablauf aus.
+        shutil.filecopy überschreibt Files, die am Ziel bereits
+        existieren. Also muss dies auch nicht vorgängig geprüft
+        werden. Ob die Files alle vorhanden sind, wird in der
+        Funktion CheckscriptNormierung bereits überprüft.
         '''
         
-        self.logger.info(u"Die Funktion " + self.name + u" arbeitet vor sich hin")
+        # Fonts
+        self.logger.info("Fonts kopieren")
+        if self.task_config["font"] > 0:
+            for font in self.task_config["font"]:
+                self.logger.info("Font " + font["name"] + " wird kopiert.")
+                shutil.copyfile(font["quelle"], font["ziel"])
+        else:
+            self.logger.info("Keine Fonts vorhanden. Es wird nichts kopiert.")
         
-       
         self.finish()
