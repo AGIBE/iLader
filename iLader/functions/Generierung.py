@@ -132,7 +132,50 @@ class Generierung(TemplateFunction):
                 ebeRasDict['ziel_ras2'] = ziel_ras2
                 self.ebeRasList.append(ebeRasDict)          
                 
-        
+    def __get_leg_dd(self):
+        self.sql_dd_ebe = "SELECT a.gpr_bezeichnung, c.ebe_bezeichnung, b.gzs_jahr, b.gzs_version, f.leg_bezeichnung, h.spr_kuerzel from geodb_dd.tb_ebene_zeitstand d join geodb_dd.tb_ebene c on d.ebe_objectid = c.ebe_objectid join geodb_dd.tb_geoprodukt_zeitstand b on d.gzs_objectid = b.gzs_objectid join geodb_dd.tb_geoprodukt a on b.gpr_objectid = a.gpr_objectid join geodb_dd.tb_datentyp g on c.dat_objectid = g.dat_objectid JOIN geodb_dd.tb_legende f on f.ezs_objectid = d.ezs_objectid JOIN geodb_dd.tb_sprache h on h.spr_objectid = f.spr_objectid where b.gzs_objectid = '" + self.gzs_objectid + "'"   
+        self.__db_connect('team', 'geodb_dd', self.sql_dd_ebe)
+        for row in self.result:
+            legDict = {}
+            quelle_symbol = os.path.join(self.general_config['quelle_begleitdaten'], self.gpr, self.general_config['work'], self.general_config['quelle_begleitdaten_symbol'])
+            self.logger.info(u'Legendendetails')
+            self.logger.info(row)
+            gpr = str(row[0]).decode('cp1252')
+            ebe = str(row[1]).decode('cp1252')
+            jahr = str(row[2]).decode('cp1252')
+            version = str(row[3]).decode('cp1252')
+            version = version.zfill(2)           
+            zeitstand = jahr + "_" + version
+            leg = str(row[4]).decode('cp1252')
+            spr = str(row[5]).decode('cp1252')
+            gpr_ebe_leg_spr = gpr + "_" + ebe + "_" + leg + "_" + spr
+            gpr_ebe_zs_leg_spr = gpr + "_" + ebe + "_" + zeitstand + "_" + leg + "_" + spr
+            self.legList.append(legDict)
+
+    
+    def __get_mxd_dd(self, create_zs, lang):
+            self.mxdDict = {}
+            self.quelle_mxd = os.path.join(self.general_config['quelle_begleitdaten'], self.gpr, self.general_config['quelle_begleitdaten_work'], self.general_config['quelle_begleitdaten_mxd'])
+            self.ziel_mxd = os.path.join(self.general_config['ziel_begleitdaten'], self.gpr, "mxd") # TODO: ev. noch Parameter ziel_begleitdaten_mxd aufnehmen etc.
+            self.create_zs = create_zs
+            self.lang = lang
+            if self.create_zs == "False":
+                self.mxd_lang = self.gpr + "_" + self.gpr + "_" + self.lang + ".mxd"
+                self.quelle_mxd_lang = os.path.join(self.quelle_mxd, self.mxd_lang)
+                self.ziel_mxd_lang = os.path.join(self.ziel_mxd, self.mxd_lang)
+                self.mxdDict['name'] = self.mxd_lang
+                self.mxdDict['quelle'] = self.quelle_mxd_lang
+                self.mxdDict['ziel'] = self.ziel_mxd_lang             
+                self.mxdList.append(self.mxdDict)
+            if self.create_zs == "True":
+                self.mxd_lang = self.gpr + "_" + self.zeitstand + "_" + self.gpr + "_" + self.lang + ".mxd"
+                self.quelle_mxd_lang = os.path.join(self.quelle_mxd, self.mxd_lang)
+                self.ziel_mxd_lang = os.path.join(self.ziel_mxd, self.mxd_lang)
+                self.mxdDict['name'] = self.mxd_lang
+                self.mxdDict['quelle'] = self.quelle_mxd_lang
+                self.mxdDict['ziel'] = self.ziel_mxd_lang
+                self.mxdList.append(self.mxdDict)
+            
             
     def __get_wtb_dd(self):
         self.sql_dd_wtb = "SELECT a.gpr_bezeichnung, c.ebe_bezeichnung, b.gzs_jahr, b.gzs_version, e.wtb_bezeichnung from geodb_dd.tb_wertetabelle e join geodb_dd.tb_ebene_zeitstand d on e.ezs_objectid = d.ezs_objectid join geodb_dd.tb_ebene c on d.ebe_objectid = c.ebe_objectid join geodb_dd.tb_geoprodukt_zeitstand b on d.gzs_objectid = b.gzs_objectid join geodb_dd.tb_geoprodukt a on b.gpr_objectid = a.gpr_objectid where b.gzs_objectid = '" + self.gzs_objectid + "'"
@@ -183,18 +226,27 @@ class Generierung(TemplateFunction):
         self.schema_norm = self.general_config['users']['norm']['schema']
        
         self.ebeVecList = []
-        self.ebeRasList = []               
+        self.ebeRasList = []
+        self.legList = []
+        self.mxdList = []               
         self.__get_importe_dd()
         self.__get_gpr_info()
         self.__get_ebe_dd()
         self.__get_wtb_dd()
+        self.__get_mxd_dd("False", "DE")
+        self.__get_mxd_dd("False", "FR")
+        self.__get_mxd_dd("True", "DE")
+        self.__get_mxd_dd("True", "FR")
+        #self.__get_leg_dd()
         self.task_config['gpr'] = self.gpr
         self.task_config['zeitstand'] = self.zeitstand
         self.task_config['zeitstand_jahr'] = self.jahr
         self.task_config['zeitstand_version'] = self.version
         self.task_config['rolle'] = self.rolle_freigabe
-        self.task_config['vektor_ebenen']= self.ebeVecList
-        self.task_config['raster_ebenen']= self.ebeRasList
+        self.task_config['vektor_ebenen'] = self.ebeVecList
+        self.task_config['raster_ebenen'] = self.ebeRasList
+        self.task_config['legende'] = self.legList
+        self.task_config['mxd'] = self.mxdList
         self.finish()  
        
     def __load_task_config(self):
