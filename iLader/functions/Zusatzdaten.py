@@ -1,9 +1,4 @@
 # -*- coding: utf-8 -*-
-'''
-Created on 14.01.2015
-
-@author: Peter Schär
-'''
 from __future__ import absolute_import, division, print_function, unicode_literals
 from .TemplateFunction import TemplateFunction
 import shutil
@@ -11,7 +6,11 @@ import os
 
 class Zusatzdaten(TemplateFunction):
     '''
-    Kopiert die Zusatzdaten
+    Kopiert ein allfällig vorhandenes Zusatzdaten-Verzeichnis auf den
+    Freigabeshare. Dort wird es zusätzlich in einen neuen Ordner mit
+    Zeitstands-Angabe kopiert. Die Angaben sind in task_config abgelegt:
+    
+    - ``task_config["zusatzdaten"]``
     '''
 
     def __init__(self, logger, task_config):

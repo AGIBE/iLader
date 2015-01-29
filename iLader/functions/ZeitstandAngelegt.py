@@ -1,20 +1,18 @@
 # -*- coding: utf-8 -*-
-'''
-Created on 14.01.2015
-
-@author: Peter Schär
-'''
 from __future__ import absolute_import, division, print_function, unicode_literals
 from .TemplateFunction import TemplateFunction
 
 class ZeitstandAngelegt(TemplateFunction):
     '''
-    Setzt Zeitstand-Status auf 1 (angelegt)
+    Diese Funktion erfasst den Status angelegt (Wert=1) in der Tabelle ``tb_geoprodukt_zeitstand``,
+    wenn es sich beim Usecase um eine Korrektur eines Geoproduktzeitstandes handelt. In allen anderen
+    Usecases wird dieser Wert durch die Synchronisation GeoDBmeta => DataDictionary gesetzt.
     '''
 
     def __init__(self, logger, task_config):
         '''
         Constructor
+        
         :param logger: vom Usecase initialisierter logger (logging.logger)
         :param task_config: Vom Usecase initialisierte task_config (Dictionary)
         '''

@@ -1,15 +1,17 @@
 # -*- coding: utf-8 -*-
-'''
-Created on 14.01.2015
-
-@author: Peter Schär
-'''
 from __future__ import absolute_import, division, print_function, unicode_literals
 from .TemplateFunction import TemplateFunction
 
 class IndicesVek2(TemplateFunction):
     '''
-    Setzt die Indices auf Vek2
+    Für alle nach Vek2 kopierten Vektorebenen erstellt diese Funktion
+    die Attribut-Indices. Die Angaben zu den Ebenen und Indices sind
+    in task_config abgelegt:
+    
+    - ``task_config["vektor_ebenen"]``
+    
+    Ob die Indices mit arcpy oder mit Oracle-Funktionen erstellt werden
+    sollen, ist noch festzulegen.
     '''
 
     def __init__(self, logger, task_config):

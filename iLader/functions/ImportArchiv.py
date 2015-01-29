@@ -1,15 +1,11 @@
 # -*- coding: utf-8 -*-
-'''
-Created on 14.01.2015
-
-@author: Peter Schär
-'''
 from __future__ import absolute_import, division, print_function, unicode_literals
 from .TemplateFunction import TemplateFunction
 
 class ImportArchiv(TemplateFunction):
     '''
-    Archiviert das Log-File sowie das Task-Config-JSON
+    Diese Funktion kopiert sowohl das Logfile als auch das task_config-File auf dem Arbeitsshare.
+    Allfällige Aufräumarbeiten können auch in dieser Funktion vorgenommen werden.
     '''
 
     def __init__(self, logger, task_config):

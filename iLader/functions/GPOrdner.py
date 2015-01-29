@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
-'''
-Created on 14.01.2015
-
-@author: Peter Schär
-'''
 from __future__ import absolute_import, division, print_function, unicode_literals
 from .TemplateFunction import TemplateFunction
 import os
 
 class GPOrdner(TemplateFunction):
     '''
-    Erstellt den Geoprodukt-Ordner neu
+    Die Funktion erstellt auf dem Freigabeshare folgende Verzeichnisse neu:
+    
+    - Geoprodukt-Verzeichnis
+    - Unterverzeichnis ``mxd``
+    - Unterverzeichnis ``symbol``
+    - Unterverzeichnis ``Zusatzdaten``
     '''
 
     def __init__(self, logger, task_config):
@@ -47,11 +47,11 @@ class GPOrdner(TemplateFunction):
         '''
         Führt den eigentlichen Funktionsablauf aus
         '''
-        
+        #TODO: Verzeichnis Zusatzdaten erstellen
         # Verzeichnis-Pfade zusammensetzen
         gpr_dir = self.task_config['ziel_begleitdaten_gpr']
-        mxd_dir = os.path.join(gpr_dir, "mxd")
-        symbol_dir = os.path.join(gpr_dir, "symbol")
+        mxd_dir = os.path.join(gpr_dir, "mxd") #TODO: Verzeichnisname aus task_config auslesen
+        symbol_dir = os.path.join(gpr_dir, "symbol") #TODO: Verzeichnisname aus task_config auslesen
         
         # Prüfen ob das Geoprodukt-Verzeichnis existiert
         if os.path.exists(gpr_dir):

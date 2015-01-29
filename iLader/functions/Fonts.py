@@ -1,16 +1,14 @@
 # -*- coding: utf-8 -*-
-'''
-Created on 14.01.2015
-
-@author: Peter Schär
-'''
 from __future__ import absolute_import, division, print_function, unicode_literals
 from .TemplateFunction import TemplateFunction
 import shutil
 
 class Fonts(TemplateFunction):
     '''
-    Kopiert die Fonts
+    Kopiert allfällige Font-Dateien auf den Freigabeshare. Die Font-Dateien
+    sind in task_config definiert:
+    
+    - ``task_config["font"]`` 
     '''
 
     def __init__(self, logger, task_config):

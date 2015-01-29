@@ -1,16 +1,14 @@
 # -*- coding: utf-8 -*-
-'''
-Created on 14.01.2015
-
-@author: Peter Schär
-'''
 from __future__ import absolute_import, division, print_function, unicode_literals
 from .TemplateFunction import TemplateFunction
 import shutil
 
 class Styles(TemplateFunction):
     '''
-    Kopiert die Styles.
+    Kopiert allfällige Style-Dateien auf den Freigabeshare. Die Style-Dateien
+    sind in task_config definiert:
+    
+    - ``task_config["style"]`` 
     '''
 
     def __init__(self, logger, task_config):

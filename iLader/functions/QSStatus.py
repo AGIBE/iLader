@@ -1,15 +1,32 @@
 # -*- coding: utf-8 -*-
-'''
-Created on 14.01.2015
-
-@author: Peter Schär
-'''
 from __future__ import absolute_import, division, print_function, unicode_literals
 from .TemplateFunction import TemplateFunction
 
 class QSStatus(TemplateFunction):
     '''
-    Berechnet den QS-Status und schreibt ihn in die Tabelle TB_IMPORTE_GEODB
+    Die Funktion ermittelt den Status der Qualitätssicherung. Die Qualitätssicherung
+    besteht auf folgenden Funktionen und deren Stati in task_config:
+    
+    - Checkscript Normierung ``task_config["qs"]["checkscript_passed"]``
+    - DeltaChecker ``task_config["qs"]["deltachecker_passed"]``
+    - QA-Framework ``task_config["qs"]["qaframework_passed"]``
+    
+    Jede Funktion kann in task_config folgende Stati aufweisen:
+    
+    - ``"undefined"``: Funktion wurde nicht ausgeführt.
+    - ``TRUE``: Funktion wurde ausgeführt, Rückgabewert ist ``TRUE``, es wurden keine Fehler gefunden
+    - ``FALSE`` Funktion wurde ausgeführt, Rückgabewert ist ``TRUE``, es wurden Fehler gefunden
+    
+    Wenn einer der drei Bestandteile den Wert ``FALSE`` hat, werden folgende 
+    Aktionen ausgeführt:
+
+    - ``task_config["qs"]["qs_gesamt_passed"]=FALSE`` setzen
+    - In der Tabelle ``tb_importe_geodb.status=1`` (geprüft) setzen
+    
+    In allen übrigen Fällen werden folgende Aktionen ausgeführt:
+    
+    - ``task_config["qs"]["qs_gesamt_passed"]=TRUE`` setzen
+    - In der Tabelle ``tb_importe_geodb.status=4`` (geprüft) setzen
     '''
 
     def __init__(self, logger, task_config):
