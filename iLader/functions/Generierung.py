@@ -241,6 +241,7 @@ class Generierung(TemplateFunction):
         self.sde_conn_norm = os.path.join(self.sde_connection_directory, 'norm.sde')
         self.schema_geodb = self.general_config['users']['geodb']['schema']
         self.schema_norm = self.general_config['users']['norm']['schema']
+        
        
         self.ebeVecList = []
         self.ebeRasList = []
@@ -257,6 +258,7 @@ class Generierung(TemplateFunction):
         self.__get_mxd_dd("True", "FR")
         self.__get_leg_dd("True")
         self.__get_leg_dd("False")
+        
         self.task_config['gpr'] = self.gpr
         self.task_config['zeitstand'] = self.zeitstand
         self.task_config['zeitstand_jahr'] = self.jahr
