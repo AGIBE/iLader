@@ -16,24 +16,24 @@ Usecase / Funktion                NeuesGeoproduct  AktZSohneDMA  AktZSmitDMA  Ko
 :py:mod:`.DeltaChecker`                                   X             X           X          X              X                X            
 :py:mod:`.QAFramework`                  X                 X             X           X          X              X                X              
 :py:mod:`.QSStatus`                     X                 X             X           X          X              X                X              
-:py:mod:`.QSBenachrichtigung`                                                                  X             (X)               X            
+:py:mod:`.QSBenachrichtigung`           X                 X             X           X          X              X                X            
 :py:mod:`.GPOrdner`                     X                                                                                               
 :py:mod:`.Begleitdaten`                 X                 X             X           X                                                      
-:py:mod:`.Fonts`                        X                                                                                               
-:py:mod:`.Styles`                       X                                                                                               
-:py:mod:`.Zusatzdaten`                  X                                                                                               
+:py:mod:`.Fonts`                        X                 X             X           X                                                      
+:py:mod:`.Styles`                       X                 X             X           X                                                    
+:py:mod:`.Zusatzdaten`                  X                 X             X           X          X              X                X         
 :py:mod:`.KopieVek2Neu`                 X                                                                                               
-:py:mod:`.KopieVek2Ersatz`                                                                                                             
-:py:mod:`.IndicesVek2`                  X                                                                                               
-:py:mod:`.KopieVek1Ersatz`                                                                                                             
-:py:mod:`.KopieVek3Neu`                 X                                                                                               
-:py:mod:`.IndicesVek3`                  X                                                                                               
-:py:mod:`.KopieVek3Ersatz`                                                                                                             
-:py:mod:`.TransferVek2`                                                                                                                
-:py:mod:`.TransferVek1`                                                                                                                
-:py:mod:`.AktuellerZeitstand`           X                                                                                               
-:py:mod:`.ZeitstandStatus`              X                                                                                               
-:py:mod:`.ImportStatus`                 X                                                                                               
-:py:mod:`.FlagStatus`                                                                                                                 
-:py:mod:`.ImportArchiv`                 X                                                                                               
+:py:mod:`.KopieVek2Ersatz`                                X             X           X          X              X                X       
+:py:mod:`.IndicesVek2`                  X                 X             X                                                               
+:py:mod:`.KopieVek1Ersatz`                                                         (X)         X                               X         
+:py:mod:`.KopieVek3Neu`                 X                 X             X                                                               
+:py:mod:`.IndicesVek3`                  X                 X             X                                                               
+:py:mod:`.KopieVek3Ersatz`                                                          X          X              X                X         
+:py:mod:`.TransferVek2`                                                                                       X                X       
+:py:mod:`.TransferVek1`                                                                                       X                X       
+:py:mod:`.AktuellerZeitstand`           X                 X             X                                                               
+:py:mod:`.ZeitstandStatus`              X                 X             X           X                                                      
+:py:mod:`.ImportStatus`                 X                 X             X           X          X              X                X        
+:py:mod:`.FlagStatus`                                                                          X                                       
+:py:mod:`.ImportArchiv`                 X                 X             X           X          X              X                X        
 ================================  ===============  ============  ===========  =========  ===========  ==============  ================

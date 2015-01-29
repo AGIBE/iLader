@@ -1,15 +1,25 @@
 # -*- coding: utf-8 -*-
-'''
-Created on 09.01.2015
-
-@author: Peter Schär
-'''
 from __future__ import absolute_import, division, print_function, unicode_literals
 from .TemplateFunction import TemplateFunction
 
 class DeltaChecker(TemplateFunction):
     '''
-    Führt den DeltaChecker aus
+    Bei dieser Funktion handelt es sich nur um den Aufruf eines bereits
+    bestehenden Tools und die Weiterverarbeitung des Rückgabewertes dieses
+    Tools.
+    Die Funktion ruft den DeltaChecker anhand der Informationen aus der
+    task_config auf, übernimmt den Rückgabewert des DeltaCheckers und
+    verarbeitet ihn wiefolgt weiter:
+    
+    - Der Rückgabewert der Funktion ist ``TRUE``, wenn der Rückgabewert
+      des DeltaCheckers ``keine DMA`` ist.
+    - Der Rückgabewert der Funktion ist ``TRUE``, wenn der Rückgabewert
+      des DeltaCheckers ``DMA`` ist und ``task_config["qs"]["dma_erlaubt"]=TRUE``
+    - Der Rückgabewert der Funktion ist ``FALSE``, wenn der Rückgabewert
+      des DeltaCheckers ``DMA`` ist und ``task_config["qs"]["dma_erlaubt"]=FALSE``
+      
+    Der Rückgabewert wird in ``task_config["qs"]["deltachecker_passed"]``
+    festgehalten.
     '''
 
     def __init__(self, logger, task_config):

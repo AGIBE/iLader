@@ -1,16 +1,15 @@
 # -*- coding: utf-8 -*-
-'''
-Created on 14.01.2015
-
-@author: Peter Schär
-'''
 from __future__ import absolute_import, division, print_function, unicode_literals
 from .TemplateFunction import TemplateFunction
 import shutil
 
 class Begleitdaten(TemplateFunction):
     '''
-    Kopiert die Begleitdaten
+    Kopiert sämtliche Legendenfiles (.lyr) und MXD-Dateien (.mxd) auf den
+    Freigabeshare. Die Files sind in task_config referenziert:
+    
+    - ``task_config["legende"]``
+    - ``task_config["mxd"]``
     '''
 
     def __init__(self, logger, task_config):

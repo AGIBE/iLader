@@ -1,15 +1,11 @@
 # -*- coding: utf-8 -*-
-'''
-Created on 14.01.2015
-
-@author: Peter Schär
-'''
 from __future__ import absolute_import, division, print_function, unicode_literals
 from .TemplateFunction import TemplateFunction
 
 class ZeitstandStatus(TemplateFunction):
     '''
-    Setzt den Zeitstands-Status (Tabelle TB_GEOPRODUKT_ZEISTAND)
+    Diese Funktion setzt den Zeitstands-Status in der Tabelle ``TB_GEOPRODUKT_ZEISTAND``
+    auf ``freigegeben`` (=9).
     '''
 
     def __init__(self, logger, task_config):

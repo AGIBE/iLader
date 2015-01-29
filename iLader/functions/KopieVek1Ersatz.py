@@ -1,17 +1,25 @@
 # -*- coding: utf-8 -*-
-'''
-Created on 14.01.2015
-
-@author: Peter Schär
-'''
 from __future__ import absolute_import, division, print_function, unicode_literals
 from .TemplateFunction import TemplateFunction
 
 class KopieVek1Ersatz(TemplateFunction):
     '''
-    Kopiert die Ebenen und Tabellen nach Vek1, bestehende Objekte werden ersetzt.
+    Kopiert sämtliche Vektorebenen aus der Instanz TEAM in die Instanz VEK1. Folgende Typen
+    werden kopiert:
+    
+    - Vektor-FeatureClasses
+    - Tabellen (Standalone oder Werte-)
+    - Annotations
+    
+    In der Zielinstanz VEK2 sind die Ebenen bereits vorhanden. Sie können nicht gelöscht werden,
+    da sie gelockt sind. Deshalb müssen sie geleert (Truncate) und gefüllt (Append) werden. 
+    
+    Die Angaben zu den Ebenen sind in task_config:
+    
+    - ``task_config["vektor_ebenen"]``
+    
+    Der räumlichen Indexes kann ebenfalls aufgrund der Locks nicht neu berechnet werden.
     '''
-
     def __init__(self, logger, task_config):
         '''
         Constructor

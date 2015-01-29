@@ -5,7 +5,12 @@ import os
 
 class GPOrdner(TemplateFunction):
     '''
-    Erstellt den Geoprodukt-Ordner neu
+    Die Funktion erstellt auf dem Freigabeshare folgende Verzeichnisse neu:
+    
+    - Geoprodukt-Verzeichnis
+    - Unterverzeichnis ``mxd``
+    - Unterverzeichnis ``symbol``
+    - Unterverzeichnis ``Zusatzdaten``
     '''
 
     def __init__(self, logger, task_config):

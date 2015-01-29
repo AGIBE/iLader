@@ -1,9 +1,4 @@
 # -*- coding: utf-8 -*-
-'''
-Created on 22.01.2015
-
-@author: Peter Schär
-'''
 from __future__ import absolute_import, division, print_function, unicode_literals
 import keyczar.keyczar
 import os

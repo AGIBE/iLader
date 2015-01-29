@@ -1,15 +1,22 @@
 # -*- coding: utf-8 -*-
-'''
-Created on 14.01.2015
-
-@author: Peter Schär
-'''
 from __future__ import absolute_import, division, print_function, unicode_literals
 from .TemplateFunction import TemplateFunction
 
 class QAFramework(TemplateFunction):
     '''
-    Führt die Qualitätschecks mit dem QA-Framework aus
+    Bei dieser Funktion handelt es sich nur um den Aufruf eines bereits bestehenden
+    Tools und die Weiterverarbeitung  des Rückgabewertes dieses Tools.
+    
+    Die Funktion ruft das ini-Tool anhand der Informationen aus task_config auf, übernimmt
+    den Rückgabewert (``Anzahl hard errors``) des ini-Tools und verarbeitet ihn wiefolgt
+    weiter:
+    
+    - Der Rückgabewert der Funktion ist ``TRUE``, wenn der Rückgabewert des Tools
+      ``QA bestanden`` oder ``keine QA vorhanden`` ist.
+    - Der Rückgabewert der Funktion ist ``FALSE``, wenn der Rückgabewert des Tools
+      ``QA bestanden`` ist.
+        
+    Der Rückgabewert wird in ``task_config["qs"]["qaframework_passed"]`` festgehalten.
     '''
 
     def __init__(self, logger, task_config):

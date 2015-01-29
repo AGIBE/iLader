@@ -1,15 +1,11 @@
 # -*- coding: utf-8 -*-
-'''
-Created on 14.01.2015
-
-@author: Peter Schär
-'''
 from __future__ import absolute_import, division, print_function, unicode_literals
 from .TemplateFunction import TemplateFunction
 
 class FlagStatus(TemplateFunction):
     '''
-    Setzt den Flag-Status in TB_FLAG
+    Im Attribut ``FLAG`` der Tabelle ``TB_FLAG`` wird für das importierte
+    Geoprodukt der Wert ``ENDE`` erfasst.
     '''
 
     def __init__(self, logger, task_config):

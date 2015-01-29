@@ -1,15 +1,19 @@
 # -*- coding: utf-8 -*-
-'''
-Created on 14.01.2015
-
-@author: Peter Schär
-'''
 from __future__ import absolute_import, division, print_function, unicode_literals
 from .TemplateFunction import TemplateFunction
 
 class QSBenachrichtigung(TemplateFunction):
     '''
-    Sendet eine Benachrichtigung, wenn der QS-Status nicht ok ist
+    Wenn ``task_config["qs"]["qs_gesamt_passed"]=FALSE`` d.h. die
+    Qualitätssicherung wurde nicht erfolgreich durchlaufen, führt diese
+    Funktion folgende Aktionen aus:
+    
+    - Benachrichtigungsmail versenden (Adressatenkreis t.b.d.)
+    - Import abbrechen (raise exception, Error-Meldung im Log)
+
+    Wenn ``task_config["qs"]["qs_gesamt_passed"]=TRUE`` d.h. die
+    Qualitätssicherung wurde erfolgreich durchlaufen, führt diese
+    Funktion keine weiteren Aktionen aus.
     '''
 
     def __init__(self, logger, task_config):

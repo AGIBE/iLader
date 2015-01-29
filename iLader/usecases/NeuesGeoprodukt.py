@@ -2,11 +2,6 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 from .TemplateUsecase import TemplateUsecase
 import iLader.functions
-'''
-Created on 09.01.2015
-
-@author: Peter Schär
-'''
 
 class NeuesGeoprodukt(TemplateUsecase):
     '''
