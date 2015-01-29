@@ -97,9 +97,9 @@ class Generierung(TemplateFunction):
             datentyp = row[4].decode('cp1252')            
             zeitstand = jahr + "_" + version
             gpr_ebe = str(gpr) + "_" + str(ebe)
-            quelle_schema_gpr_ebe = self.schema_norm + "_" + gpr_ebe
-            quelle = os.path.join(self.sde_conn_norm + quelle_schema_gpr_ebe)
-            ziel_schema_gpr_ebe = self.schema_geodb + "_" + gpr_ebe
+            quelle_schema_gpr_ebe = self.schema_norm + "." + gpr_ebe
+            quelle = os.path.join(self.sde_conn_norm, quelle_schema_gpr_ebe)
+            ziel_schema_gpr_ebe = self.schema_geodb + "." + gpr_ebe
             ziel_schema_gpr_ebe_zs = ziel_schema_gpr_ebe + "_" + zeitstand     
             ziel_vek1 = os.path.join(self.sde_conn_vek1, ziel_schema_gpr_ebe)
             ziel_vek2 = os.path.join(self.sde_conn_vek2, ziel_schema_gpr_ebe)
@@ -108,6 +108,21 @@ class Generierung(TemplateFunction):
             ziel_ras1_zs = os.path.join(self.sde_conn_ras1, ziel_schema_gpr_ebe_zs)
             ziel_ras2 = os.path.join(self.sde_conn_ras2, ziel_schema_gpr_ebe)
             if datentyp != 'Rastermosaik' and datentyp != 'Rasterkatalog':
+                self.sql_ind_gdbp = "SELECT b.felder, b." + '"unique"' + " from gdbp.index_attribut b join gdbp.geoprodukte a on b.id_geoprodukt = a.id_geoprodukt where a.code = '" + gpr + "' and b.ebene = '" + ebe + "'"
+                self.__db_connect('work', 'gdbp', self.sql_ind_gdbp)
+                indList = []
+                for row in self.result:
+                    self.indDict = {}
+                    ind_attr = row[0].decode('cp1252')
+                    indextyp = str(row[1]).decode('cp1252')
+                    if indextyp == "1":
+                        ind_unique = "True"
+                    elif indextyp == "2":
+                        ind_unique = "False"
+                    self.indDict['attribute'] = ind_attr
+                    self.indDict['unique'] = ind_unique            
+                    indList.append(self.indDict)
+                    ebeVecDict['indices'] = indList
                 ebeVecDict['datentyp']= datentyp
                 ebeVecDict['gpr_ebe'] = gpr_ebe
                 ebeVecDict['quelle'] = quelle
@@ -132,6 +147,7 @@ class Generierung(TemplateFunction):
                 # RD: ebeRasDict['quelle'] = os.path.join(self.general_config['quelle_begleitdaten_work'], self.general_config['raster']['quelle_rasterkacheln'], self.general_config['raster']['raster_rd'])
                 ebeRasDict['ziel_ras2'] = ziel_ras2
                 self.ebeRasList.append(ebeRasDict)          
+                         
                 
     def __get_leg_dd(self, create_zs):
         self.create_zs = create_zs
@@ -205,9 +221,9 @@ class Generierung(TemplateFunction):
             version = version.zfill(2)
             zeitstand = jahr + "_" + version
             gpr_wtb = str(gpr) + "_" + str(wtb)            
-            quelle_schema_gpr_wtb = self.schema_norm + "_" + gpr_wtb
-            quelle = os.path.join(self.sde_conn_norm + quelle_schema_gpr_wtb)
-            ziel_schema_gpr_wtb = self.schema_geodb + "_" + gpr_wtb
+            quelle_schema_gpr_wtb = self.schema_norm + "." + gpr_wtb
+            quelle = os.path.join(self.sde_conn_norm, quelle_schema_gpr_wtb)
+            ziel_schema_gpr_wtb = self.schema_geodb + "." + gpr_wtb
             ziel_schema_gpr_wtb_zs = ziel_schema_gpr_wtb + "_" + zeitstand                
             ziel_vek1 = os.path.join(self.sde_conn_vek1, ziel_schema_gpr_wtb)
             ziel_vek2 = os.path.join(self.sde_conn_vek2, ziel_schema_gpr_wtb)
@@ -219,17 +235,12 @@ class Generierung(TemplateFunction):
             wtbDict['ziel_vek2'] = ziel_vek2
             wtbDict['ziel_vek3'] = ziel_vek3
             self.ebeVecList.append(wtbDict)
+   
+    
             
-     
-                
-    def __execute(self):
-        '''
-        Führt den eigentlichen Funktionsablauf aus
-        '''
-        #Diverse Einträge im task_config generieren
-        if not self.task_config.has_key("ausgefuehrte_funktionen"):
-            self.task_config['ausgefuehrte_funktionen'] = []
-
+            
+    def __define_connections(self):
+        self.connDict = {}
         self.config_secret = os.environ['GEODBIMPORTSECRET']
         self.sde_connection_directory = os.path.join(self.config_secret, 'connections')
         self.sde_conn_team_dd = os.path.join(self.sde_connection_directory, 'team_dd.sde')
@@ -239,18 +250,55 @@ class Generierung(TemplateFunction):
         self.sde_conn_ras1 = os.path.join(self.sde_connection_directory, 'ras1.sde')
         self.sde_conn_ras2 = os.path.join(self.sde_connection_directory, 'ras2.sde')
         self.sde_conn_norm = os.path.join(self.sde_connection_directory, 'norm.sde')
+        self.sde_conn_team_oereb = os.path.join(self.sde_connection_directory, 'team_oereb.sde')
+        self.sde_conn_vek1_oereb = os.path.join(self.sde_connection_directory, 'vek1_oereb.sde')
+        self.sde_conn_vek2_oereb = os.path.join(self.sde_connection_directory, 'vek2_oereb.sde')      
+        self.connDict['sde_conn_team_dd'] = self.sde_conn_team_dd
+        self.connDict['sde_conn_vek1'] = self.sde_conn_vek1
+        self.connDict['sde_conn_vek2'] = self.sde_conn_vek2
+        self.connDict['sde_conn_vek3'] = self.sde_conn_vek3
+        self.connDict['sde_conn_ras1'] = self.sde_conn_ras1
+        self.connDict['sde_conn_ras2'] = self.sde_conn_ras2
+        self.connDict['sde_conn_norm'] = self.sde_conn_norm
+        self.connDict['sde_conn_team_oereb'] = self.sde_conn_team_oereb
+        self.connDict['sde_conn_vek1_oereb'] = self.sde_conn_vek1_oereb
+        self.connDict['sde_conn_vek2_oereb'] = self.sde_conn_vek2_oereb
+        self.connList.append(self.connDict)
+        self.schemaDict = {}
         self.schema_geodb = self.general_config['users']['geodb']['schema']
+        self.schema_geodb_dd = self.general_config['users']['geodb_dd']['schema']
         self.schema_norm = self.general_config['users']['norm']['schema']
+        self.schema_oereb = self.general_config['users']['oereb']['schema']
+        self.schema_gdbp = self.general_config['users']['gdbp']['schema']
+        self.schemaDict['geodb'] = self.schema_geodb
+        self.schemaDict['geodb_dd'] = self.schema_geodb_dd
+        self.schemaDict['norm'] = self.schema_norm
+        self.schemaDict['oereb'] = self.schema_oereb
+        self.schemaDict['gdbp'] = self.schema_gdbp
+        self.schemaList.append(self.schemaDict) 
+
+                
+    def __execute(self):
+        '''
+        Führt den eigentlichen Funktionsablauf aus
+        '''
+        #Diverse Einträge im task_config generieren
+        if not self.task_config.has_key("ausgefuehrte_funktionen"):
+            self.task_config['ausgefuehrte_funktionen'] = []        
         
        
+        self.connList = []
+        self.schemaList = []
         self.ebeVecList = []
         self.ebeRasList = []
         self.legList = []
-        self.mxdList = []               
+        self.mxdList = []
+        self.__define_connections()               
         self.__get_importe_dd()
         self.__get_gpr_info()
         self.__get_ebe_dd()
         self.__get_wtb_dd()
+        # ev. löschen self.__get_ind_gdbp()
         self.__define_quelle_ziel_begleitdaten()
         self.__get_mxd_dd("False", "DE")
         self.__get_mxd_dd("False", "FR")
@@ -259,6 +307,8 @@ class Generierung(TemplateFunction):
         self.__get_leg_dd("True")
         self.__get_leg_dd("False")
         
+        self.task_config['connections'] = self.connList
+        self.task_config['schema'] = self.schemaList
         self.task_config['gpr'] = self.gpr
         self.task_config['zeitstand'] = self.zeitstand
         self.task_config['zeitstand_jahr'] = self.jahr
