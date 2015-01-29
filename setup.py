@@ -1,9 +1,4 @@
 # -*- coding: utf-8 -*-
-'''
-Created on 15.01.2015
-
-@author: Peter Schär
-'''
 # übernommen aus: https://pythonhosted.org/setuptools/setuptools.html#id24
 import ez_setup
 ez_setup.use_setuptools()
