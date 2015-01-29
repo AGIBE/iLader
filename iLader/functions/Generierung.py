@@ -68,7 +68,7 @@ class Generierung(TemplateFunction):
         #TODO: self.sql_dd_importe = "select * from geodb_dd.tb_importe_geodb"
         #TODO: self.__db_connect('dd_connection', self.sql_dd_importe)
         #TODO: dma_erlaubt für qs auslesen und execute übergeben
-        self.gzs_objectid = '99531'
+        self.gzs_objectid = '157675'
 
     
     def __get_gpr_info(self):
@@ -193,6 +193,28 @@ class Generierung(TemplateFunction):
             self.mxdDict['quelle'] = self.quelle_mxd_lang
             self.mxdDict['ziel'] = self.ziel_mxd_lang             
             self.mxdList.append(self.mxdDict)
+    
+    def __get_fak_begleitdaten(self):
+        for root, dirs, files in os.walk(self.quelle_begleitdaten_symbol):
+            self.logger.info("Liste Files auf:")
+            for file in files:
+                styleDict = {}
+                fontDict = {}
+                if file.endswith('.STYLE') or file.endswith('.style'):
+                    styleDict['name'] = file
+                    styleDict['quelle'] = os.path.join(self.quelle_begleitdaten_symbol, file)
+                    styleDict['ziel'] = os.path.join(self.ziel_begleitdaten_symbol, file)
+                    self.styleList.append(styleDict)
+                elif file.endswith('.ttf') or file.endswith('.TTF'):
+                    fontDict['name'] = file
+                    fontDict['quelle'] = os.path.join(self.quelle_begleitdaten_symbol, file)
+                    fontDict['ziel'] = os.path.join(self.ziel_begleitdaten_symbol, file)
+                    self.fontList.append(fontDict)
+            for dir in dirs:
+                zusatzDict = {}
+                if dir == "zusatzdaten":
+                     #zusatzDict['quelle'] = os.path.join(self.quelle_begleitdaten_gpr, self.general_config['qelle_begleitdaten_zusatzdaten'])
+                     #zusatzDict['ziel']           
 
     def __define_quelle_ziel_begleitdaten(self):
             self.quelle_begleitdaten_gpr = os.path.join(self.general_config['quelle_begleitdaten'], self.gpr, self.general_config['quelle_begleitdaten_work'])
@@ -293,12 +315,13 @@ class Generierung(TemplateFunction):
         self.ebeRasList = []
         self.legList = []
         self.mxdList = []
+        self.styleList = []
+        self.fontList = []
         self.__define_connections()               
         self.__get_importe_dd()
         self.__get_gpr_info()
         self.__get_ebe_dd()
         self.__get_wtb_dd()
-        # ev. löschen self.__get_ind_gdbp()
         self.__define_quelle_ziel_begleitdaten()
         self.__get_mxd_dd("False", "DE")
         self.__get_mxd_dd("False", "FR")
@@ -306,6 +329,7 @@ class Generierung(TemplateFunction):
         self.__get_mxd_dd("True", "FR")
         self.__get_leg_dd("True")
         self.__get_leg_dd("False")
+        self.__get_fak_begleitdaten()
         
         self.task_config['connections'] = self.connList
         self.task_config['schema'] = self.schemaList
@@ -319,7 +343,8 @@ class Generierung(TemplateFunction):
         self.task_config['legende'] = self.legList
         self.task_config['mxd'] = self.mxdList
         self.task_config['ziel'] = {'ziel_begleitdaten_gpr': self.ziel_begleitdaten_gpr, 'ziel_begleitdaten_mxd': self.ziel_begleitdaten_mxd, 'ziel_begleitdaten_symbol': self.ziel_begleitdaten_symbol, 'ziel_begleitdaten_zusatzdaten': self.ziel_begleitdaten_zusatzdaten}
-        
+        self.task_config['style'] = self.styleList
+        self.task_config['font'] = self.fontList
         self.task_config['qs'] = {'dma_erlaubt': u'false', 'checkskript_passed': u'undefined', 'deltachecker_passed': u'undefined', 'qa_framework_passed': u'undefined', 'qs_gesamt_passed': u'undefined'}
 
         self.finish()  
