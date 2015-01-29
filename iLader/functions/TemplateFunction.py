@@ -20,6 +20,7 @@ class TemplateFunction(object):
     def __init__(self, logger, task_config):
         '''
         Constructor
+        
         :param logger: vom Usecase initialisierter logger (logging.logger)
         :param task_config: Vom Usecase initialisierte task_config (Dictionary)
         '''
@@ -35,9 +36,11 @@ class TemplateFunction(object):
         f.close()
         
     def start(self):
-        # Die aktuelle Funktion wird zu Beginn der Funktionsausführung
-        # (deshalb im Konstruktor) aus der Liste der ausgeführten
-        # entfernt. Sie wird erst am Schluss wieder eingefügt.
+        '''
+        Die aktuelle Funktion wird zu Beginn der Funktionsausführung
+        (deshalb im Konstruktor) aus der Liste der ausgeführten
+        entfernt. Sie wird erst am Schluss wieder eingefügt.
+        '''
         #TODO: Meldung im Log ausgeben, dass Funktion gestartet wird.
         if self.task_config.has_key("ausgefuehrte_funktionen"):
             if self.name in self.task_config['ausgefuehrte_funktionen']:

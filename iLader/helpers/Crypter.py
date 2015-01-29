@@ -34,6 +34,7 @@ class Crypter(object):
     def encrypt(self, data):
         '''
         verschlüsselt den übergebenen String
+        
         :param data: zu verschlüsselnder String
         '''
         return self.crypt.Encrypt(data)
@@ -41,6 +42,7 @@ class Crypter(object):
     def decrypt(self, data):
         '''
         entschlüsselt den übergebenen String
+        
         :param data: zu entschlüsselnder String
         '''
         return self.crypt.Decrypt(data).decode("iso-8859-1")
