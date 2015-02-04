@@ -63,7 +63,7 @@ class KopieVek2Ersatz(TemplateFunction):
                 raise Exception
             if arcpy.Exists(target):
                 # Gibt es die Ziel-Ebene bereits, muss sie gelöscht werden
-                self.logger.warn("Ebene " + target + " gibt es bereits. Sie wird nun gelöscht!")
+                self.logger.info("Ebene " + target + " wird nun gelöscht!")
                 arcpy.Delete_management(target)
             arcpy.Copy_management(source, target)
             # Berechtigungen setzen
