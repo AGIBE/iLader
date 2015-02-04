@@ -86,5 +86,6 @@ class KopieVek3Neu(TemplateFunction):
             
             self.logger.info("Ebene " + ebename + " wurde kopiert")
         
+        self.logger.info("Alle Ebenen wurden kopiert.")
        
         self.finish()

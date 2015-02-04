@@ -84,6 +84,8 @@ class KopieVek2Neu(TemplateFunction):
             else:
                 self.logger.info("Anzahl Objekte in Quelle und Ziel identisch!")
                 
-            self.logger.info("Ebene " + ebename + " wurde kopiert")            
+            self.logger.info("Ebene " + ebename + " wurde kopiert")    
+            
+        self.logger.info("Alle Ebenen wurden kopiert.")        
        
         self.finish()
