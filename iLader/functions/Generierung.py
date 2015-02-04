@@ -67,7 +67,7 @@ class Generierung(TemplateFunction):
         #TODO: Tabelle tb_importe_geodb erstellen
         #TODO: self.sql_dd_importe = "select * from geodb_dd.tb_importe_geodb"
         #TODO: self.__db_connect('dd_connection', self.sql_dd_importe)
-        #TODO: dma_erlaubt für qs auslesen und execute übergeben
+        #TODO: taskid aus tb_importe_geodb übergeben und gzs_objectid übernehmen
         self.gzs_objectid = '157675'
 
     
@@ -110,19 +110,19 @@ class Generierung(TemplateFunction):
             if datentyp != 'Rastermosaik' and datentyp != 'Rasterkatalog':
                 self.sql_ind_gdbp = "SELECT b.felder, b." + '"unique"' + " from gdbp.index_attribut b join gdbp.geoprodukte a on b.id_geoprodukt = a.id_geoprodukt where a.code = '" + gpr + "' and b.ebene = '" + ebe + "'"
                 self.__db_connect('work', 'gdbp', self.sql_ind_gdbp)
-                indList = []
+                self.indList = []
                 for row in self.result:
-                    self.indDict = {}
+                    indDict = {}
                     ind_attr = row[0].decode('cp1252')
                     indextyp = str(row[1]).decode('cp1252')
                     if indextyp == "1":
                         ind_unique = "True"
                     elif indextyp == "2":
                         ind_unique = "False"
-                    self.indDict['attribute'] = ind_attr
-                    self.indDict['unique'] = ind_unique            
-                    indList.append(self.indDict)
-                    ebeVecDict['indices'] = indList
+                    indDict['attribute'] = ind_attr
+                    indDict['unique'] = ind_unique            
+                    self.indList.append(indDict)
+                ebeVecDict['indices'] = self.indList
                 ebeVecDict['datentyp']= datentyp
                 ebeVecDict['gpr_ebe'] = gpr_ebe
                 ebeVecDict['quelle'] = quelle
@@ -218,6 +218,7 @@ class Generierung(TemplateFunction):
                     self.zusatzList.append(zusatzDict)         
 
     def __define_quelle_ziel_begleitdaten(self):
+            zielDict = {}
             self.quelle_begleitdaten_gpr = os.path.join(self.general_config['quelle_begleitdaten'], self.gpr, self.general_config['quelle_begleitdaten_work'])
             self.quelle_begleitdaten_mxd = os.path.join(self.quelle_begleitdaten_gpr, self.general_config['quelle_begleitdaten_mxd'])
             self.quelle_begleitdaten_symbol = os.path.join(self.quelle_begleitdaten_gpr, self.general_config['quelle_begleitdaten_symbol'])
@@ -226,10 +227,13 @@ class Generierung(TemplateFunction):
             self.ziel_begleitdaten_mxd = os.path.join(self.ziel_begleitdaten_gpr, self.general_config['ziel_begleitdaten_mxd'])
             self.ziel_begleitdaten_symbol = os.path.join(self.ziel_begleitdaten_gpr, self.general_config['ziel_begleitdaten_symbol'])
             self.ziel_begleitdaten_zusatzdaten = os.path.join(self.ziel_begleitdaten_gpr, self.general_config['ziel_begleitdaten_zusatzdaten'])
-     
-    #def __define_optionale_begleitdaten(self):
-            # TODO: durch symbol und work loopen --> gibt es diese Daten?
-          
+            zielDict['ziel_begleitdaten_gpr'] = self.ziel_begleitdaten_gpr
+            zielDict['ziel_begleitdaten_mxd'] = self.ziel_begleitdaten_mxd
+            zielDict['ziel_begleitdaten_symbol'] = self.ziel_begleitdaten_symbol
+            zielDict['ziel_begleitdaten_zusatzdaten'] = self.ziel_begleitdaten_zusatzdaten
+            self.zielList.append(zielDict)
+      
+         
     def __get_wtb_dd(self):
         self.sql_dd_wtb = "SELECT a.gpr_bezeichnung, c.ebe_bezeichnung, b.gzs_jahr, b.gzs_version, e.wtb_bezeichnung from geodb_dd.tb_wertetabelle e join geodb_dd.tb_ebene_zeitstand d on e.ezs_objectid = d.ezs_objectid join geodb_dd.tb_ebene c on d.ebe_objectid = c.ebe_objectid join geodb_dd.tb_geoprodukt_zeitstand b on d.gzs_objectid = b.gzs_objectid join geodb_dd.tb_geoprodukt a on b.gpr_objectid = a.gpr_objectid where b.gzs_objectid = '" + self.gzs_objectid + "'"
         self.__db_connect('team', 'geodb_dd', self.sql_dd_wtb)
@@ -259,8 +263,18 @@ class Generierung(TemplateFunction):
             wtbDict['ziel_vek3'] = ziel_vek3
             self.ebeVecList.append(wtbDict)
    
-    
-            
+    def __define_qs(self):
+        qsDict = {}
+        #TODO: self.sql_dd_importe = "select * from geodb_dd.tb_importe_geodb"
+        #TODO: self.__db_connect('dd_connection', self.sql_dd_importe)
+        #TODO: dma_erlaubt für qs auslesen und 'dma_erlaubt' übergeben
+        qsDict['dma_erlaubt'] = u'false'
+        qsDict['checkskript_passed'] = u'undefined'
+        qsDict['deltachecker_passed'] = u'undefined'
+        qsDict['qa_framework_passed'] = u'undefined'
+        qsDict['qs_gesamt_passed'] = u'undefined'
+        self.qsList.append(qsDict)   
+          
             
     def __define_connections(self):
         self.connDict = {}
@@ -318,6 +332,8 @@ class Generierung(TemplateFunction):
         self.styleList = []
         self.fontList = []
         self.zusatzList = []
+        self.zielList = []
+        self.qsList = []
         self.__define_connections()               
         self.__get_importe_dd()
         self.__get_gpr_info()
@@ -331,6 +347,7 @@ class Generierung(TemplateFunction):
         self.__get_leg_dd("True")
         self.__get_leg_dd("False")
         self.__get_fak_begleitdaten()
+        self.__define_qs()
         
         self.task_config['connections'] = self.connList
         self.task_config['schema'] = self.schemaList
@@ -348,6 +365,8 @@ class Generierung(TemplateFunction):
         self.task_config['font'] = self.fontList
         self.task_config['qs'] = {'dma_erlaubt': u'false', 'checkskript_passed': u'undefined', 'deltachecker_passed': u'undefined', 'qa_framework_passed': u'undefined', 'qs_gesamt_passed': u'undefined'}
         self.task_config['zusatzdaten'] = self.zusatzList
+        self.task_config['ziel'] = self.zielList
+        self.task_config['qs'] = self.qsList
         self.finish()  
        
     def __load_task_config(self):
