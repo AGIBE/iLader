@@ -50,6 +50,7 @@ class KopieVek2Neu(TemplateFunction):
         '''
         Führt den eigentlichen Funktionsablauf aus
         '''
+        rolle = self.task_config['rolle']
         
         for ebene in self.task_config['vektor_ebenen']:
             source = ebene['quelle']
@@ -67,6 +68,9 @@ class KopieVek2Neu(TemplateFunction):
                 self.logger.warn("Ebene " + target + " gibt es bereits. Sie wird nun gelöscht!")
                 arcpy.Delete_management(target)
             arcpy.Copy_management(source, target)
+            # Berechtigungen setzen
+            self.logger.info("Berechtigungen für Ebene " + target + " werden gesetzt: Rolle " + rolle)
+            arcpy.ChangePrivileges_management(target, rolle, "GRANT")
             
             # Check ob in Quelle und Ziel die gleiche Anzahl Records vorhanden sind
             count_source = int(arcpy.GetCount_management(source))
@@ -79,7 +83,7 @@ class KopieVek2Neu(TemplateFunction):
                 #TODO: definieren, ob in diesem Fall das Script abbrechen soll
             else:
                 self.logger.info("Anzahl Objekte in Quelle und Ziel identisch!")
-            
+                
             self.logger.info("Ebene " + ebename + " wurde kopiert")            
        
         self.finish()
