@@ -213,8 +213,9 @@ class Generierung(TemplateFunction):
             for dir in dirs:
                 zusatzDict = {}
                 if dir == "zusatzdaten":
-                     #zusatzDict['quelle'] = os.path.join(self.quelle_begleitdaten_gpr, self.general_config['qelle_begleitdaten_zusatzdaten'])
-                     #zusatzDict['ziel']           
+                    zusatzDict['quelle'] = os.path.join(self.quelle_begleitdaten_gpr, self.general_config['quelle_begleitdaten_zusatzdaten'])
+                    zusatzDict['ziel'] = os.path.join(self.ziel_begleitdaten_gpr, self.general_config['ziel_begleitdaten_zusatzdaten'])
+                    self.zusatzList.append(zusatzDict)         
 
     def __define_quelle_ziel_begleitdaten(self):
             self.quelle_begleitdaten_gpr = os.path.join(self.general_config['quelle_begleitdaten'], self.gpr, self.general_config['quelle_begleitdaten_work'])
@@ -306,8 +307,7 @@ class Generierung(TemplateFunction):
         '''
         #Diverse Einträge im task_config generieren
         if not self.task_config.has_key("ausgefuehrte_funktionen"):
-            self.task_config['ausgefuehrte_funktionen'] = []        
-        
+            self.task_config['ausgefuehrte_funktionen'] = []
        
         self.connList = []
         self.schemaList = []
@@ -317,6 +317,7 @@ class Generierung(TemplateFunction):
         self.mxdList = []
         self.styleList = []
         self.fontList = []
+        self.zusatzList = []
         self.__define_connections()               
         self.__get_importe_dd()
         self.__get_gpr_info()
@@ -346,7 +347,7 @@ class Generierung(TemplateFunction):
         self.task_config['style'] = self.styleList
         self.task_config['font'] = self.fontList
         self.task_config['qs'] = {'dma_erlaubt': u'false', 'checkskript_passed': u'undefined', 'deltachecker_passed': u'undefined', 'qa_framework_passed': u'undefined', 'qs_gesamt_passed': u'undefined'}
-
+        self.task_config['zusatzdaten'] = self.zusatzList
         self.finish()  
        
     def __load_task_config(self):
