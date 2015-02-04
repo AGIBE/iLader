@@ -250,6 +250,22 @@ class Generierung(TemplateFunction):
             ziel_vek1 = os.path.join(self.sde_conn_vek1, ziel_schema_gpr_wtb)
             ziel_vek2 = os.path.join(self.sde_conn_vek2, ziel_schema_gpr_wtb)
             ziel_vek3 = os.path.join(self.sde_conn_vek3, ziel_schema_gpr_wtb_zs)
+            
+            self.sql_ind_gdbp = "SELECT b.felder, b." + '"unique"' + " from gdbp.index_attribut b join gdbp.geoprodukte a on b.id_geoprodukt = a.id_geoprodukt where a.code = '" + gpr + "' and b.ebene = '" + wtb + "'"
+            self.__db_connect('work', 'gdbp', self.sql_ind_gdbp)
+            self.indList = []
+            for row in self.result:
+                indDict = {}
+                ind_attr = row[0].decode('cp1252')
+                indextyp = str(row[1]).decode('cp1252')
+                if indextyp == "1":
+                    ind_unique = "True"
+                elif indextyp == "2":
+                    ind_unique = "False"
+                indDict['attribute'] = ind_attr
+                indDict['unique'] = ind_unique            
+                self.indList.append(indDict)
+            wtbDict['indices'] = self.indList
             wtbDict['datentyp']= u"Tabelle"
             wtbDict['gpr_ebe'] = gpr_wtb
             wtbDict['quelle'] = quelle
@@ -257,7 +273,7 @@ class Generierung(TemplateFunction):
             wtbDict['ziel_vek2'] = ziel_vek2
             wtbDict['ziel_vek3'] = ziel_vek3
             self.ebeVecList.append(wtbDict)
-   
+               
     def __define_qs(self):
         qsDict = {}
         #TODO: self.sql_dd_importe = "select * from geodb_dd.tb_importe_geodb"
