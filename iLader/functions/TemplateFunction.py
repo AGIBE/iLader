@@ -27,6 +27,7 @@ class TemplateFunction(object):
         schreibt die aktuelle task_config in ein JSON-File.
         '''
         f = open(self.task_config['task_config_file'], "w")
+        #TODO: beim Schreiben alle Passworte verschlüsseln (JSONEncoder)
         json.dump(self.task_config, f, indent=4)
         f.close()
         
