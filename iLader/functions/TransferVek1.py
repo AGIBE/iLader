@@ -34,6 +34,8 @@ class TransferVek1(TemplateFunction):
         source_connection = self.task_config['connections']['sde_conn_team_oereb']
         target_connection = self.task_config['connections']['sde_conn_vek1_oereb"']
         
+        #TODO: Nicht ganze Transferstruktur kopieren sondern nur Liefereinheit (Auslesen aus tb_task)
+        
         for tabelle in self.task_config['oereb_tabellen']:
             source = os.path.join(source_connection, tabelle)
             target = os.path.join(target_connection, tabelle) 
