@@ -59,11 +59,12 @@ class Generierung(TemplateFunction):
         self.connection.close()    
     
     def __get_importe_dd(self):
-        #TODO: Tabelle tb_importe_geodb erstellen
-        #TODO: self.sql_dd_importe = "select * from geodb_dd.tb_importe_geodb"
-        #TODO: self.__db_connect('dd_connection', self.sql_dd_importe)
-        #TODO: taskid aus tb_importe_geodb übergeben und gzs_objectid übernehmen
-        self.gzs_objectid = '157675'
+        self.task_id = str(self.task_config['task_id'])
+        self.logger.info(self.task_id)
+        self.sql_dd_importe = "select a.gzs_objectid from geodb_dd.tb_task a where a.task_objectid = '" + self.task_id + "'"
+        self.__db_connect('team', 'geodb_dd', self.sql_dd_importe)
+        for row in self.result:
+            self.gzs_objectid = str(row[0])
 
     
     def __get_gpr_info(self):
@@ -213,7 +214,7 @@ class Generierung(TemplateFunction):
                     self.zusatzList.append(zusatzDict)         
 
     def __define_quelle_ziel_begleitdaten(self):
-            zielDict = {}
+            self.zielDict = {}
             self.quelle_begleitdaten_gpr = os.path.join(self.general_config['quelle_begleitdaten'], self.gpr, self.general_config['quelle_begleitdaten_work'])
             self.quelle_begleitdaten_mxd = os.path.join(self.quelle_begleitdaten_gpr, self.general_config['quelle_begleitdaten_mxd'])
             self.quelle_begleitdaten_symbol = os.path.join(self.quelle_begleitdaten_gpr, self.general_config['quelle_begleitdaten_symbol'])
@@ -222,11 +223,11 @@ class Generierung(TemplateFunction):
             self.ziel_begleitdaten_mxd = os.path.join(self.ziel_begleitdaten_gpr, self.general_config['ziel_begleitdaten_mxd'])
             self.ziel_begleitdaten_symbol = os.path.join(self.ziel_begleitdaten_gpr, self.general_config['ziel_begleitdaten_symbol'])
             self.ziel_begleitdaten_zusatzdaten = os.path.join(self.ziel_begleitdaten_gpr, self.general_config['ziel_begleitdaten_zusatzdaten'])
-            zielDict['ziel_begleitdaten_gpr'] = self.ziel_begleitdaten_gpr
-            zielDict['ziel_begleitdaten_mxd'] = self.ziel_begleitdaten_mxd
-            zielDict['ziel_begleitdaten_symbol'] = self.ziel_begleitdaten_symbol
-            zielDict['ziel_begleitdaten_zusatzdaten'] = self.ziel_begleitdaten_zusatzdaten
-            self.zielList.append(zielDict)
+            self.zielDict['ziel_begleitdaten_gpr'] = self.ziel_begleitdaten_gpr
+            self.zielDict['ziel_begleitdaten_mxd'] = self.ziel_begleitdaten_mxd
+            self.zielDict['ziel_begleitdaten_symbol'] = self.ziel_begleitdaten_symbol
+            self.zielDict['ziel_begleitdaten_zusatzdaten'] = self.ziel_begleitdaten_zusatzdaten
+            #self.zielList.append(zielDict)
       
          
     def __get_wtb_dd(self):
@@ -275,16 +276,16 @@ class Generierung(TemplateFunction):
             self.ebeVecList.append(wtbDict)
                
     def __define_qs(self):
-        qsDict = {}
+        self.qsDict = {}
         #TODO: self.sql_dd_importe = "select * from geodb_dd.tb_importe_geodb"
         #TODO: self.__db_connect('dd_connection', self.sql_dd_importe)
         #TODO: dma_erlaubt für qs auslesen und 'dma_erlaubt' übergeben
-        qsDict['dma_erlaubt'] = u'false'
-        qsDict['checkskript_passed'] = u'undefined'
-        qsDict['deltachecker_passed'] = u'undefined'
-        qsDict['qa_framework_passed'] = u'undefined'
-        qsDict['qs_gesamt_passed'] = u'undefined'
-        self.qsList.append(qsDict)   
+        self.qsDict['dma_erlaubt'] = u'false'
+        self.qsDict['checkskript_passed'] = u'undefined'
+        self.qsDict['deltachecker_passed'] = u'undefined'
+        self.qsDict['qa_framework_passed'] = u'undefined'
+        self.qsDict['qs_gesamt_passed'] = u'undefined'
+        #self.qsList.append(qsDict)   
           
             
     def __define_connections(self):
@@ -311,7 +312,7 @@ class Generierung(TemplateFunction):
         self.connDict['sde_conn_team_oereb'] = self.sde_conn_team_oereb
         self.connDict['sde_conn_vek1_oereb'] = self.sde_conn_vek1_oereb
         self.connDict['sde_conn_vek2_oereb'] = self.sde_conn_vek2_oereb
-        self.connList.append(self.connDict)
+        #self.connList.append(self.connDict)
         self.schemaDict = {}
         self.schema_geodb = self.general_config['users']['geodb']['schema']
         self.schema_geodb_dd = self.general_config['users']['geodb_dd']['schema']
@@ -323,7 +324,13 @@ class Generierung(TemplateFunction):
         self.schemaDict['norm'] = self.schema_norm
         self.schemaDict['oereb'] = self.schema_oereb
         self.schemaDict['gdbp'] = self.schema_gdbp
-        self.schemaList.append(self.schemaDict) 
+        #self.schemaList.append(self.schemaDict)
+        self.userpwDict = {}
+        self.userpwDict['norm'] = self.general_config['users']['norm']['password']
+        self.userpwDict['oereb'] = self.general_config['users']['oereb']['password']
+        self.userpwDict['geodb'] = self.general_config['users']['geodb']['password']
+        self.userpwDict['geodb_dd'] = self.general_config['users']['geodb_dd']['password']
+        self.userpwDict['gdbp'] = self.general_config['users']['gdbp']['password']
 
                 
     def __execute(self):
@@ -334,8 +341,8 @@ class Generierung(TemplateFunction):
         if not self.task_config.has_key("ausgefuehrte_funktionen"):
             self.task_config['ausgefuehrte_funktionen'] = []
        
-        self.connList = []
-        self.schemaList = []
+        #self.connList = []
+        #self.schemaList = []
         self.ebeVecList = []
         self.ebeRasList = []
         self.legList = []
@@ -343,8 +350,8 @@ class Generierung(TemplateFunction):
         self.styleList = []
         self.fontList = []
         self.zusatzList = []
-        self.zielList = []
-        self.qsList = []
+        #self.zielList = []
+        #self.qsList = []
         self.__define_connections()               
         self.__get_importe_dd()
         self.__get_gpr_info()
@@ -360,8 +367,9 @@ class Generierung(TemplateFunction):
         self.__get_fak_begleitdaten()
         self.__define_qs()
         
-        self.task_config['connections'] = self.connList
-        self.task_config['schema'] = self.schemaList
+        self.task_config['connections'] = self.connDict
+        self.task_config['schema'] = self.schemaDict
+        self.task_config['users'] = self.userpwDict
         self.task_config['gpr'] = self.gpr
         self.task_config['zeitstand'] = self.zeitstand
         self.task_config['zeitstand_jahr'] = self.jahr
@@ -374,10 +382,9 @@ class Generierung(TemplateFunction):
         self.task_config['ziel'] = {'ziel_begleitdaten_gpr': self.ziel_begleitdaten_gpr, 'ziel_begleitdaten_mxd': self.ziel_begleitdaten_mxd, 'ziel_begleitdaten_symbol': self.ziel_begleitdaten_symbol, 'ziel_begleitdaten_zusatzdaten': self.ziel_begleitdaten_zusatzdaten}
         self.task_config['style'] = self.styleList
         self.task_config['font'] = self.fontList
-        self.task_config['qs'] = {'dma_erlaubt': u'false', 'checkskript_passed': u'undefined', 'deltachecker_passed': u'undefined', 'qa_framework_passed': u'undefined', 'qs_gesamt_passed': u'undefined'}
         self.task_config['zusatzdaten'] = self.zusatzList
-        self.task_config['ziel'] = self.zielList
-        self.task_config['qs'] = self.qsList
+        self.task_config['ziel'] = self.zielDict
+        self.task_config['qs'] = self.qsDict
         self.finish()  
        
     def __load_task_config(self):
