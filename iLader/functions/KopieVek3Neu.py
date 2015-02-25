@@ -54,8 +54,8 @@ class KopieVek3Neu(TemplateFunction):
         
         for ebene in self.task_config['vektor_ebenen']:
             source = ebene['quelle']
-            target = ebene['"ziel_vek3']
-            ebename = ebene['gpr_ebene']
+            target = ebene['ziel_vek3']
+            ebename = ebene['gpr_ebe']
             self.logger.info("Ebene " + ebename + " wird nach VEK3 kopiert.")
             self.logger.info("Quelle: " + source)
             self.logger.info("Ziel: " + target)
@@ -73,9 +73,9 @@ class KopieVek3Neu(TemplateFunction):
             arcpy.ChangePrivileges_management(target, rolle, "GRANT")
             
             # Check ob in Quelle und Ziel die gleiche Anzahl Records vorhanden sind
-            count_source = int(arcpy.GetCount_management(source))
+            count_source = int(arcpy.GetCount_management(source)[0])
             self.logger.info("Anzahl Objekte in Quell-Ebene: " + str(count_source))
-            count_target = int(arcpy.GetCount_management(target))
+            count_target = int(arcpy.GetCount_management(target)[0])
             self.logger.info("Anzahl Objekte in Ziel-Ebene: " + str(count_target))
             
             if count_source != count_target:

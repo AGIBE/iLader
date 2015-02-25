@@ -45,7 +45,7 @@ class KopieVek1Ersatz(TemplateFunction):
         for ebene in self.task_config['vektor_ebenen']:
             source = ebene['quelle']
             target = ebene['"ziel_vek1']
-            ebename = ebene['gpr_ebene']
+            ebename = ebene['gpr_ebe']
             self.logger.info("Ebene " + ebename + " wird nach VEK1 kopiert.")
             self.logger.info("Quelle: " + source)
             self.logger.info("Ziel: " + target)
@@ -67,9 +67,9 @@ class KopieVek1Ersatz(TemplateFunction):
             arcpy.Append_management(source, target, "TEST")
             
             # Check ob in Quelle und Ziel die gleiche Anzahl Records vorhanden sind
-            count_source = int(arcpy.GetCount_management(source))
+            count_source = int(arcpy.GetCount_management(source)[0])
             self.logger.info("Anzahl Objekte in Quell-Ebene: " + str(count_source))
-            count_target = int(arcpy.GetCount_management(target))
+            count_target = int(arcpy.GetCount_management(target)[0])
             self.logger.info("Anzahl Objekte in Ziel-Ebene: " + str(count_target))
             
             if count_source != count_target:

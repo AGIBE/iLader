@@ -46,7 +46,7 @@ class Begleitdaten(TemplateFunction):
         self.logger.info("MXD-Files kopieren")
         for mxd in self.task_config["mxd"]:
             self.logger.info(mxd["name"] + " wird kopiert.")
-            shutil.copyfile(legende["quelle"], legende["ziel"])
+            shutil.copyfile(mxd["quelle"], mxd["ziel"])
         
        
         self.finish()
