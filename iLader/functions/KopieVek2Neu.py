@@ -54,7 +54,7 @@ class KopieVek2Neu(TemplateFunction):
         
         for ebene in self.task_config['vektor_ebenen']:
             source = ebene['quelle']
-            target = ebene['"ziel_vek2']
+            target = ebene['ziel_vek2']
             ebename = ebene['gpr_ebene']
             self.logger.info("Ebene " + ebename + " wird nach VEK2 kopiert.")
             self.logger.info("Quelle: " + source)
