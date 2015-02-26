@@ -8,8 +8,9 @@ setup(
       name = "iLader",
       version = "0.1",
       packages = find_packages(),
+      package_data={'': ["*.pyt"]},
       # Abhängigkeiten
-      install_requires = ["configobj==5.0.6", "cx-Oracle==5.1.3", "numpy==1.7.1", "six==1.9.0", "pyasn1==0.1.7", "pycrypto==2.6.1", "python-keyczar==0.715"],
+      install_requires = ["configobj==5.0.6", "cx-Oracle==5.1.3", "numpy==1.7.1", "six==1.9.0", "pyasn1==0.1.7", "pycrypto>=2.6", "python-keyczar==0.715"],
       # PyPI metadata
       author = "Peter Schär, Manuela Uhlmann",
       author_email = "peter.schaer@bve.be.ch, manuela.uhlmann@bve.be.ch",
