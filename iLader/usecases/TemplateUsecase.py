@@ -19,7 +19,7 @@ class TemplateUsecase(object):
         '''
         Constructor
         :param task_id: Eindeutige ID des auszuführenden Tasks, stammt aus TB_IMPORTE_GEODB.task_id
-        :param task_config_load_from_JSON: soll die Task-Konfiguration neu generiert werden (TRUE) oder nicht (FALSE)
+        :param task_config_load_from_JSON: soll eine existierende Task-Config eingelesen (TRUE) oder neu erzeugt werden (FALSE)
         '''
         self.task_id = int(task_id)
         self.task_config_load_from_JSON = task_config_load_from_JSON
