@@ -15,12 +15,12 @@ class NeuesGeoprodukt(TemplateUsecase):
         :param task_id: Eindeutige ID des auszuführenden Tasks, stammt aus TB_IMPORTE_GEODB.task_id
         :param task_config_load_from_JSON: soll eine existierende Task-Config eingelesen (TRUE) oder neu erzeugt werden (FALSE)
         '''
-        try: 
-            self.name = u"NeuesGeoprodukt"
-            TemplateUsecase.__init__(self, task_id, task_config_load_from_JSON)
+        self.name = u"NeuesGeoprodukt"
+        TemplateUsecase.__init__(self, task_id, task_config_load_from_JSON)
 
-            self.logger.info(u"Start der Funktionsausführung")
-            
+        self.logger.info(u"Start der Funktionsausführung")
+
+        try:            
             f = iLader.functions.Generierung(self.logger, self.task_config, self.general_config)
             self.logger.info(u"Usecase "+ self.name + u": Funktion " + f.name + u" wurde ausgeführt")
     
