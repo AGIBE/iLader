@@ -398,7 +398,6 @@ class Generierung(TemplateFunction):
         Lädt die Task-Config aus der JSON-Datei.
         '''
         f = open(self.task_config['task_config_file'], "r")
-        #TODO: beim Einlesen alle Passworte entschlüsseln (JSONDecoder)
         js = json.load(f)
         f.close
                 
