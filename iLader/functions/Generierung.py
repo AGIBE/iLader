@@ -227,7 +227,6 @@ class Generierung(TemplateFunction):
             self.zielDict['ziel_begleitdaten_mxd'] = self.ziel_begleitdaten_mxd
             self.zielDict['ziel_begleitdaten_symbol'] = self.ziel_begleitdaten_symbol
             self.zielDict['ziel_begleitdaten_zusatzdaten'] = self.ziel_begleitdaten_zusatzdaten
-            #self.zielList.append(zielDict)
       
          
     def __get_wtb_dd(self):
@@ -285,7 +284,7 @@ class Generierung(TemplateFunction):
         self.qsDict['deltachecker_passed'] = u'undefined'
         self.qsDict['qa_framework_passed'] = u'undefined'
         self.qsDict['qs_gesamt_passed'] = u'undefined'
-        #self.qsList.append(qsDict)   
+
           
             
     def __define_connections(self):
@@ -312,7 +311,14 @@ class Generierung(TemplateFunction):
         self.connDict['sde_conn_team_oereb'] = self.sde_conn_team_oereb
         self.connDict['sde_conn_vek1_oereb'] = self.sde_conn_vek1_oereb
         self.connDict['sde_conn_vek2_oereb'] = self.sde_conn_vek2_oereb
-        #self.connList.append(self.connDict)
+        self.instanceDict = {}
+        self.instanceDict['team'] = self.general_config['instances']['team']
+        self.instanceDict['vek1'] = self.general_config['instances']['vek1']
+        self.instanceDict['vek2'] = self.general_config['instances']['vek2']
+        self.instanceDict['vek3'] = self.general_config['instances']['vek3']
+        self.instanceDict['ras1'] = self.general_config['instances']['ras1']
+        self.instanceDict['ras2'] = self.general_config['instances']['ras2']
+        self.instanceDict['work'] = self.general_config['instances']['work']
         self.schemaDict = {}
         self.schema_geodb = self.general_config['users']['geodb']['schema']
         self.schema_geodb_dd = self.general_config['users']['geodb_dd']['schema']
@@ -324,13 +330,13 @@ class Generierung(TemplateFunction):
         self.schemaDict['norm'] = self.schema_norm
         self.schemaDict['oereb'] = self.schema_oereb
         self.schemaDict['gdbp'] = self.schema_gdbp
-        #self.schemaList.append(self.schemaDict)
         self.userpwDict = {}
         self.userpwDict['norm'] = self.general_config['users']['norm']['password']
         self.userpwDict['oereb'] = self.general_config['users']['oereb']['password']
         self.userpwDict['geodb'] = self.general_config['users']['geodb']['password']
         self.userpwDict['geodb_dd'] = self.general_config['users']['geodb_dd']['password']
         self.userpwDict['gdbp'] = self.general_config['users']['gdbp']['password']
+        
 
                 
     def __execute(self):
@@ -341,8 +347,7 @@ class Generierung(TemplateFunction):
         if not self.task_config.has_key("ausgefuehrte_funktionen"):
             self.task_config['ausgefuehrte_funktionen'] = []
        
-        #self.connList = []
-        #self.schemaList = []
+
         self.ebeVecList = []
         self.ebeRasList = []
         self.legList = []
@@ -350,8 +355,6 @@ class Generierung(TemplateFunction):
         self.styleList = []
         self.fontList = []
         self.zusatzList = []
-        #self.zielList = []
-        #self.qsList = []
         self.__define_connections()               
         self.__get_importe_dd()
         self.__get_gpr_info()
@@ -368,9 +371,11 @@ class Generierung(TemplateFunction):
         self.__define_qs()
         
         self.task_config['connections'] = self.connDict
+        self.task_config['instances'] = self.instanceDict
         self.task_config['schema'] = self.schemaDict
         self.task_config['users'] = self.userpwDict
         self.task_config['gpr'] = self.gpr
+        self.task_config['gzs_objectid'] = self.gzs_objectid
         self.task_config['zeitstand'] = self.zeitstand
         self.task_config['zeitstand_jahr'] = self.jahr
         self.task_config['zeitstand_version'] = self.version
