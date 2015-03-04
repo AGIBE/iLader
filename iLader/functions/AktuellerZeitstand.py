@@ -34,7 +34,7 @@ class AktuellerZeitstand(TemplateFunction):
         schema = self.task_config['schema']['geodb_dd']
         username = 'geodb_dd'
         password = self.task_config['users'][username]
-        gzs_objectid = str(self.task_config['gzs_objectid'])
+        gzs_objectid = self.task_config['gzs_objectid']
         gpr_code = self.task_config['gpr']
         
         sql = "UPDATE " + schema + ".TB_GEOPRODUKT SET GZS_OBJECTID=" + gzs_objectid + " WHERE GPR_BEZEICHNUNG='" + gpr_code + "'"

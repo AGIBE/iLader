@@ -38,7 +38,7 @@ class ImportStatus(TemplateFunction):
         schema = self.task_config['schema']['geodb_dd']
         username = 'geodb_dd'
         password = self.task_config['users'][username]
-        gzs_objectid = str(self.task_config['gzs_objectid'])
+        gzs_objectid = self.task_config['gzs_objectid']
         today = time.strftime("%d.%m.%y")
         
         sql = "UPDATE " + schema + ".TB_TASK SET TASK_STATUS=5, TASK_ENDE=TO_DATE('" + today + "', 'DD.MM.YY') WHERE GZS_OBJECTID=" + gzs_objectid

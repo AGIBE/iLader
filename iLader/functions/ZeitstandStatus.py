@@ -34,7 +34,7 @@ class ZeitstandStatus(TemplateFunction):
         schema = self.task_config['schema']['geodb_dd']
         username = 'geodb_dd'
         password = self.task_config['users'][username]
-        gzs_objectid = str(self.task_config['gzs_objectid'])
+        gzs_objectid = self.task_config['gzs_objectid']
         
         sql = "UPDATE " + schema + ".TB_GEOPRODUKT_ZEITSTAND SET STA_OBJECTID=9 WHERE GZS_OBJECTID=" + gzs_objectid
         self.logger.info("SQL-Update wird ausgeführt: " + sql)
