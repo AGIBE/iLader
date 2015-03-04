@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function, unicode_literals
 from .TemplateFunction import TemplateFunction
+import cx_Oracle
 
 class AktuellerZeitstand(TemplateFunction):
     '''
@@ -29,8 +30,31 @@ class AktuellerZeitstand(TemplateFunction):
         '''
         Führt den eigentlichen Funktionsablauf aus
         '''
+        db = self.task_config['instances']['team']
+        schema = self.task_config['schema']['geodb_dd']
+        username = 'geodb_dd'
+        password = self.task_config['users'][username]
+        gzs_objectid = str(self.task_config['gzs_objectid'])
+        gpr_code = self.task_config['gpr']
         
-        self.logger.info(u"Die Funktion " + self.name + u" arbeitet vor sich hin")
+        sql = "UPDATE " + schema + ".TB_GEOPRODUKT SET GZS_OBJECTID=" + gzs_objectid + " WHERE GPR_BEZEICHNUNG='" + gpr_code + "'"
+        self.logger.info("SQL-Update wird ausgeführt: " + sql)
         
+        connection = cx_Oracle.connect(username, password, db)  
+        cursor = connection.cursor()
+        cursor.execute(sql)
+        if cursor.rowcount == 1:
+            # Nur wenn genau 1 Zeile aktualisiert wurde, ist alles i.O. 
+            self.logger.info("Query wurde ausgeführt!")
+            connection.commit()
+            del cursor
+            del connection
+        else:
+            # Wenn nicht genau 1 Zeile aktualisiert wurde, muss abgebrochen werden
+            self.logger.error("Query wurde nicht erfolgreich ausgeführt.")
+            self.logger.error("Aktueller Zeitstand konnte nicht gesetzt werden.")
+            del cursor
+            del connection
+            raise Exception
        
         self.finish()
