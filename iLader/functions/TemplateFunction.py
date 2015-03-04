@@ -49,7 +49,6 @@ class TemplateFunction(object):
         (deshalb im Konstruktor) aus der Liste der ausgeführten
         entfernt. Sie wird erst am Schluss wieder eingefügt.
         '''
-        #TODO: Meldung im Log ausgeben, dass Funktion gestartet wird.
         if self.task_config.has_key("ausgefuehrte_funktionen"):
             if self.name in self.task_config['ausgefuehrte_funktionen']:
                 self.task_config['ausgefuehrte_funktionen'].remove(self.name)
@@ -65,5 +64,4 @@ class TemplateFunction(object):
             self.task_config['ausgefuehrte_funktionen'].append(self.name)
         
         self.write_task_config()
-        #TODO: Meldung im Log ausgeben, dass Funktion beendet wurde.
         
