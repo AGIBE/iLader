@@ -4,6 +4,7 @@ from .TemplateFunction import TemplateFunction
 import os
 import json
 import cx_Oracle as ora
+from iLader.helpers.Crypter import Crypter
 
 class Generierung(TemplateFunction):
     '''
@@ -410,4 +411,9 @@ class Generierung(TemplateFunction):
                 # Inhalten aus der Variable js gefüllt.
                 self.task_config.clear()
                 self.task_config.update(js)
+                # Alle Passwörter im JSON-File sind verschlüsselt.
+                # Sie müssen deshalb entschlüsselt werden.
+                crypter = Crypter()
+                for key, value in self.task_config['users'].iteritems():
+                    self.task_config['users'][key] = crypter.decrypt(value)
                 

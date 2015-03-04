@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function, unicode_literals
 import json
+from iLader.helpers.Crypter import Crypter
+import copy
 
 class TemplateFunction(object):
     '''
@@ -27,8 +29,18 @@ class TemplateFunction(object):
         schreibt die aktuelle task_config in ein JSON-File.
         '''
         f = open(self.task_config['task_config_file'], "w")
-        #TODO: beim Schreiben alle Passworte verschlüsseln (JSONEncoder)
-        json.dump(self.task_config, f, indent=4)
+        # Alle Passwörter in der task_config müssen vor dem
+        # Rausschreiben verschlüsselt werden. Damit sind sie
+        # nur im Memory im Klartext vorhanden.
+        # Deepcopy ist nötig, damit auch wirklich eine Kopie
+        # des gesamten Dicts (inkl. aller verschachtelter
+        # Objekte) gemacht wird.
+        encrypted_task_config = copy.deepcopy(self.task_config)
+        crypter = Crypter()
+        for key, value in encrypted_task_config['users'].iteritems():
+            encrypted_task_config['users'][key] = crypter.encrypt(value) 
+                       
+        json.dump(encrypted_task_config, f, indent=4)
         f.close()
         
     def start(self):
