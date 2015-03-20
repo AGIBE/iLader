@@ -7,6 +7,7 @@ from iLader.usecases import NeuesGeoprodukt
 import os
 import configobj
 
+#TODO: prüfen ob statt ArcGIS-Toolbox nicht ein GUI mit argparse und gooey einfacher wäre
 class Toolbox(object):
     '''
     ArcGIS Python-Toolbox, mit der ein Import-Task in der Geoprocessing-
