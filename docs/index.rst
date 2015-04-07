@@ -13,6 +13,7 @@ Contents:
 
    einfuehrung
    uebersicht
+   installation
    iLader
 
 

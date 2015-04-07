@@ -4,11 +4,18 @@ Der iLader besteht aus Funktionen und Usecases. Funktionen sind modulare Codebl√
 Sowohl die Anzahl Usecases als auch die Anzahl Funktionen ist variabel. Z.Zt. sind folgende Usecases implementiert:
 
 - :py:mod:`.NeuesGeoprodukt`
+- :py:mod:`.AktZSohneDMA`
+- :py:mod:`.AktZSmitDMA`
+- :py:mod:`.Korrektur`
+- :py:mod:`.AktTagesakt`
+- :py:mod:`.AktohneZSOEREB`
+- :py:mod:`.AktTagesaktOEREB`
+
 
 Die Zuordnung von Funktionen zu Usecases ist in folgender Tabelle dokumentiert:
 
 ================================  ===============  ============  ===========  =========  ===========  ==============  ================
-Usecase / Funktion                NeuesGeoproduct  AktZSohneDMA  AktZSmitDMA  Korrektur  AktTagesakt  AktohneZSOEREB  AktTagesaktOEREB
+Usecase / Funktion                NeuesGeoprodukt  AktZSohneDMA  AktZSmitDMA  Korrektur  AktTagesakt  AktohneZSOEREB  AktTagesaktOEREB
 ================================  ===============  ============  ===========  =========  ===========  ==============  ================
 :py:mod:`.Generierung`                  X                 X             X           X          X              X                X
 :py:mod:`.ZeitstandAngelegt`                                                        X                                       
@@ -25,12 +32,12 @@ Usecase / Funktion                NeuesGeoproduct  AktZSohneDMA  AktZSmitDMA  Ko
 :py:mod:`.KopieVek2Neu`                 X                                                                                               
 :py:mod:`.KopieVek2Ersatz`                                X             X           X          X              X                X       
 :py:mod:`.IndicesVek2`                  X                 X             X                                                               
-:py:mod:`.KopieVek1Ersatz`                                                         (X)         X                               X         
+:py:mod:`.KopieVek1Ersatz`                                                          ?          X                               X         
 :py:mod:`.KopieVek3Neu`                 X                 X             X                                                               
 :py:mod:`.IndicesVek3`                  X                 X             X                                                               
 :py:mod:`.KopieVek3Ersatz`                                                          X          X              X                X         
 :py:mod:`.TransferVek2`                                                                                       X                X       
-:py:mod:`.TransferVek1`                                                                                       X                X       
+:py:mod:`.TransferVek1`                                                                                                        X       
 :py:mod:`.AktuellerZeitstand`           X                 X             X                                                               
 :py:mod:`.ZeitstandStatus`              X                 X             X           X                                                      
 :py:mod:`.ImportStatus`                 X                 X             X           X          X              X                X        

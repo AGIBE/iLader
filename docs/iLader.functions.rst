@@ -9,6 +9,11 @@ Submodules
     :undoc-members:
     :show-inheritance:
 
+.. automodule:: iLader.functions.Ausputzer
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 .. automodule:: iLader.functions.Begleitdaten
     :members:
     :undoc-members:
