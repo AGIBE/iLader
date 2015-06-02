@@ -32,6 +32,7 @@ class NeuesGeoprodukt(TemplateUsecase):
                          iLader.functions.QSBenachrichtigung,
                          iLader.functions.GPOrdner,
                          iLader.functions.Begleitdaten,
+                         iLader.functions.BegleitdatenReplaceSource,
                          iLader.functions.Fonts,
                          iLader.functions.Styles,
                          iLader.functions.Zusatzdaten,
