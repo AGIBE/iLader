@@ -42,7 +42,8 @@ class Styles(TemplateFunction):
         if self.task_config["style"] > 0:
             for style in self.task_config["style"]:
                 self.logger.info("Style " + style["name"] + " wird kopiert.")
-                shutil.copyfile(style["quelle"], style["ziel"])
+                shutil.copyfile(style["quelle"], style["ziel_akt"])
+                shutil.copyfile(style["quelle"], style["ziel_zs"])
         else:
             self.logger.info("Keine Styles vorhanden. Es wird nichts kopiert.")
         

@@ -42,7 +42,8 @@ class Fonts(TemplateFunction):
         if self.task_config["font"] > 0:
             for font in self.task_config["font"]:
                 self.logger.info("Font " + font["name"] + " wird kopiert.")
-                shutil.copyfile(font["quelle"], font["ziel"])
+                shutil.copyfile(font["quelle"], font["ziel_akt"])
+                shutil.copyfile(font["quelle"], font["ziel_zs"])
         else:
             self.logger.info("Keine Fonts vorhanden. Es wird nichts kopiert.")
         

@@ -169,7 +169,7 @@ class Generierung(TemplateFunction):
             if self.datentyp == 2:
                 self.symbol_name_akt = self.gpr + "_" + self.ebe + "_" + self.zeitstand + "_" + self.leg + "_" + self.spr + ".lyr"
             else:
-                self.symbol_name_akt = self.gpr + "_" + self.ebe + "_" + self.leg + "_" + self.spr + ".lyr"
+                self.symbol_name_akt = "AKTUELL_" + self.gpr + "_" + self.ebe + "_" + self.leg + "_" + self.spr + ".lyr"
             self.symbol_name_zs = self.gpr + "_" + self.ebe + "_" + self.zeitstand + "_" + self.leg + "_" + self.spr + ".lyr"
             self.logger.info(self.symbol_name)
             self.quelle_symbol =  os.path.join(self.quelle_begleitdaten_symbol, self.symbol_name)
@@ -187,12 +187,10 @@ class Generierung(TemplateFunction):
             self.lang = lang
             self.mxd_lang = self.gpr + "_" + self.lang + ".mxd"
             self.quelle_mxd_lang = os.path.join(self.quelle_begleitdaten_mxd, self.mxd_lang)
-            self.mxd_lang_akt = self.gpr + "_" + self.gpr + "_" + self.lang + ".mxd"
-            self.ziel_mxd_lang_akt = os.path.join(self.quelle_begleitdaten_mxd, self.mxd_lang_akt)
+            self.mxd_lang_akt = "AKTUELL_" + self.gpr + "_" + self.gpr + "_" + self.lang + ".mxd"
+            self.ziel_mxd_lang_akt = os.path.join(self.ziel_begleitdaten_mxd, self.mxd_lang_akt)
             self.mxd_lang_zs = self.gpr + "_" + self.zeitstand + "_" + self.gpr + "_" + self.lang + ".mxd"
-            self.ziel_mxd_lang_zs = os.path.join(self.quelle_begleitdaten_mxd, self.mxd_lang_zs)
-            self.quelle_mxd_lang = os.path.join(self.quelle_begleitdaten_mxd, self.mxd_lang)                
-            self.ziel_mxd_lang = os.path.join(self.ziel_begleitdaten_mxd, self.mxd_lang)
+            self.ziel_mxd_lang_zs = os.path.join(self.ziel_begleitdaten_mxd, self.mxd_lang_zs)
             self.mxdDict['name'] = self.mxd_lang
             self.mxdDict['quelle'] = self.quelle_mxd_lang
             self.mxdDict['ziel_akt'] = self.ziel_mxd_lang_akt.upper()
@@ -208,12 +206,18 @@ class Generierung(TemplateFunction):
                 if file.endswith('.STYLE') or file.endswith('.style'):
                     styleDict['name'] = file
                     styleDict['quelle'] = os.path.join(self.quelle_begleitdaten_symbol, file)
-                    styleDict['ziel'] = os.path.join(self.ziel_begleitdaten_symbol, file)
+                    self.style_ziel_akt = os.path.join(self.ziel_begleitdaten_symbol, self.gpr + "_" + file)
+                    styleDict['ziel_akt'] = self.style_ziel_akt.upper()
+                    self.style_zs = os.path.join(self.ziel_begleitdaten_symbol, self.gpr + "_" + self.zeitstand + "_" + file)
+                    styleDict['ziel_zs'] = self.style_zs.upper()
                     self.styleList.append(styleDict)
                 elif file.endswith('.ttf') or file.endswith('.TTF'):
                     fontDict['name'] = file
                     fontDict['quelle'] = os.path.join(self.quelle_begleitdaten_symbol, file)
-                    fontDict['ziel'] = os.path.join(self.ziel_begleitdaten_symbol, file)
+                    self.font_akt = os.path.join(self.ziel_begleitdaten_symbol, self.gpr + "_" + file)
+                    fontDict['ziel_akt'] = self.font_akt.upper()
+                    self.font_zs = os.path.join(self.ziel_begleitdaten_symbol, self.gpr + "_" + self.zeitstand + "_" + file)
+                    fontDict['ziel_zs'] = self.font_zs.upper()
                     self.fontList.append(fontDict)
             for dir in dirs:
                 zusatzDict = {}

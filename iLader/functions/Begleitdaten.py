@@ -2,6 +2,7 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 from .TemplateFunction import TemplateFunction
 import shutil
+import arcpy
 
 class Begleitdaten(TemplateFunction):
     '''
@@ -40,13 +41,15 @@ class Begleitdaten(TemplateFunction):
         self.logger.info("Legendenfiles kopieren")
         for legende in self.task_config["legende"]:
             self.logger.info("Legende " + legende["name"] + " wird kopiert.")
-            shutil.copyfile(legende["quelle"], legende["ziel"])
+            shutil.copyfile(legende["quelle"], legende["ziel_akt"])
+            shutil.copyfile(legende["quelle"], legende["ziel_zs"])
         
         # MXDs
         self.logger.info("MXD-Files kopieren")
         for mxd in self.task_config["mxd"]:
             self.logger.info(mxd["name"] + " wird kopiert.")
-            shutil.copyfile(mxd["quelle"], mxd["ziel"])
+            shutil.copyfile(mxd["quelle"], mxd["ziel_akt"])
+            shutil.copyfile(mxd["quelle"], mxd["ziel_zs"])
         
        
         self.finish()
