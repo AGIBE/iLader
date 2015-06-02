@@ -49,5 +49,6 @@ class NeuesGeoprodukt(TemplateUsecase):
                 f = funktion(self.logger, self.task_config)
                 self.logger.info(u"Usecase "+ self.name + u": Funktion " + f.name + u" wurde ausgeführt")
         finally: # Die Ausputzer-Funktion muss immer ausgeführt werden.
-            f = iLader.functions.Ausputzer(self.logger, self.task_config)
-            self.logger.info(u"Usecase "+ self.name + u": Funktion " + f.name + u" wurde ausgeführt")
+            pass
+            #f = iLader.functions.Ausputzer(self.logger, self.task_config)
+            #self.logger.info(u"Usecase "+ self.name + u": Funktion " + f.name + u" wurde ausgeführt")
