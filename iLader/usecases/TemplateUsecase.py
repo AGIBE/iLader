@@ -19,7 +19,7 @@ class TemplateUsecase(object):
         '''
         Constructor
         :param task_id: Eindeutige ID des auszuführenden Tasks, stammt aus TB_IMPORTE_GEODB.task_id
-        :param task_config_load_from_JSON: soll die Task-Konfiguration neu generiert werden (TRUE) oder nicht (FALSE)
+        :param task_config_load_from_JSON: soll eine existierende Task-Config eingelesen (TRUE) oder neu erzeugt werden (FALSE)
         '''
         self.task_id = int(task_id)
         self.task_config_load_from_JSON = task_config_load_from_JSON
@@ -118,15 +118,15 @@ class TemplateUsecase(object):
         d['task_id'] = self.task_id
         d['task_config_load_from_JSON'] = self.task_config_load_from_JSON
         
-        task_dir = os.path.join(self.general_config['task_verzeichnis'], str(self.task_id))
+        task_dir = os.path.join(self.general_config['task_verzeichnis'], unicode(self.task_id))
         
-        task_config_file = os.path.join(task_dir, str(self.task_id) + ".json")
+        task_config_file = os.path.join(task_dir, unicode(self.task_id) + ".json")
 
-        log_file_name = str(self.task_id) + ".log"
+        log_file_name = unicode(self.task_id) + ".log"
         log_file = os.path.join(task_dir, log_file_name)
         
         # Falls das Log-File umbenannt werden muss, wird hier der Name gebildet
-        archive_log_file_name = str(self.task_id) + datetime.datetime.now().strftime("_%Y_%m_%d_%H_%M_%S") + ".log"
+        archive_log_file_name = unicode(self.task_id) + datetime.datetime.now().strftime("_%Y_%m_%d_%H_%M_%S") + ".log"
         archive_log_file = os.path.join(task_dir, archive_log_file_name)
         
         # Task-Verzeichnis erstellen, falls es noch nicht existiert

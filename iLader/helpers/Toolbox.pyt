@@ -6,9 +6,22 @@ from iLader.helpers import Crypter
 from iLader.usecases import NeuesGeoprodukt
 import os
 import configobj
-import sys
 
+#TODO: prüfen ob statt ArcGIS-Toolbox nicht ein GUI mit argparse und gooey einfacher wäre
 class Toolbox(object):
+    '''
+    ArcGIS Python-Toolbox, mit der ein Import-Task in der Geoprocessing-
+    Umgebung gestartet werden kann. Die Toolbox greift auf die iLader-
+    Konfiguration zu, um die nötigen Infos aus dem DataDictionary aus-
+    lesen zu können.
+    
+    Alle Tasks werden aus dem DataDictionary ausgelesen (wenn STATUS=1) und
+    mit Zusatzinformationen (GPR-Code, Jahr, Version) im Geoprocessing-
+    Dialog angezeigt.
+     
+    Hat der Anwender einen Taks ausgewählt, wird der entsprechende Usecase
+    gestartet.
+    '''
     def __init__(self):
         self.label = "iLader"
         self.alias = "iLader-Toolbox - GeoDB-Import"
@@ -76,7 +89,7 @@ class Import(object):
         user = self.general_config['users']['geodb_dd']['username']
         pw = self.general_config['users']['geodb_dd']['password']
         schema = self.general_config['users']['geodb_dd']['schema']
-        sql = "SELECT TASK_OBJECTID, GZS_OBJECTID, UC_OBJECTID From " + schema + ".TB_TASK"
+        sql = "SELECT t.TASK_OBJECTID, u.UC_BEZEICHNUNG, g.GPR_BEZEICHNUNG, z.GZS_JAHR, z.GZS_VERSION FROM " + schema + ".TB_TASK t LEFT JOIN " + schema + ".TB_USECASE u ON t.UC_OBJECTID=u.UC_OBJECTID LEFT JOIN " + schema + ".TB_GEOPRODUKT_ZEITSTAND z ON z.GZS_OBJECTID = t.GZS_OBJECTID LEFT JOIN " + schema + ".TB_GEOPRODUKT g ON z.GPR_OBJECTID = g.GPR_OBJECTID WHERE t.TASK_STATUS=1 ORDER BY g.GPR_BEZEICHNUNG ASC"
         
         dd_connection = cx_Oracle.connect(user, pw, db)
         cursor = dd_connection.cursor()
@@ -86,7 +99,15 @@ class Import(object):
         tasks = []
         
         for row in task_query_result:
-            tasks.append(str(row[0]).decode('cp1252'))
+            task_objectid = str(row[0]).decode('cp1252')
+            uc_bezeichnung = str(row[1]).decode('cp1252')
+            gpr_bezeichnung = str(row[2]).decode('cp1252')
+            gzs_jahr = str(row[3]).decode('cp1252')
+            gzs_version = str(row[4]).decode('cp1252')
+            #Abmachung: alle Zeichen vor dem ersten Doppelpunkt entsprechen der Task-ID
+            parameter_string = task_objectid + ": " + gpr_bezeichnung + " " + gzs_jahr + "_" + gzs_version + " (" + uc_bezeichnung + ")"
+            
+            tasks.append(parameter_string)
         
         cursor.close()
         dd_connection.close()    
@@ -96,8 +117,8 @@ class Import(object):
     def getParameterInfo(self):
         
         param1 = arcpy.Parameter(
-            displayName="Pfad",
-            name="pfad",
+            displayName="Import-Task",
+            name="import_task",
             datatype="String",
             parameterType="required",
             direction="Input"
@@ -105,7 +126,17 @@ class Import(object):
         
         param1.filter.list = self.__getImportTasks()
         
-        params = [param1]
+        param2 = arcpy.Parameter(
+            displayName="Task-Config aus JSON-File einlesen?",
+            name="load_task_config",
+            datatype="Boolean",
+            parameterType="required",
+            direction="Input"
+        )
+        
+        param2.value=False;
+        
+        params = [param1, param2]
         return params
     
     def isLicensed(self):
@@ -123,7 +154,9 @@ class Import(object):
         return
     
     def execute(self, parameters, messages):
-        task_id = parameters[0].valueAsText
+        #Abmachung: alle Zeichen vor dem ersten Doppelpunkt entsprechen der Task-ID
+        task_id = parameters[0].valueAsText.split(":")[0]
+        load_task_config = parameters[1].value
         arcpy.AddMessage("Task-ID " + task_id + " wird ausgeführt.")
-        uc = NeuesGeoprodukt(task_id, False)
+        uc = NeuesGeoprodukt(task_id, load_task_config)
         
