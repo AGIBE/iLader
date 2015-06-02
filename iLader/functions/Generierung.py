@@ -311,6 +311,9 @@ class Generierung(TemplateFunction):
         self.sde_conn_ras1 = os.path.join(self.sde_connection_directory, 'ras1.sde')
         self.sde_conn_ras2 = os.path.join(self.sde_connection_directory, 'ras2.sde')
         self.sde_conn_norm = os.path.join(self.sde_connection_directory, 'norm.sde')
+        self.sde_conn_vek1_geo = os.path.join(self.sde_connection_directory, 'vek1_geo.sde')
+        self.sde_conn_vek3_geo = os.path.join(self.sde_connection_directory, 'vek3_geo.sde')
+        self.sde_conn_ras1_geo = os.path.join(self.sde_connection_directory, 'ras1_geo.sde')        
         self.sde_conn_team_oereb = os.path.join(self.sde_connection_directory, 'team_oereb.sde')
         self.sde_conn_vek1_oereb = os.path.join(self.sde_connection_directory, 'vek1_oereb.sde')
         self.sde_conn_vek2_oereb = os.path.join(self.sde_connection_directory, 'vek2_oereb.sde')      
@@ -321,9 +324,13 @@ class Generierung(TemplateFunction):
         self.connDict['sde_conn_ras1'] = self.sde_conn_ras1
         self.connDict['sde_conn_ras2'] = self.sde_conn_ras2
         self.connDict['sde_conn_norm'] = self.sde_conn_norm
+        self.connDict['sde_conn_vek1_geo'] = self.sde_conn_vek1_geo
+        self.connDict['sde_conn_vek3_geo'] = self.sde_conn_vek3_geo
+        self.connDict['sde_conn_ras1_geo'] = self.sde_conn_ras1_geo
         self.connDict['sde_conn_team_oereb'] = self.sde_conn_team_oereb
         self.connDict['sde_conn_vek1_oereb'] = self.sde_conn_vek1_oereb
-        self.connDict['sde_conn_vek2_oereb'] = self.sde_conn_vek2_oereb
+        self.connDict['sde_conn_vek2_oereb'] = self.sde_conn_vek2_oereb        
+        
         self.instanceDict = {}
         self.instanceDict['team'] = self.general_config['instances']['team']
         self.instanceDict['vek1'] = self.general_config['instances']['vek1']
