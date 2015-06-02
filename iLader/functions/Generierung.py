@@ -150,22 +150,23 @@ class Generierung(TemplateFunction):
                          
                 
     def __get_leg_dd(self):
-        self.sql_dd_ebe = "SELECT a.gpr_bezeichnung, c.ebe_bezeichnung, b.gzs_jahr, b.gzs_version, f.leg_bezeichnung, h.spr_kuerzel from geodb_dd.tb_ebene_zeitstand d join geodb_dd.tb_ebene c on d.ebe_objectid = c.ebe_objectid join geodb_dd.tb_geoprodukt_zeitstand b on d.gzs_objectid = b.gzs_objectid join geodb_dd.tb_geoprodukt a on b.gpr_objectid = a.gpr_objectid join geodb_dd.tb_datentyp g on c.dat_objectid = g.dat_objectid JOIN geodb_dd.tb_legende f on f.ezs_objectid = d.ezs_objectid JOIN geodb_dd.tb_sprache h on h.spr_objectid = f.spr_objectid where b.gzs_objectid = '" + self.gzs_objectid + "'"   
+        self.sql_dd_ebe = "SELECT a.gpr_bezeichnung, c.ebe_bezeichnung, b.gzs_jahr, b.gzs_version, f.leg_bezeichnung, h.spr_kuerzel, g.dat_objectid from geodb_dd.tb_ebene_zeitstand d join geodb_dd.tb_ebene c on d.ebe_objectid = c.ebe_objectid join geodb_dd.tb_geoprodukt_zeitstand b on d.gzs_objectid = b.gzs_objectid join geodb_dd.tb_geoprodukt a on b.gpr_objectid = a.gpr_objectid join geodb_dd.tb_datentyp g on c.dat_objectid = g.dat_objectid JOIN geodb_dd.tb_legende f on f.ezs_objectid = d.ezs_objectid JOIN geodb_dd.tb_sprache h on h.spr_objectid = f.spr_objectid where b.gzs_objectid = '" + self.gzs_objectid + "'"   
         self.__db_connect('team', 'geodb_dd', self.sql_dd_ebe)
         for row in self.result:
             self.legDict = {}
             self.logger.info(u'Legendendetails')
             self.logger.info(row)
-            self.gpr = str(row[0]).decode('cp1252')
-            self.ebe = str(row[1]).decode('cp1252')
-            self.jahr = str(row[2]).decode('cp1252')
-            self.version = str(row[3]).decode('cp1252')
+            self.gpr = row[0].decode('cp1252')
+            self.ebe = row[1].decode('cp1252')
+            self.jahr = str(row[2])
+            self.version = str(row[3])
             self.version = self.version.zfill(2)           
             self.zeitstand = self.jahr + "_" + self.version
-            self.leg = str(row[4]).decode('cp1252')
-            self.spr = str(row[5]).decode('cp1252')
+            self.leg = row[4].decode('cp1252')
+            self.spr = row[5].decode('cp1252')
+            self.datentyp = str(row[6])
             self.symbol_name = self.gpr + "_" + self.ebe + "_" + self.leg + "_" + self.spr + ".lyr"
-            if self.datatype == "Rasterkatalog":
+            if self.datentyp == 2:
                 self.symbol_name_akt = self.gpr + "_" + self.ebe + "_" + self.zeitstand + "_" + self.leg + "_" + self.spr + ".lyr"
             else:
                 self.symbol_name_akt = self.gpr + "_" + self.ebe + "_" + self.leg + "_" + self.spr + ".lyr"
@@ -174,10 +175,10 @@ class Generierung(TemplateFunction):
             self.quelle_symbol =  os.path.join(self.quelle_begleitdaten_symbol, self.symbol_name)
             self.ziel_symbol_akt = os.path.join(self.ziel_begleitdaten_symbol, self.symbol_name_akt)
             self.ziel_symbol_zs = os.path.join(self.ziel_begleitdaten_symbol, self.symbol_name_zs)
-            self.legDict['name'] = self.symbol_name
-            self.legDict['quelle'] = self.quelle_symbol
-            self.legDict['ziel_akt'] = self.ziel_symbol_akt
-            self.legDict['ziel_zs'] = self.ziel_symbol_zs
+            self.legDict['name'] = self.symbol_name.lower()
+            self.legDict['quelle'] = self.quelle_symbol.lower()
+            self.legDict['ziel_akt'] = self.ziel_symbol_akt.upper()
+            self.legDict['ziel_zs'] = self.ziel_symbol_zs.upper()
             self.legList.append(self.legDict)
 
     
@@ -194,8 +195,8 @@ class Generierung(TemplateFunction):
             self.ziel_mxd_lang = os.path.join(self.ziel_begleitdaten_mxd, self.mxd_lang)
             self.mxdDict['name'] = self.mxd_lang
             self.mxdDict['quelle'] = self.quelle_mxd_lang
-            self.mxdDict['ziel_akt'] = self.ziel_mxd_lang_akt
-            self.mxdDict['ziel_zs'] = self.ziel_mxd_lang_zs             
+            self.mxdDict['ziel_akt'] = self.ziel_mxd_lang_akt.upper()
+            self.mxdDict['ziel_zs'] = self.ziel_mxd_lang_zs.upper()             
             self.mxdList.append(self.mxdDict)
     
     def __get_fak_begleitdaten(self):
@@ -371,6 +372,7 @@ class Generierung(TemplateFunction):
         self.__define_quelle_ziel_begleitdaten()
         self.__get_mxd_dd("DE")
         self.__get_mxd_dd("FR")
+        self.__get_leg_dd()        
         self.__get_fak_begleitdaten()
         self.__define_qs()
         
