@@ -32,14 +32,17 @@ class Generierung(TemplateFunction):
         # wird die Task-Config aus der JSON-Datei geladen. In diesem Fall wird die eigentliche
         # Generierungsfunktion nicht ausgeführt.
         if os.path.exists(self.task_config['task_config_file']) and self.task_config['task_config_load_from_JSON']:
+            #TODO: Validierungsfunktion ausführen
             self.__load_task_config()
             # Dieser Wert muss explizit auf True gesetzt werden, da er im JSON-File
             # auch auf False sein könnte.
             self.task_config['task_config_load_from_JSON'] = True
             self.finish()
         else:
+            #TODO: Validierungsfunktion ausführen
             self.__execute()        
-       
+            #TODO: def Validierungsfunktion, Status muss 1,2 sein (TB_usecase) und Geoproduktstatus = 1,9 ebenfalls tb_usecase
+            #TODO: in tb_usecase attribut einfügen, welcher Geoproduktstatus für jeden UseCase gültig ist  
 
     def __db_connect(self, instance, usergroup, sql_name):
         self.sql_name = sql_name
@@ -145,8 +148,7 @@ class Generierung(TemplateFunction):
                 self.ebeRasList.append(ebeRasDict)          
                          
                 
-    def __get_leg_dd(self, create_zs):
-        self.create_zs = create_zs
+    def __get_leg_dd(self):
         self.sql_dd_ebe = "SELECT a.gpr_bezeichnung, c.ebe_bezeichnung, b.gzs_jahr, b.gzs_version, f.leg_bezeichnung, h.spr_kuerzel from geodb_dd.tb_ebene_zeitstand d join geodb_dd.tb_ebene c on d.ebe_objectid = c.ebe_objectid join geodb_dd.tb_geoprodukt_zeitstand b on d.gzs_objectid = b.gzs_objectid join geodb_dd.tb_geoprodukt a on b.gpr_objectid = a.gpr_objectid join geodb_dd.tb_datentyp g on c.dat_objectid = g.dat_objectid JOIN geodb_dd.tb_legende f on f.ezs_objectid = d.ezs_objectid JOIN geodb_dd.tb_sprache h on h.spr_objectid = f.spr_objectid where b.gzs_objectid = '" + self.gzs_objectid + "'"   
         self.__db_connect('team', 'geodb_dd', self.sql_dd_ebe)
         for row in self.result:
@@ -161,33 +163,38 @@ class Generierung(TemplateFunction):
             self.zeitstand = self.jahr + "_" + self.version
             self.leg = str(row[4]).decode('cp1252')
             self.spr = str(row[5]).decode('cp1252')
-            if self.create_zs == "True":
-                self.symbol_name = self.gpr + "_" + self.ebe + "_" + self.zeitstand + "_" + self.leg + "_" + self.spr + ".lyr"
-            if self.create_zs == "False":
-                self.symbol_name = self.gpr + "_" + self.ebe + "_" + self.leg + "_" + self.spr + ".lyr"
+            self.symbol_name = self.gpr + "_" + self.ebe + "_" + self.leg + "_" + self.spr + ".lyr"
+            if self.datatype == "Rasterkatalog":
+                self.symbol_name_akt = self.gpr + "_" + self.ebe + "_" + self.zeitstand + "_" + self.leg + "_" + self.spr + ".lyr"
+            else:
+                self.symbol_name_akt = self.gpr + "_" + self.ebe + "_" + self.leg + "_" + self.spr + ".lyr"
+            self.symbol_name_zs = self.gpr + "_" + self.ebe + "_" + self.zeitstand + "_" + self.leg + "_" + self.spr + ".lyr"
             self.logger.info(self.symbol_name)
             self.quelle_symbol =  os.path.join(self.quelle_begleitdaten_symbol, self.symbol_name)
-            self.ziel_symbol = os.path.join(self.ziel_begleitdaten_symbol, self.symbol_name)
+            self.ziel_symbol_akt = os.path.join(self.ziel_begleitdaten_symbol, self.symbol_name_akt)
+            self.ziel_symbol_zs = os.path.join(self.ziel_begleitdaten_symbol, self.symbol_name_zs)
             self.legDict['name'] = self.symbol_name
             self.legDict['quelle'] = self.quelle_symbol
-            self.legDict['ziel'] = self.ziel_symbol
+            self.legDict['ziel_akt'] = self.ziel_symbol_akt
+            self.legDict['ziel_zs'] = self.ziel_symbol_zs
             self.legList.append(self.legDict)
 
     
-    def __get_mxd_dd(self, create_zs, lang):
+    def __get_mxd_dd(self, lang):
             self.mxdDict = {}
-            self.create_zs = create_zs
             self.lang = lang
-            if self.create_zs == "False":
-                self.mxd_lang = self.gpr + "_" + self.gpr + "_" + self.lang + ".mxd"
-                self.quelle_mxd_lang = os.path.join(self.quelle_begleitdaten_mxd, self.mxd_lang)
-            if self.create_zs == "True":
-                self.mxd_lang = self.gpr + "_" + self.zeitstand + "_" + self.gpr + "_" + self.lang + ".mxd"
+            self.mxd_lang = self.gpr + "_" + self.lang + ".mxd"
+            self.quelle_mxd_lang = os.path.join(self.quelle_begleitdaten_mxd, self.mxd_lang)
+            self.mxd_lang_akt = self.gpr + "_" + self.gpr + "_" + self.lang + ".mxd"
+            self.ziel_mxd_lang_akt = os.path.join(self.quelle_begleitdaten_mxd, self.mxd_lang_akt)
+            self.mxd_lang_zs = self.gpr + "_" + self.zeitstand + "_" + self.gpr + "_" + self.lang + ".mxd"
+            self.ziel_mxd_lang_zs = os.path.join(self.quelle_begleitdaten_mxd, self.mxd_lang_zs)
             self.quelle_mxd_lang = os.path.join(self.quelle_begleitdaten_mxd, self.mxd_lang)                
             self.ziel_mxd_lang = os.path.join(self.ziel_begleitdaten_mxd, self.mxd_lang)
             self.mxdDict['name'] = self.mxd_lang
             self.mxdDict['quelle'] = self.quelle_mxd_lang
-            self.mxdDict['ziel'] = self.ziel_mxd_lang             
+            self.mxdDict['ziel_akt'] = self.ziel_mxd_lang_akt
+            self.mxdDict['ziel_zs'] = self.ziel_mxd_lang_zs             
             self.mxdList.append(self.mxdDict)
     
     def __get_fak_begleitdaten(self):
@@ -361,12 +368,8 @@ class Generierung(TemplateFunction):
         self.__get_ebe_dd()
         self.__get_wtb_dd()
         self.__define_quelle_ziel_begleitdaten()
-        self.__get_mxd_dd("False", "DE")
-        self.__get_mxd_dd("False", "FR")
-        self.__get_mxd_dd("True", "DE")
-        self.__get_mxd_dd("True", "FR")
-        self.__get_leg_dd("True")
-        self.__get_leg_dd("False")
+        self.__get_mxd_dd("DE")
+        self.__get_mxd_dd("FR")
         self.__get_fak_begleitdaten()
         self.__define_qs()
         
