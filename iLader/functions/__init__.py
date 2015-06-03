@@ -27,3 +27,4 @@ from .FlagStatus import FlagStatus
 from .ImportArchiv import ImportArchiv
 from .ZeitstandAngelegt import ZeitstandAngelegt
 from .Ausputzer import Ausputzer
+from .BegleitdatenReplaceSource import BegleitdatenReplaceSource
