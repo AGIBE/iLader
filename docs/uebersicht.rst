@@ -26,6 +26,7 @@ Usecase / Funktion                NeuesGeoprodukt  AktZSohneDMA  AktZSmitDMA  Ko
 :py:mod:`.QSBenachrichtigung`           X                 X             X           X          X              X                X            
 :py:mod:`.GPOrdner`                     X                                                                                               
 :py:mod:`.Begleitdaten`                 X                 X             X           X                                                      
+:py:mod:`.BegleitdatenReplaceSource     X                 X             X           X
 :py:mod:`.Fonts`                        X                 X             X           X                                                      
 :py:mod:`.Styles`                       X                 X             X           X                                                    
 :py:mod:`.Zusatzdaten`                  X                 X             X           X          X              X                X         

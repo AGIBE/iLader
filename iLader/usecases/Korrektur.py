@@ -32,6 +32,7 @@ class Korrektur(TemplateUsecase):
                          iLader.functions.QSStatus,
                          iLader.functions.QSBenachrichtigung,
                          iLader.functions.Begleitdaten,
+                         iLader.functions.BegleitdatenReplaceSource,
                          iLader.functions.Fonts,
                          iLader.functions.Styles,
                          iLader.functions.Zusatzdaten,
