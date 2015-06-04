@@ -19,6 +19,11 @@ Submodules
     :undoc-members:
     :show-inheritance:
 
+.. automodule:: iLader.functions.BegleitdatenReplaceSource
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 .. automodule:: iLader.functions.CheckscriptNormierung
     :members:
     :undoc-members:
