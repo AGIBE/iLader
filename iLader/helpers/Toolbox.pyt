@@ -119,7 +119,7 @@ class Import(object):
         param1 = arcpy.Parameter(
             displayName="Import-Task",
             name="import_task",
-            datatype="String",
+            datatype="GPString",
             parameterType="required",
             direction="Input"
         )
@@ -129,7 +129,7 @@ class Import(object):
         param2 = arcpy.Parameter(
             displayName="Task-Config aus JSON-File einlesen?",
             name="load_task_config",
-            datatype="Boolean",
+            datatype="GPBoolean",
             parameterType="required",
             direction="Input"
         )
