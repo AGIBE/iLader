@@ -26,23 +26,23 @@ Neuinstallation
 
 #. Installation pip
   
-   * python get-pip.py
+   * ``python get-pip.py``
    
 #. Installation iLader
 
-   * pip install iLader-0.1-py2-none-any.whl
+   * ``pip install iLader-0.1-py2-none-any.whl``
    
 #. Konfiguration iLader
 
-   * Umgebungsvariable GEODBIMPORTHOME setzen
-   * Umgebungsvariable GEODBIMPORTSECRET setzen
-   * Schlüssel kopieren (Files meta und 1) nach GEODBIMPORTSECRET
-   * connections-Verzeichnis kopieren nach GEODBIMPORTSECRET
+   * Umgebungsvariable ``GEODBIMPORTHOME`` setzen
+   * Umgebungsvariable ``GEODBIMPORTSECRET`` setzen
+   * Schlüssel kopieren (Files ``meta`` und ``1``) nach ``GEODBIMPORTSECRET``
+   * connections-Verzeichnis kopieren nach ``GEODBIMPORTSECRET``
    * Toolbox einbinden (??)
 
 Aktualisierung
 --------------
 
-#. iLader deinstallieren (pip uninstall iLader)
-#. iLader installieren (pip install iLader-0.1-py2-none-any.whl
+#. iLader deinstallieren (``pip uninstall iLader``)
+#. iLader installieren (``pip install iLader-0.1-py2-none-any.whl``)
 #. evtl. Änderungen an Config vornehmen (Connection-Files etc.)

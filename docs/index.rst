@@ -13,6 +13,7 @@ Inhaltsverzeichnis:
 
    einfuehrung
    uebersicht
+   releases
    installation
    iLader
 
