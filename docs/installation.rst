@@ -19,7 +19,6 @@ Requirements
 
 Neuinstallation
 ---------------
-#. Installation cx_Oracle (evtl. Teil von ArcGIS-KWP-Paket)
 #. Installation pycrypto
 
    * exe ausführen
@@ -43,3 +42,7 @@ Neuinstallation
 
 Aktualisierung
 --------------
+
+#. iLader deinstallieren (pip uninstall iLader)
+#. iLader installieren (pip install iLader-0.1-py2-none-any.whl
+#. evtl. Änderungen an Config vornehmen (Connection-Files etc.)
