@@ -34,8 +34,8 @@ Neuinstallation
    
 #. Konfiguration iLader
 
-   * Umgebungsvariable ``GEODBIMPORTHOME`` setzen
-   * Umgebungsvariable ``GEODBIMPORTSECRET`` setzen
+   * Umgebungsvariable ``GEODBIMPORTHOME`` setzen (Freigabeshare)
+   * Umgebungsvariable ``GEODBIMPORTSECRET`` setzen (``P:\iLader``)
    * Schlüssel kopieren (Files ``meta`` und ``1``) nach ``GEODBIMPORTSECRET``
    * connections-Verzeichnis kopieren nach ``GEODBIMPORTSECRET``
    * Toolbox einbinden (??)
