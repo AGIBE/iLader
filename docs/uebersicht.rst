@@ -38,7 +38,9 @@ Usecase / Funktion                    NeuesGeoprodukt  AktZSohneDMA  AktZSmitDMA
 :py:mod:`.IndicesVek3`                      X                 X             X                                                               
 :py:mod:`.KopieVek3Ersatz`                                                              X          X              X                X         
 :py:mod:`.TransferVek2`                                                                                           X                X       
-:py:mod:`.TransferVek1`                                                                                                            X       
+:py:mod:`.TransferVek1`                                                                                                            X
+:py:mod:`.KopieRas1Neu`                     X                                                                                            
+:py:mod:`.KopieRas1Ersatz`                                    X             X           X                                               
 :py:mod:`.AktuellerZeitstand`               X                 X             X                                                               
 :py:mod:`.ZeitstandStatus`                  X                 X             X           X                                                      
 :py:mod:`.ImportStatus`                     X                 X             X           X          X              X                X        

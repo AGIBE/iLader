@@ -74,6 +74,16 @@ Submodules
     :undoc-members:
     :show-inheritance:
 
+.. automodule:: iLader.functions.KopieRas1Ersatz
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+.. automodule:: iLader.functions.KopieRas1Neu
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 .. automodule:: iLader.functions.KopieVek1Ersatz
     :members:
     :undoc-members:

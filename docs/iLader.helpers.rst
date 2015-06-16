@@ -14,6 +14,11 @@ Submodules
     :undoc-members:
     :show-inheritance:
 
+.. automodule:: iLader.helpers.Toolbox
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 
 Module contents
 ---------------
