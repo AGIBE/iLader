@@ -55,8 +55,6 @@ class Generierung(TemplateFunction):
         self.logger.info(u"Username: " + self.username)
         self.logger.info(u"Verbindung herstellen mit der Instanz " + self.db)
         self.connection = ora.connect(self.username, self.password, self.db)
-        self.logger.info(u"Es wird folgendes encoding verwendet:")
-        self.logger.info(self.connection.encoding)
         self.cursor = self.connection.cursor()
         self.cursor.execute(self.sql_name)
         self.result = self.cursor.fetchall()

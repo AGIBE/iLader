@@ -6,11 +6,16 @@ import os
 
 class BegleitdatenReplaceSource(TemplateFunction):
     '''
-    Hängt die Quelle sämtlicher Legendenfiles (.lyr) und MXD-Dateien (.mxd) auf den
-    die Publikationstinstanzen um. Die Files sind in task_config referenziert:
+    Hängt die Quelle sämtlicher Legendenfiles (.lyr) und MXD-Dateien (.mxd) auf
+     die Publikationstinstanzen um. Die Files sind in task_config referenziert:
     
     - ``task_config["legende"]``
     - ``task_config["mxd"]``
+    
+    Umgehaengt werden muessen nur Vektordaten und ganzflaechig aktualisierte Rasterdaten.
+    Begleitdaten von kachelweise aktualisierte Rasterdaten, welche in MosaicDatasets gehalten werden,
+    verweisen bereits auf die korrekte Instanz, da das Lyr-Tool in der Normierung entsprechende Lyr-Files
+    und mxd's bereitstellt.
     '''
 
     def __init__(self, logger, task_config):
@@ -30,6 +35,19 @@ class BegleitdatenReplaceSource(TemplateFunction):
             self.__execute()
             
     def __replace(self, legende, sde_conn_vek, sde_conn_ras, is_zeitstand, is_mxd):
+        '''
+        Funktion, welche die Lyrfiles und mxd auf vek2, vek3 und ras1 umhaengt.
+        arcpy.replaceDataSource aendert das Schema nicht von NORM zu GEODB, wenn umgehaengt werden soll
+        auch wenn die Datenquelle nicht existiert. Deshalb wird zuerst auf VEK2 umgehaengt, wo die Daten-
+        quelle immer existiert. Anschliessend noch auf VEK1, worauf immer umgehaengt werden soll.
+        :param legende: Ziel-Legende aus task_config (Lyr-File oder in mxd)
+        :param sde_conn_vek: SDE-Connection fuer Vektordaten (VEK1 oder VEK3)
+        :param sde_conn_ras: SDE-Connection fuer Rasterdaten (RAS1)
+        :param is_zeitstand: Gehoert das Objekt zu einem Zeitstand? true oder false. Dieser Parameter
+        steuert die Parameter der Funktion arcpy.replaceDataSource.
+        :param is_mxd: Ist das Objekt ein mxd? true oder false. Dieser Parameter war nötig, weil 
+        die Legendenfiles in mxd's bereits gemappt sind.
+        '''
         self.legende = legende
         self.sde_conn_vek = sde_conn_vek
         self.sde_conn_ras = sde_conn_ras
@@ -97,15 +115,14 @@ class BegleitdatenReplaceSource(TemplateFunction):
             mxd_mapping = arcpy.mapping.MapDocument(mxd["ziel_akt"])
             lyrfiles = arcpy.mapping.ListLayers(mxd_mapping)
             for lyr in lyrfiles:
-                lyrname = (lyr.name).encode('utf-8')
+                # lyrname = (lyr.name).encode('utf-8')
                 self.lyr = lyr
-                #lyr.replaceDataSource(self.sde_conn_vek1_geo, "SDE_WORKSPACE", "GEODB.GEOSOND_GEOSOND", False)
                 self.__replace(self.lyr, self.sde_conn_vek2_geo, self.sde_conn_ras1_geo, "false", "true")
             mxd_mapping.save()    
             mxd_mapping = arcpy.mapping.MapDocument(mxd["ziel_zs"])
             lyrfiles = arcpy.mapping.ListLayers(mxd_mapping)
             for lyr in lyrfiles:
-                lyrname = (lyr.name).encode('utf-8')
+                # lyrname = (lyr.name).encode('utf-8')
                 self.lyr = lyr
                 self.__replace(self.lyr, self.sde_conn_vek3_geo, self.sde_conn_ras1_geo, "true", "true")
             mxd_mapping.save()    
