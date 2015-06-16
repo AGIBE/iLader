@@ -44,5 +44,6 @@ Aktualisierung
 --------------
 
 #. iLader deinstallieren (``pip uninstall iLader``)
-#. iLader installieren (``pip install iLader-0.1-py2-none-any.whl``)
+#. iLader installieren (``pip install iLader-0.x-py2-none-any.whl``)
+#. Alternative: ``pip install --upgrade iLader-0.x-py2-none-any.whl``
 #. evtl. Änderungen an Config vornehmen (Connection-Files etc.)
