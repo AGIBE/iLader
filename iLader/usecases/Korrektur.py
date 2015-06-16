@@ -39,6 +39,7 @@ class Korrektur(TemplateUsecase):
                          iLader.functions.KopieVek2Ersatz,
                          #TODO: braucht es hier noch KopieVek1Ersatz?
                          iLader.functions.KopieVek3Ersatz,
+                         iLader.functions.GeoDBProzess,
                          iLader.functions.ZeitstandStatus,
                          iLader.functions.ImportStatus,
                          iLader.functions.ImportArchiv

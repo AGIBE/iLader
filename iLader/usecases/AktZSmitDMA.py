@@ -42,6 +42,7 @@ class AktZSmitDMA(TemplateUsecase):
                          iLader.functions.KopieRas1Ersatz,
                          iLader.functions.BegleitdatenReplaceSource,
                          iLader.functions.AktuellerZeitstand,
+                         iLader.functions.GeoDBProzess,
                          iLader.functions.ZeitstandStatus,
                          iLader.functions.ImportStatus,
                          iLader.functions.ImportArchiv

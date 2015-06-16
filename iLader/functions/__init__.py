@@ -30,3 +30,4 @@ from .ImportArchiv import ImportArchiv
 from .ZeitstandAngelegt import ZeitstandAngelegt
 from .Ausputzer import Ausputzer
 from .BegleitdatenReplaceSource import BegleitdatenReplaceSource
+from .GeoDBProzess import GeoDBProzess

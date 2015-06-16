@@ -54,6 +54,11 @@ Submodules
     :undoc-members:
     :show-inheritance:
 
+.. automodule:: iLader.functions.GeoDBProzess
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 .. automodule:: iLader.functions.ImportArchiv
     :members:
     :undoc-members:

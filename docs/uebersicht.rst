@@ -42,7 +42,8 @@ Usecase / Funktion                    NeuesGeoprodukt  AktZSohneDMA  AktZSmitDMA
 :py:mod:`.KopieRas1Neu`                     X                                                                                            
 :py:mod:`.KopieRas1Ersatz`                                    X             X           X                                               
 :py:mod:`.AktuellerZeitstand`               X                 X             X                                                               
-:py:mod:`.ZeitstandStatus`                  X                 X             X           X                                                      
+:py:mod:`.ZeitstandStatus`                  X                 X             X           X                                               
+:py:mod:`.GeoDBProzess`                     X                 X             X           X                                                                                                       
 :py:mod:`.ImportStatus`                     X                 X             X           X          X              X                X        
 :py:mod:`.FlagStatus`                                                                              X                                       
 :py:mod:`.ImportArchiv`                     X                 X             X           X          X              X                X        
