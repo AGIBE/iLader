@@ -18,6 +18,8 @@ from .KopieVek1Ersatz import KopieVek1Ersatz
 from .KopieVek3Neu import KopieVek3Neu
 from .IndicesVek3 import IndicesVek3
 from .KopieVek3Ersatz import KopieVek3Ersatz
+from .KopieRas1Neu import KopieRas1Neu
+from .KopieRas1Ersatz import KopieRas1Ersatz
 from .TransferVek2 import TransferVek2
 from .TransferVek1 import TransferVek1
 from .AktuellerZeitstand import AktuellerZeitstand
