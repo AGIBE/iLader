@@ -52,7 +52,8 @@ class BegleitdatenReplaceSource(TemplateFunction):
         self.sde_conn_vek = sde_conn_vek
         self.sde_conn_ras = sde_conn_ras
         self.is_zeitstand = is_zeitstand
-        if is_mxd == "false":
+        self.is_mxd = is_mxd
+        if self.is_mxd == "false":
             # Filter nach Lyr-Files (mxd's sind bereits mit arcpy.mapping im richtigen Datentyp)
             lyr = arcpy.mapping.Layer(self.legende)
         else:
@@ -76,25 +77,37 @@ class BegleitdatenReplaceSource(TemplateFunction):
                     self.logger.info('Haenge Quelle nach ' + self.sde_conn_vek + ' um.')
                     # Kniff: zuerst auf vek2 umhängen, wo die Quelle existiert (wenn Parameter=False wird Schema GEODB nicht übernommmen.)
                     lyr.replaceDataSource(self.sde_conn_vek, "SDE_WORKSPACE", gpr_ebe_publ, True)
-                    if is_mxd == "false":
+                    if self.is_mxd == "false":
                         lyr.save()
                     if self.is_zeitstand == "false":
                         # Filter, damit nur die aktuellen Zeitstände nach auch noch auf vek1 umgehängt werden
                         self.logger.info('Haenge Quelle nach ' + self.sde_conn_vek1_geo +' um.')
                         lyr.replaceDataSource(self.sde_conn_vek1_geo, "SDE_WORKSPACE", gpr_ebe_publ, False)
-                        if is_mxd == "false":
+                        if self.is_mxd == "false":
                             lyr.save()
+                    if self.is_mxd == "false" and self.is_zeitstand == "true":
+                        self.logger.info("Fuege der Bezeichnung den Zeitstand an.")
+                        lyr_bezeichnung = lyr.name
+                        lyr_bezeichnung_zs = lyr_bezeichnung + ", " + self.task_config['zeitstand']
+                        lyr.name = lyr_bezeichnung_zs
+                        lyr.save()
                 except Exception as e:
                     self.logger.warn('FEHLER: Die Datenquelle konnte nicht umgehaengt werden!')
                     self.logger.warn(e)
-                if is_mxd == "false":
+                if self.is_mxd == "false":
                     lyr.save()    
             elif datentyp == "RasterDataset":
                 try:
                     self.logger.info("Haenge Quelle nach " + self.sde_conn_ras + " um.")
                     lyr.replaceDataSource(self.sde_conn_ras, "SDE_WORKSPACE", gpr_ebe_publ, True)
-                    if is_mxd == "false":
+                    if self.is_mxd == "false":
                         lyr.save()
+                        if self.is_zeitstand == "true":
+                            self.logger.info("Fuege der Bezeichnung den Zeitstand an.")
+                            lyr_bezeichnung = lyr.name
+                            lyr_bezeichnung_zs = lyr_bezeichnung + ", " + self.task_config['zeitstand']
+                            lyr.name = lyr_bezeichnung_zs
+                            lyr.save()
                 except Exception as e:
                     self.logger.warn("FEHLER: Die Datenquelle konnte nicht umgehaengt werden!")
                     self.logger.warn(e)
@@ -120,6 +133,7 @@ class BegleitdatenReplaceSource(TemplateFunction):
             self.logger.info("Legende " + legende["ziel_zs"] + " wird bearbeitet.")
             self.__replace(legende["ziel_zs"], self.sde_conn_vek3_geo, self.sde_conn_ras1_geo, "true", "false")   
         self.logger.info("alle Legendenfiles sind umgehängt.")
+        
         # MXDs
         self.logger.info("MXD-Files bearbeiten")
         for mxd in self.task_config["mxd"]:
