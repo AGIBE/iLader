@@ -46,6 +46,7 @@ class Generierung(TemplateFunction):
             #TODO: in tb_usecase attribut einfügen, welcher Geoproduktstatus für jeden UseCase gültig ist  
 
     def __db_connect(self, instance, usergroup, sql_name):
+        #TODO: Parameter einführen (true, false) für fetchall bzw. fetchone; anschliessend ausführen
         self.sql_name = sql_name
         self.instance = instance
         self.usergroup = usergroup
@@ -70,6 +71,12 @@ class Generierung(TemplateFunction):
 
     
     def __get_gpr_info(self):
+        '''
+        Diese Funktion sucht die Informationen auf Stufe Geoprodukt aus dem DD der GeoDB
+        und aus GeoDBprozess zusammen
+        DD GeoDB: Geoproduktcode, Jahr, Version
+        GeoDBprozess: Rolle, sofern eine definiert ist, ansonsten Standardrolle
+        '''
         self.sql_dd_gpr = "SELECT a.gpr_bezeichnung, b.gzs_jahr, b.gzs_version, a.gpr_viewer_freigabe from geodb_dd.tb_geoprodukt_zeitstand b join geodb_dd.tb_geoprodukt a on b.gpr_objectid = a.gpr_objectid where b.gzs_objectid = '" + self.gzs_objectid + "'"
         self.__db_connect('team', 'geodb_dd', self.sql_dd_gpr)
         for row in self.result:
@@ -77,8 +84,16 @@ class Generierung(TemplateFunction):
             self.jahr = str(row[1]).decode('cp1252')
             self.version = str(row[2]).decode('cp1252')
             self.version = self.version.zfill(2)
-            self.zeitstand = self.jahr + "_" + self.version
-            self.rolle_freigabe = row[3].decode('cp1252')
+            self.zeitstand = self.jahr + "_" + self.version        
+        self.sql_gpr_role = "SELECT a.db_rollen from gdbp.geoprodukte a where a.code = '" + self.gpr + "'"
+        self.__db_connect('work', 'gdbp', self.sql_gpr_role)
+        for row in self.result:
+            if row[0]:
+                self.gpr_role_gdbp = row[0].decode('cp1252')
+                self.rolle_freigabe = self.gpr_role_gdbp
+            else:
+                self.rolle_freigabe = self.general_config['standard_rolle']
+       
     
     def __get_ebe_dd(self):
         self.sql_dd_ebe = "SELECT a.gpr_bezeichnung, c.ebe_bezeichnung, b.gzs_jahr, b.gzs_version, g.dat_bezeichnung_de from geodb_dd.tb_ebene_zeitstand d join geodb_dd.tb_ebene c on d.ebe_objectid = c.ebe_objectid join geodb_dd.tb_geoprodukt_zeitstand b on d.gzs_objectid = b.gzs_objectid join geodb_dd.tb_geoprodukt a on b.gpr_objectid = a.gpr_objectid join geodb_dd.tb_datentyp g on c.dat_objectid = g.dat_objectid where b.gzs_objectid = '" + self.gzs_objectid + "'"   
