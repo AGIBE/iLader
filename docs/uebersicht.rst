@@ -17,7 +17,7 @@ Die Zuordnung von Funktionen zu Usecases ist in folgender Tabelle dokumentiert:
 ====================================  ===============  ============  ===========  =========  ===========  ==============  ================
 Usecase / Funktion                    NeuesGeoprodukt  AktZSohneDMA  AktZSmitDMA  Korrektur  AktTagesakt  AktohneZSOEREB  AktTagesaktOEREB
 ====================================  ===============  ============  ===========  =========  ===========  ==============  ================
-:py:mod:`.Generierung`                      X                 X             X           X          X              X                X
+:doc:`generierung`                          X                 X             X           X          X              X                X
 :py:mod:`.ZeitstandAngelegt`                                                            X                                       
 :py:mod:`.CheckscriptNormierung`            X                 X             X           X                                                     
 :py:mod:`.DeltaChecker`                                       X             X           X          X              X                X            
