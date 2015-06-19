@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import arcpy
 import cx_Oracle
 from iLader.helpers import Crypter
-from iLader.usecases import NeuesGeoprodukt
+from iLader.usecases import Usecase
 import os
 import configobj
 
@@ -158,5 +158,5 @@ class Import(object):
         task_id = parameters[0].valueAsText.split(":")[0]
         load_task_config = parameters[1].value
         arcpy.AddMessage("Task-ID " + task_id + " wird ausgeführt.")
-        uc = NeuesGeoprodukt(task_id, load_task_config)
+        uc = Usecase(task_id, load_task_config)
         
