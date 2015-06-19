@@ -1,6 +1,6 @@
-Generierungsfunktion
-====================
-Ausführliche Beschreibung der Generierungsfunktion insbesondere:
+Generierung
+===========
+Ausführliche Beschreibung der Generierungsfunktion ( :py:mod:`.Generierung` ) insbesondere:
 
 - verwendete Datenquellen
 - Abhängigkeiten

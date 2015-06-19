@@ -44,6 +44,11 @@ Submodules
     :undoc-members:
     :show-inheritance:
 
+.. automodule:: iLader.usecases.Usecase
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 
 Module contents
 ---------------
