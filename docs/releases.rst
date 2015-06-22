@@ -9,7 +9,8 @@ Benennung
 
 Release builden
 ---------------
-* in setup.py die nötigen Metadaten abfüllen (v.a. Version, Requirements)
+* in setup.py die nötigen Metadaten abfüllen (v.a. Requirements)
+* in iLader/__init__.py die Version erhöhen
 * wheel erzeugen: ``python setup.py bdist_wheel``
 * wheel installieren (s. :doc:`installation`)
 
@@ -21,7 +22,8 @@ Doku aus dem Quellcode heraus generieren:
 * ausführen zuoberst im Repository, Doku landet im Verzeichnis ``docs``
  
 HTML-Version generieren
- 
+
+* ``python setup.py develop`` 
 * ``make html``
 * im ``docs``-Verzeichnis ausführen
  
