@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 # übernommen aus: https://pythonhosted.org/setuptools/setuptools.html#id24
 import ez_setup
+from iLader import __version__
 ez_setup.use_setuptools()
 
 from setuptools import setup, find_packages
 setup(
       name = "iLader",
-      version = "0.2.1",
       packages = find_packages(),
+      version = __version__,
       # .pyt-Files werden von Python nicht erkannt. Deshalb müssen sie explizit als Package-Inhalt aufgelistet werden.
       package_data={'': ["*.pyt"]},
       # Abhängigkeiten
