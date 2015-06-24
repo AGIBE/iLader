@@ -28,7 +28,7 @@ class KopieVek2Neu(TemplateFunction):
     
     Auf das explizite Berechnen des räumlichen Indexes wird verzichtet.
     '''
-
+    #TODO: Precision etc.
     def __init__(self, logger, task_config):
         '''
         Constructor

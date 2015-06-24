@@ -23,6 +23,7 @@ class KopieVek3Ersatz(TemplateFunction):
     Auf das explizite Berechnen des räumlichen Indexes wird verzichtet. Da die Ebenen
     gelockt sein können.
     '''
+    #TODO: Precision etc.
     def __init__(self, logger, task_config):
         '''
         Constructor

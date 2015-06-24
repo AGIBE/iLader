@@ -21,6 +21,7 @@ class KopieVek1Ersatz(TemplateFunction):
     
     Der räumlichen Indexes kann ebenfalls aufgrund der Locks nicht neu berechnet werden.
     '''
+    #TODO: Precision etc.
     def __init__(self, logger, task_config):
         '''
         Constructor
