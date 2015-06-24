@@ -93,6 +93,9 @@ class Generierung(TemplateFunction):
                 self.rolle_freigabe = self.gpr_role_gdbp
             else:
                 self.rolle_freigabe = self.general_config['standard_rolle']
+        self.default_tolerance = self.general_config['default_tolerance']  
+        self.default_resolution = self.general_config['default_resolution']
+        self.spatial_reference = self.general_config['spatial_reference']
        
     
     def __get_ebe_dd(self):
@@ -308,9 +311,9 @@ class Generierung(TemplateFunction):
         self.qsDict['deltachecker_passed'] = u'undefined'
         self.qsDict['qa_framework_passed'] = u'undefined'
         self.qsDict['qs_gesamt_passed'] = u'undefined'
-
-          
-            
+        
+  
+        
     def __define_connections(self):
         self.connDict = {}
         self.config_secret = os.environ['GEODBIMPORTSECRET']
@@ -420,6 +423,9 @@ class Generierung(TemplateFunction):
         self.task_config['zusatzdaten'] = self.zusatzList
         self.task_config['ziel'] = self.zielDict
         self.task_config['qs'] = self.qsDict
+        self.task_config['default_tolerance'] = self.default_tolerance
+        self.task_config['default_resolution'] = self.default_resolution
+        self.task_config['spatial_reference'] = self.spatial_reference
         self.finish()  
        
     def __load_task_config(self):
