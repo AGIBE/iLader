@@ -150,14 +150,12 @@ class Generierung(TemplateFunction):
                 ebeRasDict['ziel_ras1']= ziel_ras1_akt
                 ebeRasDict['ziel_ras1_zs']= ziel_ras1_zs
                 self.ebeRasList.append(ebeRasDict)
-            elif datentyp == 'Mosaicdataset': # TODO neuer Datentyp MosaicDataset einfügen (hier Rasterkatalog nur zu Testzwecken
-                #TODOself.sql_raster_properties = "SELECT * from gdbp.raster_xy a where a.gpr = SWISSI"
-                self.__db_connect('work', 'gdbp', self.sql_raster_properties)
+            elif datentyp == 'Rasterkatalog': # TODO neuer Datentyp MosaicDataset einfügen (hier Rasterkatalog nur zu Testzwecken
                 ebeRasDict['datentyp'] = datentyp
                 ebeRasDict['gpr_ebe'] = gpr_ebe
-                #TODO: Quelle von MosaicDatasets festlegen (in erweiterten Tabellen gdbp.info_rastermosaic ebeRasDict['quelle'] = u'noch offen' / 
-                # MD: ebeRasDict['quelle'] = os.path.join(self.general_config['quelle_begleitdaten_work'], self.general_config['raster']['quelle_rasterkacheln'], self.general_config['raster']['raster_md'])
-                # RD: ebeRasDict['quelle'] = os.path.join(self.general_config['quelle_begleitdaten_work'], self.general_config['raster']['quelle_rasterkacheln'], self.general_config['raster']['raster_rd'])
+                rasterkacheln_pfad = os.path.join(self.general_config['quelle_begleitdaten'], gpr, self.general_config['quelle_begleitdaten_work'], self.general_config['raster']['quelle_rasterkacheln'], self.general_config['raster']['historisch'])
+                rasterkacheln_csv = gpr_ebe + "_" + zeitstand + ".csv"
+                ebeRasDict['quelle'] = os.path.join(rasterkacheln_pfad, rasterkacheln_csv)
                 ebeRasDict['ziel_ras2'] = ziel_ras2
                 self.ebeRasList.append(ebeRasDict)          
                          
