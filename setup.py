@@ -18,4 +18,6 @@ setup(
       author_email = "peter.schaer@bve.be.ch, manuela.uhlmann@bve.be.ch",
       description = "Import-Modul Geodatenbank des Kantons Bern",
       url = "http://www.be.ch/geoportal"
+      # TODO: entry_points einfügen (console_script und gui_script)
+      # https://pythonhosted.org/setuptools/setuptools.html#automatic-script-creation
 )
