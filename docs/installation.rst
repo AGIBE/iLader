@@ -36,11 +36,16 @@ Neuinstallation
    
 #. Konfiguration iLader
 
-   * Umgebungsvariable ``GEODBIMPORTHOME`` setzen (Freigabeshare)
+   * Umgebungsvariable ``GEODBIMPORTHOME`` setzen (``Freigabe\Anwendungen\iLader``)
    * Umgebungsvariable ``GEODBIMPORTSECRET`` setzen (``P:\iLader``)
    * Schlüssel kopieren (Files ``meta`` und ``1``) nach ``GEODBIMPORTSECRET``
-   * connections-Verzeichnis kopieren nach ``GEODBIMPORTSECRET``
+   * connections-Verzeichnisse von ``K:\Anwend\GeoDBAdmin\iLader\config_master`` kopieren nach ``GEODBIMPORTSECRET`` und umbenennen auf ``connections``
    * Toolbox einbinden (t.b.d.)
+   
+#. Konfiguration EWS, BKT, PROD
+
+   * In ``GEODBIMPORTSECRET`` den entsprechenden Unterordner umbenennen auf ``connections``
+   * Umgebungsvariable ``GEODBIMPORTHOME`` auf entsprechenden Freigabeshare anpassen
 
 Aktualisierung
 --------------

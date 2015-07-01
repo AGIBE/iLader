@@ -9,27 +9,29 @@ Benennung
 
 Release builden
 ---------------
-* in setup.py die nötigen Metadaten abfüllen (v.a. Requirements)
+* in setup.py die nötigen Metadaten abfüllen (v.a. wenn sich an den Requirements etwas geändert hat)
 * in iLader/__init__.py die Version erhöhen
-* wheel erzeugen: ``python setup.py bdist_wheel``
+* Commit und Push
+* Create Tag und Push Tag
+* wheel erzeugen: ``python setup.py bdist_wheel``  (im root-Verzeichnis ausführen)
+* neues wheel liegt im Unterverzeichnis ``dist``
 * wheel installieren (s. :doc:`installation`)
 
 Dokumentation builden
 ---------------------
 Doku aus dem Quellcode heraus generieren:
  
-* ``sphinx-apidoc -E -f -o docs iLader``
-* ausführen zuoberst im Repository, Doku landet im Verzeichnis ``docs``
+* ``sphinx-apidoc -E -f -o docs iLader``  (im root-Verzeichnis ausführen)
+* Doku landet im Verzeichnis ``docs``
  
 HTML-Version generieren
 
-* ``python setup.py develop`` 
-* ``make html``
-* im ``docs``-Verzeichnis ausführen
+* ``python setup.py develop`` (im root-Verzeichnis ausführen) 
+* ``make html`` (im Unterverzeichnis ``docs`` ausführen)
  
 Gesamte Doku mit setup.py erstellen
  
-* ``python setup.py build_sphinx``
+* ``python setup.py build_sphinx`` (im root-Verzeichnis ausführen)
  
 Infos:
  

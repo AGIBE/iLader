@@ -114,6 +114,11 @@ Submodules
     :undoc-members:
     :show-inheritance:
 
+.. automodule:: iLader.functions.MosaicDatasetRas2
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 .. automodule:: iLader.functions.QAFramework
     :members:
     :undoc-members:
