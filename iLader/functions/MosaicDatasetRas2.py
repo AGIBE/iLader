@@ -44,7 +44,7 @@ class MosaicDatasetRas2(TemplateFunction):
         '''
         rolle = self.task_config['rolle']
         spatial_reference = self.task_config['spatial_reference']
-        sde_conn_md = self.task_config['sde_conn_ras2']
+        sde_conn_md = self.task_config['connections']['sde_conn_ras2']
         gpr = self.task_config['gpr']
         zeitstand_jahr = self.task_config['zeitstand_jahr']
         zeitstand_version = self.task_config['zeitstand_version']
