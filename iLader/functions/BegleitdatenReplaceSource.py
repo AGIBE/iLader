@@ -156,32 +156,37 @@ class BegleitdatenReplaceSource(TemplateFunction):
             mxd_mapping.save()
         self.logger.info("alle MXD-Files sind umgehängt.")
         
-        # Bis Umstellung auf ArcGIS 10.2.2
+        # Bis Umstellung auf ArcGIS 10.2.2; dann wieder entfernen
         for legende in self.task_config["legende"]:
+            lyr = arcpy.mapping.Layer(legende["ziel_akt"])
             temp_legende_name = os.path.basename(legende["ziel_akt"])
             temp_legende = os.path.join(self.task_config["ziel"]["ziel_begleitdaten_gpr"], temp_legende_name)
             self.logger.info(temp_legende)
-            legende["ziel_akt"].saveACopy(temp_legende, "v10.0")
+            lyr.saveACopy(temp_legende, "10.0")
             shutil.copyfile(temp_legende, legende["ziel_akt"])
+            os.remove(temp_legende)
             
+            lyr = arcpy.mapping.Layer(legende["ziel_zs"])
             temp_legende_name = os.path.basename(legende["ziel_zs"])
             temp_legende = os.path.join(self.task_config["ziel"]["ziel_begleitdaten_gpr"], temp_legende_name)
             self.logger.info(temp_legende)
-            legende["ziel_zs"].saveACopy(temp_legende, "v10.0")
+            legende["ziel_zs"].saveACopy(temp_legende, "10.0")
             shutil.copyfile(temp_legende, legende["ziel_zs"])
+            os.remove(temp_legende)
         
 
         for mxd in self.task_config["mxd"]:
-            temp_mxd_name = os.path.basename(mxd["ziel_akt"])
-            temp_mxd = os.path.join(self.task_config["ziel"]["ziel_begleitdaten_gpr"], temp_mxd_name)
+            mxd_file = arcpy.mapping.MapDocument(mxd["ziel_akt"])
+            temp_mxd_akt = os.path.basename(mxd["ziel_akt"])
+            temp_mxd = os.path.join(self.task_config["ziel"]["ziel_begleitdaten_gpr"], temp_mxd_akt)
             self.logger.info(temp_mxd)
-            mxd["ziel_akt"].saveACopy(temp_mxd, "v10.0")
-            shutil.copyfile(temp_mxd, mxd["ziel_akt"])
-        for mxd in self.task_config["mxd"]:
-            temp_mxd_name = os.path.basename(mxd["ziel_zs"])
-            temp_mxd = os.path.join(self.task_config["ziel"]["ziel_begleitdaten_gpr"], temp_mxd_name)
+            mxd_file.saveACopy(temp_mxd, "10.0")
+            
+        
+            mxd_file = arcpy.mapping.MapDocument(mxd["ziel_zs"])
+            temp_mxd_zs = os.path.basename(mxd["ziel_zs"])
+            temp_mxd = os.path.join(self.task_config["ziel"]["ziel_begleitdaten_gpr"], temp_mxd_zs)
             self.logger.info(temp_mxd)
-            mxd["ziel_zs"].saveACopy(temp_mxd, "v10.0")
-            shutil.copyfile(temp_mxd, mxd["ziel_zs"])
+            mxd_file.saveACopy(temp_mxd, "10.0")
        
         self.finish()
