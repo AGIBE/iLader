@@ -78,13 +78,14 @@ class BegleitdatenReplaceSource(TemplateFunction):
                     # Kniff: zuerst auf vek2 umhängen, wo die Quelle existiert (wenn Parameter=False wird Schema GEODB nicht übernommmen.)
                     lyr.replaceDataSource(self.sde_conn_vek, "SDE_WORKSPACE", gpr_ebe_publ, True)
                     if self.is_mxd == "false":
-                        lyr.save()
+                        if self.is_zeitstand == "true":
+                            lyr.saveACopy(legende["ziel_zs"], "10.0")
                     if self.is_zeitstand == "false":
                         # Filter, damit nur die aktuellen Zeitstände nach auch noch auf vek1 umgehängt werden
                         self.logger.info('Haenge Quelle nach ' + self.sde_conn_vek1_geo +' um.')
                         lyr.replaceDataSource(self.sde_conn_vek1_geo, "SDE_WORKSPACE", gpr_ebe_publ, False)
                         if self.is_mxd == "false":
-                            lyr.save()
+                            lyr.saveACopy(legende["ziel_akt"], "10.0")
                     if self.is_mxd == "false" and self.is_zeitstand == "true":
                         self.logger.info("Fuege der Bezeichnung den Zeitstand an.")
                         lyr_bezeichnung = lyr.name
@@ -101,13 +102,14 @@ class BegleitdatenReplaceSource(TemplateFunction):
                     self.logger.info("Haenge Quelle nach " + self.sde_conn_ras + " um.")
                     lyr.replaceDataSource(self.sde_conn_ras, "SDE_WORKSPACE", gpr_ebe_publ, True)
                     if self.is_mxd == "false":
-                        lyr.save()
+                        if self.is_zeitstand == "false":
+                            lyr.saveACopy(legende["ziel_akt"], "v10.0")
                         if self.is_zeitstand == "true":
                             self.logger.info("Fuege der Bezeichnung den Zeitstand an.")
                             lyr_bezeichnung = lyr.name
                             lyr_bezeichnung_zs = lyr_bezeichnung + ", " + self.task_config['zeitstand']
                             lyr.name = lyr_bezeichnung_zs
-                            lyr.save()
+                            lyr.saveACopy(legende["ziel_zs"], "v10.0")
                 except Exception as e:
                     self.logger.warn("FEHLER: Die Datenquelle konnte nicht umgehaengt werden!")
                     self.logger.warn(e)
@@ -128,31 +130,31 @@ class BegleitdatenReplaceSource(TemplateFunction):
         # Legenden
         self.logger.info("Legendenfiles bearbeiten")
         for legende in self.task_config["legende"]:
-            self.logger.info("Legende " + legende["ziel_akt"] + " wird bearbeitet.")
-            self.__replace(legende["ziel_akt"], self.sde_conn_vek2_geo, self.sde_conn_ras1_geo, "false", "false")
-            self.logger.info("Legende " + legende["ziel_zs"] + " wird bearbeitet.")
-            self.__replace(legende["ziel_zs"], self.sde_conn_vek3_geo, self.sde_conn_ras1_geo, "true", "false")   
+            self.logger.info("Legende " + legende["quelle"] + " wird bearbeitet.")
+            self.__replace(legende["quelle"], self.sde_conn_vek2_geo, self.sde_conn_ras1_geo, "false", "false")
+            self.logger.info("Legende " + legende["quelle"] + " wird bearbeitet.")
+            self.__replace(legende["quelle"], self.sde_conn_vek3_geo, self.sde_conn_ras1_geo, "true", "false")   
         self.logger.info("alle Legendenfiles sind umgehängt.")
         
         # MXDs
         self.logger.info("MXD-Files bearbeiten")
         for mxd in self.task_config["mxd"]:
-            self.logger.info(mxd["ziel_akt"] + " wird bearbeitet.")
-            mxd_mapping = arcpy.mapping.MapDocument(mxd["ziel_akt"])
+            self.logger.info(mxd["quelle"] + " wird bearbeitet.")
+            mxd_mapping = arcpy.mapping.MapDocument(mxd["quelle"])
             lyrfiles = arcpy.mapping.ListLayers(mxd_mapping)
             for lyr in lyrfiles:
                 # lyrname = (lyr.name).encode('utf-8')
                 self.lyr = lyr
                 self.__replace(self.lyr, self.sde_conn_vek2_geo, self.sde_conn_ras1_geo, "false", "true")
-            mxd_mapping.save()
-            self.logger.info(mxd["ziel_zs"] + " wird bearbeitet.")    
-            mxd_mapping = arcpy.mapping.MapDocument(mxd["ziel_zs"])
+            mxd_mapping.saveACopy(mxd["ziel_akt"], "10.0")
+            self.logger.info(mxd["quelle"] + " wird bearbeitet.")    
+            mxd_mapping = arcpy.mapping.MapDocument(mxd["quelle"])
             lyrfiles = arcpy.mapping.ListLayers(mxd_mapping)
             for lyr in lyrfiles:
                 # lyrname = (lyr.name).encode('utf-8')
                 self.lyr = lyr
                 self.__replace(self.lyr, self.sde_conn_vek3_geo, self.sde_conn_ras1_geo, "true", "true")
-            mxd_mapping.save()
+            mxd_mapping.save(mxd["ziel_zs"], "10.0")
         self.logger.info("alle MXD-Files sind umgehängt.")    
        
         self.finish()
