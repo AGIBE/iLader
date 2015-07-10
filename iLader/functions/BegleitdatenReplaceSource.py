@@ -3,6 +3,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 from .TemplateFunction import TemplateFunction
 import arcpy
 import os
+import shutil
 
 class BegleitdatenReplaceSource(TemplateFunction):
     '''
@@ -153,6 +154,34 @@ class BegleitdatenReplaceSource(TemplateFunction):
                 self.lyr = lyr
                 self.__replace(self.lyr, self.sde_conn_vek3_geo, self.sde_conn_ras1_geo, "true", "true")
             mxd_mapping.save()
-        self.logger.info("alle MXD-Files sind umgehängt.")    
+        self.logger.info("alle MXD-Files sind umgehängt.")
+        
+        # Bis Umstellung auf ArcGIS 10.2.2
+        for legende in self.task_config["legende"]:
+            temp_legende_name = os.path.basename(legende["ziel_akt"])
+            temp_legende = os.path.join(self.task_config["ziel"]["ziel_begleitdaten_gpr"], temp_legende_name)
+            self.logger.info(temp_legende)
+            legende["ziel_akt"].saveACopy(temp_legende, "v10.0")
+            shutil.copyfile(temp_legende, legende["ziel_akt"])
+            
+            temp_legende_name = os.path.basename(legende["ziel_zs"])
+            temp_legende = os.path.join(self.task_config["ziel"]["ziel_begleitdaten_gpr"], temp_legende_name)
+            self.logger.info(temp_legende)
+            legende["ziel_zs"].saveACopy(temp_legende, "v10.0")
+            shutil.copyfile(temp_legende, legende["ziel_zs"])
+        
+
+        for mxd in self.task_config["mxd"]:
+            temp_mxd_name = os.path.basename(mxd["ziel_akt"])
+            temp_mxd = os.path.join(self.task_config["ziel"]["ziel_begleitdaten_gpr"], temp_mxd_name)
+            self.logger.info(temp_mxd)
+            mxd["ziel_akt"].saveACopy(temp_mxd, "v10.0")
+            shutil.copyfile(temp_mxd, mxd["ziel_akt"])
+        for mxd in self.task_config["mxd"]:
+            temp_mxd_name = os.path.basename(mxd["ziel_zs"])
+            temp_mxd = os.path.join(self.task_config["ziel"]["ziel_begleitdaten_gpr"], temp_mxd_name)
+            self.logger.info(temp_mxd)
+            mxd["ziel_zs"].saveACopy(temp_mxd, "v10.0")
+            shutil.copyfile(temp_mxd, mxd["ziel_zs"])
        
         self.finish()
