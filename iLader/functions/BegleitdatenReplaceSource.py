@@ -170,7 +170,7 @@ class BegleitdatenReplaceSource(TemplateFunction):
             temp_legende_name = os.path.basename(legende["ziel_zs"])
             temp_legende = os.path.join(self.task_config["ziel"]["ziel_begleitdaten_gpr"], temp_legende_name)
             self.logger.info(temp_legende)
-            legende["ziel_zs"].saveACopy(temp_legende, "10.0")
+            lyr.saveACopy(temp_legende, "10.0")
             shutil.copyfile(temp_legende, legende["ziel_zs"])
             os.remove(temp_legende)
         
