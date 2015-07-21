@@ -21,19 +21,21 @@ Neuinstallation
 ---------------
 #. Installation pycrypto
 
-   * pycrypto kann nicht mit pip installiert werden, da das Paket dabei kompiliert wird. Die notwendigen Compiler-Tools sind aber auf den PCs nicht installiert. Deshalb muss eine kompilierte Version via Setup installiert werden. 
+   * pycrypto kann nicht mit pip installiert werden, da das Paket dabei kompiliert wird. Die notwendigen Compiler-Tools sind aber auf den PCs nicht installiert. Deshalb muss eine kompilierte Version via Setup installiert werden.
    * exe ausführen. Vorkompilierte Binaires gibt es hier: http://www.voidspace.org.uk/python/modules.shtml#pycrypto
    * richtige Python-Installation auswählen
 
 #. Installation pip
-  
+
    * ``python get-pip.py``
-   
+   * Umgebungsvariable PATH ergänzen um Pfad zum Python-Binary.
+   * Umgebungsvariable PATH ergänzen um Pfad zum iLader.exe und pip.exe.
+
 #. Installation iLader
 
    * ``pip install iLader-0.2.1-py2-none-any.whl``
    * damit werden die übrigen Requirements automatisch mitinstalliert.
-   
+
 #. Konfiguration iLader
 
    * Umgebungsvariable ``GEODBIMPORTHOME`` setzen (``Freigabe\Anwendungen\iLader``)
@@ -41,7 +43,7 @@ Neuinstallation
    * Schlüssel kopieren (Files ``meta`` und ``1``) nach ``GEODBIMPORTSECRET``
    * connections-Verzeichnisse von ``K:\Anwend\GeoDBAdmin\iLader\config_master`` kopieren nach ``GEODBIMPORTSECRET`` und umbenennen auf ``connections``
    * Toolbox einbinden (t.b.d.)
-   
+
 #. Konfiguration EWS, BKT, PROD
 
    * In ``GEODBIMPORTSECRET`` den entsprechenden Unterordner umbenennen auf ``connections``
