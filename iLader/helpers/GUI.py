@@ -2,8 +2,10 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 from iLader import __version__
 import iLader.helpers.Helpers
+from iLader.usecases.Usecase import Usecase
 from Tkinter import *
 import sys
+from iLader.helpers.StdoutToWidget import StdoutToWidget
 
 class iLaderGUI(Frame):
     '''
@@ -14,8 +16,10 @@ class iLaderGUI(Frame):
         # self.title("iLader v" + __version__)
         self.pack()
 
-        self.chkbox_var = StringVar(self)
+        self.chkbox_var = IntVar(self)
+        self.chkbox_var.set(0)
         self.optmenu_var = StringVar(self)
+        
         
         # Liste mit den offenen Task aus DD auslesen
         self.tasks = iLader.helpers.Helpers.getImportTasks()
@@ -25,20 +29,29 @@ class iLaderGUI(Frame):
         
     def make_widgets(self):
         # Überschrift
-        lbl = Label(self, text="Bitte den gewünschten Import auswählen:")
-        lbl.pack(side=TOP)
+        self.lbl = Label(self, text="Bitte den gewünschten Import auswählen:")
+        self.lbl.pack(side=TOP)
         
         # Auswahlliste mit den Tasks
-        optmenu = OptionMenu(self, self.optmenu_var, *self.tasks)
-        optmenu.pack(side=LEFT)
+        self.optmenu = OptionMenu(self, self.optmenu_var, *self.tasks)
+        self.optmenu.pack(side=LEFT)
         
         # Checkbox (Task-Config reloaden)
-        chkbox = Checkbutton(self, text="Reload", variable=self.chkbox_var)
-        chkbox.pack()
+        self.chkbox = Checkbutton(self, text="Reload", variable=self.chkbox_var)
+        self.chkbox.pack()
         
         # OK-Knopf
-        btn_ok = Button(self, text="Import starten", command=self.run_import)
-        btn_ok.pack(side=BOTTOM)
+        self.btn_ok = Button(self, text="Import starten", command=self.run_import)
+        self.btn_ok.pack(side=BOTTOM)
+        
+        # Log-Fenster
+        self.log_text = Text(self,width=120)
+        self.log_text.pack()
+#         self.log_text.insert(END, "Hallo Hallo Hallo!!!")
+#         self.logger = StdoutToWidget(self.log_text)
+#         self.logger.start()
+#         sys.stdout = StdoutRedirector(self.log_text)
+        
         
     def run_import(self):
         print("sdfsfsdf")
@@ -47,18 +60,24 @@ class iLaderGUI(Frame):
         if selected_task:
             print("Usecase " + selected_task + " ausgewählt.")
             if reload_json == 1:
-                "Die Task-Config wird aus einem bestehenden JSON-File eingelesen."
+                reload_json = True
             else:
-                "Die Task-Config wird neu generiert."
+                reload_json = False
             print("Usecase wird nun ausgeführt...")
-            sys.exit()
+            
+            #Abmachung: alle Zeichen vor dem ersten Doppelpunkt entsprechen der Task-ID
+            task_id = selected_task.split(":")[0]
+            uc = Usecase(task_id, reload_json)
+            #sys.exit()
         else:
             print("kein Task ausgewählt. Bitte nochmals auswählen.")
             
 def main():
     root = Tk()
     root.title("iLader v" + __version__)
-    iLaderGUI(root).pack()
+    i = iLaderGUI(root)
+    l = StdoutToWidget(i.log_text)
+    l.start()
     root.mainloop()
 
 if __name__ == "__main__": 
