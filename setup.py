@@ -21,7 +21,10 @@ setup(
       entry_points={
            'console_scripts': [
                 'iLader = iLader.helpers.CommandLine:main'
-            ]          
+            ],
+            'gui_scripts': [
+                'iLaderGUI = iLader.helpers.GUI:main'
+            ]         
       }
       # TODO: entry_points einfügen (console_script und gui_script)
       # https://pythonhosted.org/setuptools/setuptools.html#automatic-script-creation
