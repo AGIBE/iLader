@@ -7,6 +7,7 @@ import datetime
 import cx_Oracle
 from iLader.functions import *
 import iLader.helpers
+import sys
 
 class Usecase():
     '''
@@ -85,6 +86,19 @@ class Usecase():
         connection.close()
         return functions
     
+    def __create_loghandler_stream(self):
+        '''
+        Konfiguriert einen Stream-Loghandler
+        '''
+        
+        file_formatter = logging.Formatter('%(asctime)s.%(msecs)d|%(levelname)s|%(message)s', '%Y-%m-%d %H:%M:%S')
+        
+        h = logging.StreamHandler(stream=sys.stdout)
+        h.setLevel(logging.DEBUG)
+        h.setFormatter(file_formatter)
+        
+        return h
+    
     def __create_loghandler_file(self, filename):
         '''
         Konfiguriert einen File-Loghandler
@@ -126,8 +140,9 @@ class Usecase():
         # inspiriert durch: http://ideas.arcgis.com/ideaView?id=087E00000004H3yIAE
         logger.handlers = []
         
-        logger.addHandler(self.__create_loghandler_arcgis())
+        # logger.addHandler(self.__create_loghandler_arcgis())
         logger.addHandler(self.__create_loghandler_file(self.task_config['log_file']))
+        logger.addHandler(self.__create_loghandler_stream())
         
         return logger
     
