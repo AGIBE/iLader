@@ -4,7 +4,6 @@ from iLader import __version__
 import iLader.helpers.Helpers
 from iLader.usecases.Usecase import Usecase
 from Tkinter import *
-import sys
 from iLader.helpers.StdoutToWidget import StdoutToWidget
 import tkMessageBox
 import ScrolledText
