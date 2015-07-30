@@ -159,4 +159,5 @@ class Import(object):
         load_task_config = parameters[1].value
         arcpy.AddMessage("Task-ID " + task_id + " wird ausgeführt.")
         uc = Usecase(task_id, load_task_config)
+        uc.run()
         

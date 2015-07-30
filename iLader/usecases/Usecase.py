@@ -39,9 +39,9 @@ class Usecase():
         self.logger.info(u"Task-Id: " + unicode(self.task_id))
         self.logger.info(u"Task-Directory: " + self.task_config['task_directory'])
         self.logger.info(u"Log-File: " + self.task_config['log_file'])
-
+            
+    def run(self):
         self.logger.info(u"Start der Funktionsausführung")
-
         try:            
             f = Generierung(self.logger, self.task_config, self.general_config)
             self.logger.info(u"Funktion " + f.name + u" wurde ausgeführt")
@@ -140,7 +140,7 @@ class Usecase():
         # inspiriert durch: http://ideas.arcgis.com/ideaView?id=087E00000004H3yIAE
         logger.handlers = []
         
-        # logger.addHandler(self.__create_loghandler_arcgis())
+        logger.addHandler(self.__create_loghandler_arcgis())
         logger.addHandler(self.__create_loghandler_file(self.task_config['log_file']))
         logger.addHandler(self.__create_loghandler_stream())
         

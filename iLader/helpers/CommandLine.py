@@ -29,7 +29,7 @@ def main():
         task_id = args.run_task
         load_task_config = False
         uc = Usecase(task_id, load_task_config)
-
+        uc.run()
     
 if __name__ == "__main__":
     main()
