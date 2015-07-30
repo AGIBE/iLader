@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function, unicode_literals
 import logging
-import configobj
 import os
 import datetime
 import cx_Oracle
 from iLader.functions import *
-import iLader.helpers
+import iLader.helpers.Helpers
 import sys
 
 class Usecase():
@@ -29,7 +28,7 @@ class Usecase():
         self.task_config_load_from_JSON = task_config_load_from_JSON
         
         # Allgemeine und task-spezifische Konfiguration initialisieren
-        self.general_config = self.__init_generalconfig()
+        self.general_config = iLader.helpers.Helpers.init_generalconfig()
         self.task_config = self.__init_taskconfig()
         
         # Logger initialisieren
@@ -88,7 +87,9 @@ class Usecase():
     
     def __create_loghandler_stream(self):
         '''
-        Konfiguriert einen Stream-Loghandler
+        Konfiguriert einen Stream-Loghandler. Der Output
+        wird in sys.stdout ausgegeben. In der Regel ist das
+        die Kommandozeile.
         '''
         
         file_formatter = logging.Formatter('%(asctime)s.%(msecs)d|%(levelname)s|%(message)s', '%Y-%m-%d %H:%M:%S')
@@ -129,7 +130,7 @@ class Usecase():
     
     def __init_logging(self):
         '''
-        Der Logger wird mit zwei Handlern (arcpy und file) initialisiert
+        Der Logger wird mit drei Handlern (arcpy, file und stream) initialisiert
         '''
         logger = logging.getLogger("iLaderLogger")
         logger.setLevel(logging.DEBUG)
@@ -145,19 +146,6 @@ class Usecase():
         logger.addHandler(self.__create_loghandler_stream())
         
         return logger
-    
-    def __get_general_configfile_from_envvar(self):
-        '''
-        Holt den Pfad zur Konfigurationsdatei aus der Umgebungsvariable
-        GEODBIMPORTHOME und gibt dann den vollständigen Pfad (inkl. Dateiname)
-        der Konfigurationsdatei zurück.
-        '''
-        config_directory = os.environ['GEODBIMPORTHOME']
-        config_filename = "config.ini"
-        
-        config_file = os.path.join(config_directory, config_filename)
-        
-        return config_file
     
     def __create_task_dir(self, task_dir, log_file, archive_log_file):
         '''
@@ -202,39 +190,3 @@ class Usecase():
         d['task_config_file'] = task_config_file
         
         return d
-    
-    def __decrypt_passwords(self, section, key):
-        '''
-        Entschlüsselt sämtliche Passworte in der zentralen
-        Konfigurationsdatei. Wird aus der ConfigObj.walk-Funktion
-        aus aufgerufen. Deshalb sind section und key als
-        Parameter obligatorisch.
-        :param section: ConfigObj.Section-Objekt
-        :param key: aktueller Schlüssel im ConfigObj-Objekt
-        '''
-        # Hilfsklasse für die Entschlüsselung
-        crypter = iLader.helpers.Crypter()
-        
-        # Annahme: alle Keys, die "password" heissen, enthalten zu entschlüsselnde Passwörter
-        if key == "password":
-            encrypted_password = section[key]
-            decrypted_password = crypter.decrypt(encrypted_password)
-            # Wert in der Config ersetzen
-            section[key] = decrypted_password
-    
-    def __init_generalconfig(self):
-        '''
-        liest die zentrale Konfigurationsdatei in ein ConfigObj-Objet ein.
-        Dieser kann wie ein Dictionary gelesen werden.
-        '''
-        config_filename = self.__get_general_configfile_from_envvar()
-        config_file = configobj.ConfigObj(config_filename, encoding="UTF-8")
-        
-        # Die Walk-Funktion geht rekursiv durch alle
-        # Sections und Untersections der Config und 
-        # ruft für jeden Key die angegebene Funktion
-        # auf
-        config_file.walk(self.__decrypt_passwords)
-        
-        return config_file
-            
