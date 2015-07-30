@@ -5,7 +5,6 @@ import iLader.helpers.Helpers
 from iLader.usecases.Usecase import Usecase
 from Tkinter import *
 import sys
-import iLader.helpers.Helpers
 from iLader.helpers.StdoutToWidget import StdoutToWidget
 import tkMessageBox
 import ScrolledText
