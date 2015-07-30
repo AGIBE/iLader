@@ -5,27 +5,29 @@ import iLader.helpers.Helpers
 from iLader.usecases.Usecase import Usecase
 from Tkinter import *
 import sys
+import iLader.helpers.Helpers
 from iLader.helpers.StdoutToWidget import StdoutToWidget
+import tkMessageBox
+import ScrolledText
 
 class iLaderGUI(Frame):
     '''
-    
+    GUI-Klasse (Tkinter-Frame), die das GUI für die Ausführung
+    eines Imports implementiert. Die offenen Import-Tasks werden
+    mit der Helper-Funktion get_import_tasks ermittelt.
     '''
     def __init__(self, parent=None):
         Frame.__init__(self, parent)
-        # self.title("iLader v" + __version__)
         self.pack()
 
         self.chkbox_var = IntVar(self)
         self.chkbox_var.set(0)
         self.optmenu_var = StringVar(self)
         
-        
         # Liste mit den offenen Task aus DD auslesen
-        self.tasks = iLader.helpers.Helpers.getImportTasks()
+        self.tasks = iLader.helpers.Helpers.get_import_tasks()
         
-        self.make_widgets()
-        
+        self.make_widgets()        
         
     def make_widgets(self):
         # Überschrift
@@ -43,34 +45,40 @@ class iLaderGUI(Frame):
         # OK-Knopf
         self.btn_ok = Button(self, text="Import starten", command=self.run_import)
         self.btn_ok.pack(side=BOTTOM)
+
+        # Beenden-Knopf        
+        self.btn_quit = Button(self, text="Beenden", command=self.quit)
+        self.btn_quit.pack(side=BOTTOM)
         
-        # Log-Fenster
-        self.log_text = Text(self,width=120)
+        # Log-Fenster (ScrolledText)
+        self.log_text = ScrolledText.ScrolledText(self, width=150)
         self.log_text.pack()
-#         self.log_text.insert(END, "Hallo Hallo Hallo!!!")
-#         self.logger = StdoutToWidget(self.log_text)
-#         self.logger.start()
-#         sys.stdout = StdoutRedirector(self.log_text)
-        
+
+    def quit(self):
+        sys.exit()
         
     def run_import(self):
-        print("sdfsfsdf")
-        selected_task = self.optmenu_var.get()
-        reload_json = self.chkbox_var.get()
-        if selected_task:
-            print("Usecase " + selected_task + " ausgewählt.")
-            if reload_json == 1:
-                reload_json = True
+        self.selected_task = self.optmenu_var.get()
+        self.reload_json = self.chkbox_var.get()
+        if self.selected_task:
+            self.btn_ok.configure(state=DISABLED)
+            self.btn_quit.configure(state=DISABLED)
+            if self.reload_json == 1:
+                self.reload_json = True
             else:
-                reload_json = False
-            print("Usecase wird nun ausgeführt...")
+                self.reload_json = False
             
             #Abmachung: alle Zeichen vor dem ersten Doppelpunkt entsprechen der Task-ID
-            task_id = selected_task.split(":")[0]
-            uc = Usecase(task_id, reload_json)
-            #sys.exit()
+            self.task_id = self.selected_task.split(":")[0]
+            
+            self.uc = Usecase(self.task_id, self.reload_json)
+            self.uc.run()
+            
+            self.btn_ok.configure(state=NORMAL)
+            self.btn_quit.configure(state=NORMAL)
+            
         else:
-            print("kein Task ausgewählt. Bitte nochmals auswählen.")
+            tkMessageBox.showwarning('iLader', 'Es wurde kein Geoprodukt ausgewählt. Bitte erneut versuchen!')
             
 def main():
     root = Tk()

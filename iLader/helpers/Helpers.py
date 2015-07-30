@@ -53,7 +53,7 @@ def init_generalconfig():
     
     return config_file  
     
-def getImportTasks():
+def get_import_tasks():
     general_config = init_generalconfig()
     db = general_config['instances']['team']
     user = general_config['users']['geodb_dd']['username']

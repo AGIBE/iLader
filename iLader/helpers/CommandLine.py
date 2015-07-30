@@ -20,7 +20,7 @@ def main():
         print("iLader v" + __version__)
         
     if args.show_tasks:
-        tasks = iLader.helpers.Helpers.getImportTasks()
+        tasks = iLader.helpers.Helpers.get_import_tasks()
         for task in tasks:
             print(task)
             
