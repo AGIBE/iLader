@@ -93,12 +93,12 @@ class StdoutToWidget:
             else:
                 content = '\n'.join(self.content[-self.height+end:end])
             self.widget.config(text=content)
+            self.widget.update_idletasks()
 
     def _write_to_textwidget(self):
         self.widget.insert('end', '\n'.join(self.content))
         self.widget.see('end')
         self.widget.update_idletasks()
-        self.widget.update()        
 
     def start(self):
         '''
