@@ -6,7 +6,7 @@ import iLader.helpers.Helpers
 from iLader.usecases.Usecase import Usecase
 
 def main():
-    parser = argparse.ArgumentParser(description="Kommandozeile fuer den iLader. Fuehrt Tasks aus und zeigt offene Tasks an.")
+    parser = argparse.ArgumentParser(description="Kommandozeile fuer den iLader. Fuehrt Tasks aus und zeigt offene Tasks an.", prog="iLader.exe")
     group = parser.add_mutually_exclusive_group()
     group.add_argument("-s", "--show_tasks", help="zeigt alle ausfuehrbaren Tasks an", action="store_true")
     group.add_argument("-r", "--run_task", type=int, help="fuehrt den angegebenen Task aus", metavar="TASK-ID")
@@ -18,18 +18,18 @@ def main():
     
     if args.version:
         print("iLader v" + __version__)
-        
-    if args.show_tasks:
+    elif args.show_tasks:
         tasks = iLader.helpers.Helpers.get_import_tasks()
         for task in tasks:
             print(task)
-            
-    if args.run_task:
+    elif args.run_task:
         #Abmachung: alle Zeichen vor dem ersten Doppelpunkt entsprechen der Task-ID
         task_id = args.run_task
         load_task_config = False
         uc = Usecase(task_id, load_task_config)
         uc.run()
+    else:
+        parser.print_help()
     
 if __name__ == "__main__":
     main()
