@@ -52,6 +52,8 @@ class Usecase():
                 funktionsklasse = globals()[funktion]
                 f = funktionsklasse(self.logger, self.task_config)
                 self.logger.info(u"Usecase "+ self.name + u": Funktion " + f.name + u" wurde ausgeführt")
+                
+            self.logger.info("Der Import-Task " + str(self.task_id) + " wurde erfolgreich durchgeführt!")
         except Exception as e:
             self.logger.error(e.message)
         finally: # Die Ausputzer-Funktion muss immer ausgeführt werden.
