@@ -25,8 +25,8 @@ Neuinstallation
 #. Installation pip
 
    * ``python get-pip.py``
-   * Umgebungsvariable PATH ergänzen um Pfad zum Python-Binary.
-   * Umgebungsvariable PATH ergänzen um Pfad zum iLader.exe und pip.exe.
+   * Umgebungsvariable PATH ergänzen um Pfad zum Python-Binary (``C:\Prog\Python27\ArcGIS10.2``).
+   * Umgebungsvariable PATH ergänzen um Pfad zum iLader.exe und pip.exe (``C:\Prog\Python27\ArcGIS10.2\Scripts``).
 
 #. Installation iLader
 
