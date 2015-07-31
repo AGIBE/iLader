@@ -8,14 +8,11 @@ Systemvoraussetzungen
 
 Requirements
 ------------
-- arcpy (wird durch ArcGIS Desktop bereitgestellt)
-- numpy (wird durch ArcGIS Desktop bereitgestellt)
+- arcpy (wird durch ArcGIS Desktop bereitgestellt; inkl. numpy)
 - cx-Oracle (wird durch KWP-Paket bereitgestellt)
-- pycrypto
+- python-keyczar (inkl. pycrypto)
 - configobj
-- six
-- pyasn1
-- python-keyczar
+- chromalog
 
 Neuinstallation
 ---------------
@@ -33,7 +30,7 @@ Neuinstallation
 
 #. Installation iLader
 
-   * ``pip install iLader-0.2.1-py2-none-any.whl``
+   * ``pip install iLader-x.x-py2-none-any.whl``
    * damit werden die übrigen Requirements automatisch mitinstalliert.
 
 #. Konfiguration iLader
@@ -53,6 +50,6 @@ Aktualisierung
 --------------
 
 #. iLader deinstallieren (``pip uninstall iLader``)
-#. iLader installieren (``pip install iLader-0.x-py2-none-any.whl``)
-#. Alternative: ``pip install --upgrade iLader-0.x-py2-none-any.whl``
+#. iLader installieren (``pip install iLader-x.x-py2-none-any.whl``)
+#. Alternative: ``pip install --upgrade iLader-x.x-py2-none-any.whl``
 #. evtl. Änderungen an Config vornehmen (Connection-Files etc.)
