@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function, unicode_literals
 import logging
+import chromalog
 import os
 import datetime
 import cx_Oracle
@@ -89,12 +90,14 @@ class Usecase():
         '''
         Konfiguriert einen Stream-Loghandler. Der Output
         wird in sys.stdout ausgegeben. In der Regel ist das
-        die Kommandozeile.
+        die Kommandozeile. Falls sys.stdout dies unterstützt,
+        werden Warnungen und Fehler farbig ausgegeben (dank
+        des chromalog-Moduls).
         '''
         
-        file_formatter = logging.Formatter('%(asctime)s.%(msecs)d|%(levelname)s|%(message)s', '%Y-%m-%d %H:%M:%S')
+        file_formatter = chromalog.ColorizingFormatter('%(asctime)s.%(msecs)d|%(levelname)s|%(message)s', '%Y-%m-%d %H:%M:%S')
         
-        h = logging.StreamHandler(stream=sys.stdout)
+        h = chromalog.ColorizingStreamHandler(stream=sys.stdout)
         h.setLevel(logging.DEBUG)
         h.setFormatter(file_formatter)
         
