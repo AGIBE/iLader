@@ -2,6 +2,7 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 import arcpy
 import iLader.helpers.Helpers
+from iLader import __version__
 from iLader.usecases import Usecase
 
 class Toolbox(object):
@@ -26,7 +27,7 @@ class Toolbox(object):
         
 class Import(object):
     def __init__(self):
-        self.label = "Geoprodukt importieren"
+        self.label = "Geoprodukt importieren (iLader v" + __version__ + ")"
         self.description = "Mit diesem Tool wird ein Geoprodukt in die GeoDB importiert. Es werden nur diejenigen Geoprodukte zur Auswahl angeboten, die importierbar und dem jeweiligen PC zugewiesen sind"
         self.canRunInBackground = False
         
