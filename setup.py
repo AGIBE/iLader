@@ -12,7 +12,7 @@ setup(
       # .pyt-Files werden von Python nicht erkannt. Deshalb müssen sie explizit als Package-Inhalt aufgelistet werden.
       package_data={'': ["*.pyt"]},
       # Abhängigkeiten
-      install_requires = ["configobj==5.0.6", "cx-Oracle==5.1.3", "numpy==1.7.1", "six==1.9.0", "pyasn1==0.1.7", "pycrypto==2.6", "python-keyczar==0.715"],
+      install_requires = ["configobj==5.0.6", "cx-Oracle==5.1.3", "numpy==1.7.1", "python-keyczar==0.715", "chromalog==1.0.4"],
       # PyPI metadata
       author = "Peter Schär, Manuela Uhlmann",
       author_email = "peter.schaer@bve.be.ch, manuela.uhlmann@bve.be.ch",
