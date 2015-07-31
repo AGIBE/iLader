@@ -23,15 +23,18 @@ Doku aus dem Quellcode heraus generieren:
  
 * ``sphinx-apidoc -E -f -o docs iLader``  (im root-Verzeichnis ausführen)
 * Doku landet im Verzeichnis ``docs``
+* Dieser Schritt muss dann gemacht werden, wenn sich an der Struktur des Programmcodes etwas geändert hat (neue Klassen, Klassen umbenannt oder gelöscht).
  
 HTML-Version generieren
 
 * ``python setup.py develop`` (im root-Verzeichnis ausführen) 
 * ``make html`` (im Unterverzeichnis ``docs`` ausführen)
+* Das Ergebnis liegt im Unterverzeichnis ``docs/_build/html/index.html``. 
  
 Gesamte Doku mit setup.py erstellen
  
 * ``python setup.py build_sphinx`` (im root-Verzeichnis ausführen)
+* Das Ergebnis liegt im Unterverzeichnis ``build/sphinx/html/index.html``.
  
 Infos:
  
