@@ -100,7 +100,8 @@ class BegleitdatenReplaceSource(TemplateFunction):
             elif datentyp == "RasterDataset":
                 try:
                     self.logger.info("Haenge Quelle nach " + self.sde_conn_ras + " um.")
-                    lyr.replaceDataSource(self.sde_conn_ras, "SDE_WORKSPACE", gpr_ebe_publ, True)
+                    # Parameter auf False gesetzt, da z.T. unexpected error (verm. weil Raster und nicht DC auf workp...
+                    lyr.replaceDataSource(self.sde_conn_ras, "SDE_WORKSPACE", gpr_ebe_publ, False)
                     if self.is_mxd == "false":
                         lyr.save()
                         if self.is_zeitstand == "true":

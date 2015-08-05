@@ -14,7 +14,9 @@ class Generierung(TemplateFunction):
     - GeoDBProzess
     Die Informationen werden in die task_config geschrieben.
     '''
-
+# TODO: Parameter einfügen für task_config: bestehende Daten überschreiben, per Default = JA
+# Parameter kann in task_config manuell angepasst werden, falls doch mal nicht überschrieben werdeK:\Anwend\GeoDB\P3_Applikation\Neukonzeption\Importn soll
+# z.B. bei grossen Rasterdaten
 
     def __init__(self, logger, task_config, general_config):
         '''
@@ -123,7 +125,7 @@ class Generierung(TemplateFunction):
             ziel_ras1_akt = os.path.join(self.sde_conn_ras1, ziel_schema_gpr_ebe) 
             ziel_ras1_zs = os.path.join(self.sde_conn_ras1, ziel_schema_gpr_ebe_zs)
             ziel_ras2 = os.path.join(self.sde_conn_ras2, ziel_schema_gpr_ebe)
-            if datentyp != 'Rastermosaik' and datentyp != 'Rasterkatalog':
+            if datentyp != 'Rastermosaik' and datentyp != 'Rasterkatalog': #TODO: Datentyp MosaicDataset einfügen
                 self.sql_ind_gdbp = "SELECT b.felder, b." + '"unique"' + " from gdbp.index_attribut b join gdbp.geoprodukte a on b.id_geoprodukt = a.id_geoprodukt where a.code = '" + gpr + "' and b.ebene = '" + ebe + "'"
                 self.__db_connect('work', 'gdbp', self.sql_ind_gdbp)
                 self.indList = []
@@ -146,14 +148,14 @@ class Generierung(TemplateFunction):
                 ebeVecDict['ziel_vek2'] = ziel_vek2
                 ebeVecDict['ziel_vek3'] = ziel_vek3
                 self.ebeVecList.append(ebeVecDict)            
-            elif datentyp == 'Rastermosaik': # später Rasterdataset
+            elif datentyp == 'Rastermosaik': #TODO: ev. später Rasterdataset
                 ebeRasDict['datentyp'] = datentyp
                 ebeRasDict['gpr_ebe'] = gpr_ebe
                 ebeRasDict['quelle'] = quelle
                 ebeRasDict['ziel_ras1']= ziel_ras1_akt
                 ebeRasDict['ziel_ras1_zs']= ziel_ras1_zs
                 self.ebeRasList.append(ebeRasDict)
-            elif datentyp == 'Rasterkatalog': # TODO neuer Datentyp MosaicDataset einfügen (hier Rasterkatalog nur zu Testzwecken
+            elif datentyp == 'Rasterkatalog' or datentyp == 'MosaicDataset': # TODO neuer Datentyp MosaicDataset einfügen (hier Rasterkatalog nur zu Testzwecken
                 ebeRasDict['datentyp'] = datentyp
                 ebeRasDict['gpr_ebe'] = gpr_ebe
                 rasterkacheln_pfad = os.path.join(self.general_config['quelle_begleitdaten'], gpr, self.general_config['quelle_begleitdaten_work'], self.general_config['raster']['quelle_rasterkacheln'], self.general_config['raster']['historisch'])
