@@ -24,7 +24,7 @@ class Generierung(TemplateFunction):
         :param logger: vom Usecase initialisierter logger (logging.logger)
         :param task_config: Vom Usecase initialisierte task_config (Dictionary)
         '''
-        self.name = u"Generierung"
+        self.name = "Generierung"
         TemplateFunction.__init__(self, logger, task_config)
         
         self.logger = logger
@@ -55,8 +55,8 @@ class Generierung(TemplateFunction):
         self.username = self.general_config['users'][self.usergroup]['username']
         self.password = self.general_config['users'][self.usergroup]['password']
         self.db = self.general_config['instances'][self.instance]
-        self.logger.info(u"Username: " + self.username)
-        self.logger.info(u"Verbindung herstellen mit der Instanz " + self.db)
+        self.logger.info("Username: " + self.username)
+        self.logger.info("Verbindung herstellen mit der Instanz " + self.db)
         self.connection = ora.connect(self.username, self.password, self.db)
         self.cursor = self.connection.cursor()
         self.cursor.execute(self.sql_name)
@@ -295,7 +295,7 @@ class Generierung(TemplateFunction):
                 indDict['unique'] = ind_unique            
                 self.indList.append(indDict)
             wtbDict['indices'] = self.indList
-            wtbDict['datentyp']= u"Tabelle"
+            wtbDict['datentyp']= "Tabelle"
             wtbDict['gpr_ebe'] = gpr_wtb
             wtbDict['quelle'] = quelle
             wtbDict['ziel_vek1'] = ziel_vek1

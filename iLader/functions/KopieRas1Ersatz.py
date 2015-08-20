@@ -11,7 +11,7 @@ class KopieRas1Ersatz(TemplateFunction):
     - Raster Datasets
     
     In der Zielinstanz RAS1 sind die Ebenen des aktuellen Zeitstands bereits vorhanden. Der neuen Ebene
-    wird deshalb der Namenszusatz "_NEU" angefügt. Mit dem Orion-Tool, welches nach der Wippe bei der Bedag
+    wird deshalb der Namenszusatz "_NE" angefügt. Mit dem Orion-Tool, welches nach der Wippe bei der Bedag
     ausgeführt wird, werden die neuen Rasterdaten umbenannt und die alten gelöscht.
     Die historischen Zeitstände sind in der Zielinstanz RAS1 noch nicht vorhanden.
     Aufgrund eines abgebrochenen Imports können verwaiste Ebenen vorhanden sein. Deshalb muss diese 
@@ -56,7 +56,7 @@ class KopieRas1Ersatz(TemplateFunction):
             source = ebene['quelle']
             target = ebene['ziel_ras1']
             # Dem aktuellen Zeitstand wird der Namenszusatz "_NEU angefügt"
-            target = target + "_NEU"
+            target = target + "_NE"
             target_zs = ebene['ziel_ras1_zs']
             ebename = ebene['gpr_ebe']
             self.logger.info("Ebene " + ebename + " wird nach RAS1 kopiert.")

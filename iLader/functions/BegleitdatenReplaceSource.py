@@ -25,13 +25,13 @@ class BegleitdatenReplaceSource(TemplateFunction):
         :param logger: vom Usecase initialisierter logger (logging.logger)
         :param task_config: Vom Usecase initialisierte task_config (Dictionary)
         '''
-        self.name = u"BegleitdatenReplaceSource"
+        self.name = "BegleitdatenReplaceSource"
         TemplateFunction.__init__(self, logger, task_config)
         
         if self.name in self.task_config['ausgefuehrte_funktionen'] and self.task_config['task_config_load_from_JSON']:
-            self.logger.info(u"Funktion " + self.name + u" wird ausgelassen.")
+            self.logger.info("Funktion " + self.name + " wird ausgelassen.")
         else:
-            self.logger.info(u"Funktion " + self.name + u" wird ausgef??.")
+            self.logger.info("Funktion " + self.name + " wird ausgef??.")
             self.start()
             self.__execute()
             

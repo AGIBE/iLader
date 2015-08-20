@@ -35,30 +35,30 @@ class Usecase():
         # Logger initialisieren
         self.logger = self.__init_logging()
         
-        #self.logger.info(u"Usecase " + self.name + " initialisiert.")
-        self.logger.info(u"Task-Id: " + unicode(self.task_id))
-        self.logger.info(u"Task-Directory: " + self.task_config['task_directory'])
-        self.logger.info(u"Log-File: " + self.task_config['log_file'])
+        #self.logger.info("Usecase " + self.name + " initialisiert.")
+        self.logger.info("Task-Id: " + unicode(self.task_id))
+        self.logger.info("Task-Directory: " + self.task_config['task_directory'])
+        self.logger.info("Log-File: " + self.task_config['log_file'])
             
     def run(self):
-        self.logger.info(u"Start der Funktionsausführung")
+        self.logger.info("Start der Funktionsausführung")
         try:            
             f = Generierung(self.logger, self.task_config, self.general_config)
-            self.logger.info(u"Funktion " + f.name + u" wurde ausgeführt")
+            self.logger.info("Funktion " + f.name + " wurde ausgeführt")
     
             auszufuehrende_funktionen = self.__get_functions_to_execute()
             
             for funktion in auszufuehrende_funktionen:
                 funktionsklasse = globals()[funktion]
                 f = funktionsklasse(self.logger, self.task_config)
-                self.logger.info(u"Usecase "+ self.name + u": Funktion " + f.name + u" wurde ausgeführt")
+                self.logger.info("Usecase "+ self.name + ": Funktion " + f.name + " wurde ausgeführt")
                 
             self.logger.info("Der Import-Task " + unicode(self.task_id) + " wurde erfolgreich durchgeführt!")
         except Exception as e:
             self.logger.error(e.message.decode("iso-8859-1"))
         finally: # Die Ausputzer-Funktion muss immer ausgeführt werden.
             f = Ausputzer(self.logger, self.task_config)
-            self.logger.info(u"Funktion " + f.name + u" wurde ausgeführt")
+            self.logger.info("Funktion " + f.name + " wurde ausgeführt")
             
     def __get_functions_to_execute(self):
         db = self.task_config['instances']['team']

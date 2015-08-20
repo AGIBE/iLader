@@ -22,13 +22,13 @@ class QSBenachrichtigung(TemplateFunction):
         :param logger: vom Usecase initialisierter logger (logging.logger)
         :param task_config: Vom Usecase initialisierte task_config (Dictionary)
         '''
-        self.name = u"QSBenachrichtigung"
+        self.name = "QSBenachrichtigung"
         TemplateFunction.__init__(self, logger, task_config)
         
         if self.name in self.task_config['ausgefuehrte_funktionen'] and self.task_config['task_config_load_from_JSON']:
-            self.logger.info(u"Funktion " + self.name + u" wird ausgelassen.")
+            self.logger.info("Funktion " + self.name + " wird ausgelassen.")
         else:
-            self.logger.info(u"Funktion " + self.name + u" wird ausgeführt.")
+            self.logger.info("Funktion " + self.name + " wird ausgeführt.")
             self.start()
             self.__execute()
         
@@ -38,7 +38,7 @@ class QSBenachrichtigung(TemplateFunction):
         Führt den eigentlichen Funktionsablauf aus
         '''
         
-        self.logger.info(u"Die Funktion " + self.name + u" arbeitet vor sich hin")
+        self.logger.info("Die Funktion " + self.name + " arbeitet vor sich hin")
         
        
         self.finish()

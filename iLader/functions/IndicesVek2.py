@@ -22,13 +22,13 @@ class IndicesVek2(TemplateFunction):
         :param logger: vom Usecase initialisierter logger (logging.logger)
         :param task_config: Vom Usecase initialisierte task_config (Dictionary)
         '''
-        self.name = u"IndicesVek2"
+        self.name = "IndicesVek2"
         TemplateFunction.__init__(self, logger, task_config)
         
         if self.name in self.task_config['ausgefuehrte_funktionen'] and self.task_config['task_config_load_from_JSON']:
-            self.logger.info(u"Funktion " + self.name + u" wird ausgelassen.")
+            self.logger.info("Funktion " + self.name + " wird ausgelassen.")
         else:
-            self.logger.info(u"Funktion " + self.name + u" wird ausgeführt.")
+            self.logger.info("Funktion " + self.name + " wird ausgeführt.")
             self.start()
             self.__execute()
         
@@ -43,7 +43,7 @@ class IndicesVek2(TemplateFunction):
                 if len(ebene["indices"]) > 0:
                     target = ebene['ziel_vek2']
                     ebename = ebene['gpr_ebe']
-                    self.logger.info(u"Erstelle Index für " + ebename + u" im VEK2.")           
+                    self.logger.info("Erstelle Index für " + ebename + " im VEK2.")           
                     for index in ebene["indices"]:
                         try:
                             self.logger.info("Index: ") 
@@ -57,7 +57,7 @@ class IndicesVek2(TemplateFunction):
                             arcpy.AddIndex_management(target, index_attribute, indexname, indextyp, "")
                             self.logger.info(index_attribute + ": " + indextyp)
                         except Exception as e:
-                            self.logger.info(u"Fehler bei der Erstellung des Index " + index_attribute + ", " + indextyp)
+                            self.logger.info("Fehler bei der Erstellung des Index " + index_attribute + ", " + indextyp)
                             self.logger.info(e)
        
         self.finish()
