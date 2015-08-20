@@ -38,10 +38,10 @@ class ImportStatus(TemplateFunction):
         schema = self.task_config['schema']['geodb_dd']
         username = 'geodb_dd'
         password = self.task_config['users'][username]
-        gzs_objectid = self.task_config['gzs_objectid']
+        task_id = self.task_config['task_id']
         today = time.strftime("%d.%m.%y")
         
-        sql = "UPDATE " + schema + ".TB_TASK SET TASK_STATUS=5, TASK_ENDE=TO_DATE('" + today + "', 'DD.MM.YY') WHERE GZS_OBJECTID=" + gzs_objectid
+        sql = "UPDATE " + schema + ".TB_TASK SET TASK_STATUS=5, TASK_ENDE=TO_DATE('" + today + "', 'DD.MM.YY') WHERE TASK_OBJECTID=" + task_id
         self.logger.info("SQL-Update wird ausgeführt: " + sql)
         
         connection = cx_Oracle.connect(username, password, db)  
@@ -56,7 +56,7 @@ class ImportStatus(TemplateFunction):
         else:
             # Wenn nicht genau 1 Zeile aktualisiert wurde, muss abgebrochen werden
             self.logger.error("Query wurde nicht erfolgreich ausgeführt.")
-            self.logger.error("Status 'angelegt' konnte nicht gesetzt werden.")
+            self.logger.error("Status konnte nicht gesetzt werden.")
             del cursor
             del connection
             raise Exception          
