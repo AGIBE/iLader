@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function, unicode_literals
 from .TemplateFunction import TemplateFunction
+import logging
 
 class Ausputzer(TemplateFunction):
     '''
@@ -34,7 +35,12 @@ class Ausputzer(TemplateFunction):
         Führt den eigentlichen Funktionsablauf aus
         '''
         
-        self.logger.info(u"Die Funktion " + self.name + u" arbeitet vor sich hin")
+        self.logger.info("Das Logging-System wird heruntergefahren.")
+        self.logger.info("Die Applikation wird beendet.")
+        for hdl in self.logger.handlers:
+            hdl.close()
+        self.logger.handlers = []
+        
         
        
         self.finish()
