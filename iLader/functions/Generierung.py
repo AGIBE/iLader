@@ -170,7 +170,7 @@ class Generierung(TemplateFunction):
         self.__db_connect('team', 'geodb_dd', self.sql_dd_ebe)
         for row in self.result:
             self.legDict = {}
-            self.logger.info(u'Legendendetails')
+            self.logger.info('Legendendetails')
             self.logger.info(row)
             self.gpr = row[0].decode('cp1252')
             self.ebe = row[1].decode('cp1252')
@@ -308,11 +308,11 @@ class Generierung(TemplateFunction):
         #TODO: self.sql_dd_importe = "select * from geodb_dd.tb_importe_geodb"
         #TODO: self.__db_connect('dd_connection', self.sql_dd_importe)
         #TODO: dma_erlaubt für qs auslesen und 'dma_erlaubt' übergeben
-        self.qsDict['dma_erlaubt'] = u'false'
-        self.qsDict['checkskript_passed'] = u'undefined'
-        self.qsDict['deltachecker_passed'] = u'undefined'
-        self.qsDict['qa_framework_passed'] = u'undefined'
-        self.qsDict['qs_gesamt_passed'] = u'undefined'
+        self.qsDict['dma_erlaubt'] = 'false'
+        self.qsDict['checkskript_passed'] = 'undefined'
+        self.qsDict['deltachecker_passed'] = 'undefined'
+        self.qsDict['qa_framework_passed'] = 'undefined'
+        self.qsDict['qs_gesamt_passed'] = 'undefined'
         
   
         
