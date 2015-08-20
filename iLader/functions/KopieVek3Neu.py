@@ -74,9 +74,9 @@ class KopieVek3Neu(TemplateFunction):
             
             # Check ob in Quelle und Ziel die gleiche Anzahl Records vorhanden sind
             count_source = int(arcpy.GetCount_management(source)[0])
-            self.logger.info("Anzahl Objekte in Quell-Ebene: " + str(count_source))
+            self.logger.info("Anzahl Objekte in Quell-Ebene: " + unicode(count_source))
             count_target = int(arcpy.GetCount_management(target)[0])
-            self.logger.info("Anzahl Objekte in Ziel-Ebene: " + str(count_target))
+            self.logger.info("Anzahl Objekte in Ziel-Ebene: " + unicode(count_target))
             
             if count_source != count_target:
                 self.logger.warn("Anzahl Objekte in Quelle und Ziel unterschiedlich!")

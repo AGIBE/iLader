@@ -74,19 +74,19 @@ class MosaicDatasetRas2(TemplateFunction):
                         for row in cursor_alt:
                             arcpy.AddMessage("Folgende Einträge haben BIS_JAHR = 0")
                             cursor_alt_von_jahr = row.getValue("VON_JAHR")
-                            arcpy.AddMessage("VON_JAHR " + str(cursor_alt_von_jahr))
+                            arcpy.AddMessage("VON_JAHR " + unicode(cursor_alt_von_jahr))
                             cursor_alt_von_version = row.getValue("VON_VERSION")
-                            arcpy.AddMessage("VON_VERSION " + str(cursor_alt_von_version))
+                            arcpy.AddMessage("VON_VERSION " + unicode(cursor_alt_von_version))
                             if cursor_alt_von_jahr == int(zeitstand_jahr) and cursor_alt_von_version == int(zeitstand_version):
                                 self.logger.info("Keine alte Version vorhanden.")
                             else:
                                 self.logger.info("Alte Version von " + rastername + " vorhanden, wird angepasst:")
                                 #~ print row.getValue("BIS_JAHR")
-                                arcpy.AddMessage("BIS_JAHR neu: " + str(zeitstand_jahr))
+                                arcpy.AddMessage("BIS_JAHR neu: " + unicode(zeitstand_jahr))
                                 row.setValue("BIS_JAHR", zeitstand_jahr)
                                 cursor_alt.updateRow(row)
                                 #~ print row.getValue("BIS_VERSION")
-                                arcpy.AddMessage("BIS_VERSION neu: " + str(zeitstand_version))
+                                arcpy.AddMessage("BIS_VERSION neu: " + unicode(zeitstand_version))
                                 row.setValue("BIS_VERSION", zeitstand_version)
                                 cursor_alt.updateRow(row)
                     except Exception as e:
@@ -97,10 +97,10 @@ class MosaicDatasetRas2(TemplateFunction):
                 arcpy.CalculateField_management(target, "RASTERNAME", """(gpr + "_" + str(!NAME!)).upper()""", "PYTHON","#")    
                 cursor_neu = arcpy.UpdateCursor(target, "NAME = '" + rastername + "' and VON_JAHR is NULL")
                 for row in cursor_neu:
-                    arcpy.AddMessage("VON_JAHR = " + str(zeitstand_jahr))
+                    arcpy.AddMessage("VON_JAHR = " + unicode(zeitstand_jahr))
                     row.setValue("VON_JAHR", zeitstand_jahr)
                     cursor_neu.updateRow(row)
-                    arcpy.AddMessage("VON_VERSION = " + str(zeitstand_version))
+                    arcpy.AddMessage("VON_VERSION = " + unicode(zeitstand_version))
                     row.setValue("VON_VERSION", zeitstand_version)
                     cursor_neu.updateRow(row)
                     arcpy.AddMessage("BIS_JAHR = 0")

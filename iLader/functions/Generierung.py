@@ -64,12 +64,12 @@ class Generierung(TemplateFunction):
         self.connection.close()    
     
     def __get_importe_dd(self):
-        self.task_id = str(self.task_config['task_id'])
+        self.task_id = unicode(self.task_config['task_id'])
         self.logger.info(self.task_id)
         self.sql_dd_importe = "select a.gzs_objectid from geodb_dd.tb_task a where a.task_objectid = '" + self.task_id + "'"
         self.__db_connect('team', 'geodb_dd', self.sql_dd_importe)
         for row in self.result:
-            self.gzs_objectid = str(row[0])
+            self.gzs_objectid = unicode(row[0])
 
     
     def __get_gpr_info(self):
@@ -83,8 +83,8 @@ class Generierung(TemplateFunction):
         self.__db_connect('team', 'geodb_dd', self.sql_dd_gpr)
         for row in self.result:
             self.gpr = row[0].decode('cp1252')
-            self.jahr = str(row[1]).decode('cp1252')
-            self.version = str(row[2]).decode('cp1252')
+            self.jahr = unicode(row[1]).decode('cp1252')
+            self.version = unicode(row[2]).decode('cp1252')
             self.version = self.version.zfill(2)
             self.zeitstand = self.jahr + "_" + self.version        
         self.sql_gpr_role = "SELECT a.db_rollen from gdbp.geoprodukte a where a.code = '" + self.gpr + "'"
@@ -109,12 +109,12 @@ class Generierung(TemplateFunction):
             ebeRasDict = {}
             gpr = row[0].decode('cp1252')
             ebe = row[1].decode('cp1252')
-            jahr = str(row[2]).decode('cp1252')
-            version = str(row[3]).decode('cp1252')
+            jahr = unicode(row[2]).decode('cp1252')
+            version = unicode(row[3]).decode('cp1252')
             version = version.zfill(2)
             datentyp = row[4].decode('cp1252')            
             zeitstand = jahr + "_" + version
-            gpr_ebe = str(gpr) + "_" + str(ebe)
+            gpr_ebe = unicode(gpr) + "_" + unicode(ebe)
             quelle_schema_gpr_ebe = self.schema_norm + "." + gpr_ebe
             quelle = os.path.join(self.sde_conn_norm, quelle_schema_gpr_ebe)
             ziel_schema_gpr_ebe = self.schema_geodb + "." + gpr_ebe
@@ -132,7 +132,7 @@ class Generierung(TemplateFunction):
                 for row in self.result:
                     indDict = {}
                     ind_attr = row[0].decode('cp1252')
-                    indextyp = str(row[1]).decode('cp1252')
+                    indextyp = unicode(row[1]).decode('cp1252')
                     if indextyp == "1":
                         ind_unique = "True"
                     elif indextyp == "2":
@@ -174,13 +174,13 @@ class Generierung(TemplateFunction):
             self.logger.info(row)
             self.gpr = row[0].decode('cp1252')
             self.ebe = row[1].decode('cp1252')
-            self.jahr = str(row[2])
-            self.version = str(row[3])
+            self.jahr = unicode(row[2])
+            self.version = unicode(row[3])
             self.version = self.version.zfill(2)           
             self.zeitstand = self.jahr + "_" + self.version
             self.leg = row[4].decode('cp1252')
             self.spr = row[5].decode('cp1252')
-            self.datentyp = str(row[6])
+            self.datentyp = unicode(row[6])
             self.symbol_name = self.gpr + "_" + self.ebe + "_" + self.leg + "_" + self.spr + ".lyr"
             if self.datentyp == 2:
                 self.symbol_name_akt = self.gpr + "_" + self.ebe + "_" + self.zeitstand + "_" + self.leg + "_" + self.spr + ".lyr"
@@ -267,11 +267,11 @@ class Generierung(TemplateFunction):
             gpr = row[0].decode('cp1252')
             self.logger.info(type(gpr))
             wtb = row[4].decode('cp1252')
-            jahr = str(row[2]).decode('cp1252')
-            version = str(row[3]).decode('cp1252')
+            jahr = unicode(row[2]).decode('cp1252')
+            version = unicode(row[3]).decode('cp1252')
             version = version.zfill(2)
             zeitstand = jahr + "_" + version
-            gpr_wtb = str(gpr) + "_" + str(wtb)            
+            gpr_wtb = unicode(gpr) + "_" + unicode(wtb)            
             quelle_schema_gpr_wtb = self.schema_norm + "." + gpr_wtb
             quelle = os.path.join(self.sde_conn_norm, quelle_schema_gpr_wtb)
             ziel_schema_gpr_wtb = self.schema_geodb + "." + gpr_wtb
@@ -286,7 +286,7 @@ class Generierung(TemplateFunction):
             for row in self.result:
                 indDict = {}
                 ind_attr = row[0].decode('cp1252')
-                indextyp = str(row[1]).decode('cp1252')
+                indextyp = unicode(row[1]).decode('cp1252')
                 if indextyp == "1":
                     ind_unique = "True"
                 elif indextyp == "2":
