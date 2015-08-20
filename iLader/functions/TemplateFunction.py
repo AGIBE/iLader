@@ -3,6 +3,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import json
 from iLader.helpers.Crypter import Crypter
 import copy
+import logging
 
 class TemplateFunction(object):
     '''
@@ -14,14 +15,14 @@ class TemplateFunction(object):
     '''
 
 
-    def __init__(self, logger, task_config):
+    def __init__(self, task_config):
         '''
         Constructor
         
         :param logger: vom Usecase initialisierter logger (logging.logger)
         :param task_config: Vom Usecase initialisierte task_config (Dictionary)
         '''
-        self.logger = logger
+        self.logger = logging.getLogger("iLaderLogger")
         self.task_config = task_config
         
     def write_task_config(self):

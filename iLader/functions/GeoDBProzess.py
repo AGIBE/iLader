@@ -8,14 +8,14 @@ class GeoDBProzess(TemplateFunction):
     '''
     Die Funktion trägt die Task-Id in die GeoDBProzess (Tabelle GEOPRODUKTE.TASK_ID) ein.
     '''
-    def __init__(self, logger, task_config):
+    def __init__(self, task_config):
         '''
         Constructor
         :param logger: vom Usecase initialisierter logger (logging.logger)
         :param task_config: Vom Usecase initialisierte task_config (Dictionary)
         '''
         self.name = "GeoDBProzess"
-        TemplateFunction.__init__(self, logger, task_config)
+        TemplateFunction.__init__(self, task_config)
         
         if self.name in self.task_config['ausgefuehrte_funktionen'] and self.task_config['task_config_load_from_JSON']:
             self.logger.info("Funktion " + self.name + " wird ausgelassen.")

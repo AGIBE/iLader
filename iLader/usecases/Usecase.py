@@ -43,21 +43,21 @@ class Usecase():
     def run(self):
         self.logger.info("Start der Funktionsausführung")
         try:            
-            f = Generierung(self.logger, self.task_config, self.general_config)
+            f = Generierung(self.task_config, self.general_config)
             self.logger.info("Funktion " + f.name + " wurde ausgeführt")
     
             auszufuehrende_funktionen = self.__get_functions_to_execute()
             
             for funktion in auszufuehrende_funktionen:
                 funktionsklasse = globals()[funktion]
-                f = funktionsklasse(self.logger, self.task_config)
+                f = funktionsklasse(self.task_config)
                 self.logger.info("Usecase "+ self.name + ": Funktion " + f.name + " wurde ausgeführt")
                 
             self.logger.info("Der Import-Task " + unicode(self.task_id) + " wurde erfolgreich durchgeführt!")
         except Exception as e:
             self.logger.error(e.message.decode("iso-8859-1"))
         finally: # Die Ausputzer-Funktion muss immer ausgeführt werden.
-            f = Ausputzer(self.logger, self.task_config)
+            f = Ausputzer(self.task_config)
             self.logger.info("Funktion " + f.name + " wurde ausgeführt")
             
     def __get_functions_to_execute(self):

@@ -10,14 +10,14 @@ class Ausputzer(TemplateFunction):
     - Connection-Files löschen
     '''
 
-    def __init__(self, logger, task_config):
+    def __init__(self, task_config):
         '''
         Constructor
         :param logger: vom Usecase initialisierter logger (logging.logger)
         :param task_config: Vom Usecase initialisierte task_config (Dictionary)
         '''
         self.name = "Ausputzer"
-        TemplateFunction.__init__(self, logger, task_config)
+        TemplateFunction.__init__(self, task_config)
         
         # Der Abschnitt kann wahrscheinlich entfallen, da die Funktion
         # immer ausgeführt wird.

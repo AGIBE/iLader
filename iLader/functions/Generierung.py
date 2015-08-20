@@ -18,16 +18,16 @@ class Generierung(TemplateFunction):
 # Parameter kann in task_config manuell angepasst werden, falls doch mal nicht überschrieben werdeK:\Anwend\GeoDB\P3_Applikation\Neukonzeption\Importn soll
 # z.B. bei grossen Rasterdaten
 
-    def __init__(self, logger, task_config, general_config):
+    def __init__(self, task_config, general_config):
         '''
         Constructor
         :param logger: vom Usecase initialisierter logger (logging.logger)
         :param task_config: Vom Usecase initialisierte task_config (Dictionary)
         '''
         self.name = "Generierung"
-        TemplateFunction.__init__(self, logger, task_config)
+        TemplateFunction.__init__(self, task_config)
         
-        self.logger = logger
+        #self.logger = logger
         self.task_config = task_config
         self.general_config = general_config
 
