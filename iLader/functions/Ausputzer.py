@@ -34,13 +34,15 @@ class Ausputzer(TemplateFunction):
         '''
         Führt den eigentlichen Funktionsablauf aus
         '''
-        
+        self.finish()
+
+        # Das Schliessen der Handler muss ganz am Schluss passieren,
+        # damit danach keine Zugriffe darauf erfolgen und es zu Fehlern
+        # kommt.
+        # V.a. der FileHandler muss geschlossen werden, da sonst bei der
+        # Ausführung in der ArcGIS-Toolbox File-Locks ein mehrfaches Aus-
+        # führen verhindern.        
         self.logger.info("Das Logging-System wird heruntergefahren.")
         self.logger.info("Die Applikation wird beendet.")
         for hdl in self.logger.handlers:
             hdl.close()
-        self.logger.handlers = []
-        
-        
-       
-        self.finish()
