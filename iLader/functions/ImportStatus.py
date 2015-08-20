@@ -41,7 +41,7 @@ class ImportStatus(TemplateFunction):
         task_id = self.task_config['task_id']
         today = time.strftime("%d.%m.%y")
         
-        sql = "UPDATE " + schema + ".TB_TASK SET TASK_STATUS=5, TASK_ENDE=TO_DATE('" + today + "', 'DD.MM.YY') WHERE TASK_OBJECTID=" + task_id
+        sql = "UPDATE " + schema + ".TB_TASK SET TASK_STATUS=5, TASK_ENDE=TO_DATE('" + today + "', 'DD.MM.YY') WHERE TASK_OBJECTID=" + unicode(task_id)
         self.logger.info("SQL-Update wird ausgeführt: " + sql)
         
         connection = cx_Oracle.connect(username, password, db)  
