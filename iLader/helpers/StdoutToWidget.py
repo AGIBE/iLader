@@ -21,7 +21,6 @@ class StdoutToWidget:
     # http://stackoverflow.com/a/10846997/2334951
     # http://stackoverflow.com/q/14710529/2334951
 
-    # TODO: horizontal wrapping
     #       make it a widget decorator (if possible)
     #       height management for Text widget mode
     
