@@ -74,8 +74,8 @@ class KopieVek1Ersatz(TemplateFunction):
             self.logger.info("Anzahl Objekte in Ziel-Ebene: " + unicode(count_target))
             
             if count_source != count_target:
-                self.logger.warn("Anzahl Objekte in Quelle und Ziel unterschiedlich!")
-                #TODO: definieren, ob in diesem Fall das Script abbrechen soll
+                self.logger.error("Anzahl Objekte in Quelle und Ziel unterschiedlich!")
+                raise Exception
             else:
                 self.logger.info("Anzahl Objekte in Quelle und Ziel identisch!")
             
