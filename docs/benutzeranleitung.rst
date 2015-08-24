@@ -29,11 +29,13 @@ Mit dem iLader wird auch ein Kommandozeilen-Interface installiert. Es heisst iLa
 
 .. image:: _static/cmdline1.png
 
-Mit ``iLader -s`` werden die zur Zeit importierbaren Geoprodukte ausgegeben. Angezeigt wird die Task-ID, der Geoprodukt-Code, der Zeitstand sowie der Usecase:
+Mit ``iLader list`` werden die zur Zeit importierbaren Geoprodukte ausgegeben. Angezeigt wird die Task-ID, der Geoprodukt-Code, der Zeitstand sowie der Usecase:
 
 .. image:: _static/cmdline2.png
 
-Mit ``iLader -r TASK-ID`` kann der Import gestartet werden.
+Mit ``iLader run TASKID`` kann der Import gestartet werden. Mit dem Setzen des Flags ``-l`` kann eine bestehende Task-Config geladen werden. Die Task-Config wird dann nicht mehr aus dem DD ausgelesen.
+
+Die beiden Befehle ``encrypt`` und ``decrypt`` sind noch nicht implementiert.
 
 GUI
 ----------
