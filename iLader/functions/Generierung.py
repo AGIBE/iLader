@@ -41,10 +41,8 @@ class Generierung(TemplateFunction):
             self.task_config['task_config_load_from_JSON'] = True
             self.finish()
         else:
-            #TODO: Validierungsfunktion ausführen
-            self.__execute()        
             #TODO: def Validierungsfunktion, Status muss 1,2 sein (TB_usecase) und Geoproduktstatus = 1,9 ebenfalls tb_usecase
-            #TODO: in tb_usecase attribut einfügen, welcher Geoproduktstatus für jeden UseCase gültig ist  
+            self.__execute()        
 
     def __db_connect(self, instance, usergroup, sql_name):
         #TODO: Parameter einführen (true, false) für fetchall bzw. fetchone; anschliessend ausführen
