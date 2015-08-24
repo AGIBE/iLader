@@ -10,7 +10,9 @@ class GPOrdner(TemplateFunction):
     - Geoprodukt-Verzeichnis
     - Unterverzeichnis ``mxd``
     - Unterverzeichnis ``symbol``
-    - Unterverzeichnis ``Zusatzdaten``
+    
+    Das Unterverzeichnis ``Zusatzdaten`` wird nicht erstellt. Es wird bei Bedarf
+    durch die Funktion Zusatzdaten erstellt.
     '''
 
     def __init__(self, task_config):
@@ -46,7 +48,6 @@ class GPOrdner(TemplateFunction):
         '''
         Führt den eigentlichen Funktionsablauf aus
         '''
-        #TODO: Verzeichnis Zusatzdaten erstellen
         # Verzeichnis-Pfade zusammensetzen
         gpr_dir = self.task_config['ziel']['ziel_begleitdaten_gpr']
         mxd_dir = self.task_config['ziel']['ziel_begleitdaten_mxd']
