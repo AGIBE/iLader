@@ -83,3 +83,11 @@ def get_import_tasks():
     dd_connection.close()    
     
     return tasks
+
+def db_connect(instance, username, password, sql_query):
+    connection = cx_Oracle.connect(username, password, instance)
+    cursor = connection.cursor()
+    cursor.execute(sql_query)
+    result = cursor.fetchall()
+    connection.close()
+    return result    

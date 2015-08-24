@@ -25,8 +25,7 @@ class Generierung(TemplateFunction):
         '''
         self.name = "Generierung"
         TemplateFunction.__init__(self, task_config)
-        
-        #self.logger = logger
+
         self.task_config = task_config
         self.general_config = general_config
 
@@ -34,15 +33,13 @@ class Generierung(TemplateFunction):
         # wird die Task-Config aus der JSON-Datei geladen. In diesem Fall wird die eigentliche
         # Generierungsfunktion nicht ausgeführt.
         if os.path.exists(self.task_config['task_config_file']) and self.task_config['task_config_load_from_JSON']:
-            #TODO: Validierungsfunktion ausführen
             self.__load_task_config()
             # Dieser Wert muss explizit auf True gesetzt werden, da er im JSON-File
             # auch auf False sein könnte.
             self.task_config['task_config_load_from_JSON'] = True
             self.finish()
         else:
-            #TODO: def Validierungsfunktion, Status muss 1,2 sein (TB_usecase) und Geoproduktstatus = 1,9 ebenfalls tb_usecase
-            self.__execute()        
+            self.__execute()
 
     def __db_connect(self, instance, usergroup, sql_name):
         #TODO: Parameter einführen (true, false) für fetchall bzw. fetchone; anschliessend ausführen
@@ -381,7 +378,6 @@ class Generierung(TemplateFunction):
         #Diverse Einträge im task_config generieren
         if not self.task_config.has_key("ausgefuehrte_funktionen"):
             self.task_config['ausgefuehrte_funktionen'] = []
-       
 
         self.ebeVecList = []
         self.ebeRasList = []

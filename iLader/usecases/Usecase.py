@@ -34,31 +34,55 @@ class Usecase():
         
         # Logger initialisieren
         self.logger = self.__init_logging()
-        
-        #self.logger.info("Usecase " + self.name + " initialisiert.")
         self.logger.info("Task-Id: " + unicode(self.task_id))
         self.logger.info("Task-Directory: " + self.task_config['task_directory'])
         self.logger.info("Log-File: " + self.task_config['log_file'])
+        
+        self.is_task_valid = self.__get_task_status()
             
     def run(self):
-        self.logger.info("Start der Funktionsausführung")
-        try:            
-            f = Generierung(self.task_config, self.general_config)
-            self.logger.info("Funktion " + f.name + " wurde ausgeführt")
-    
-            auszufuehrende_funktionen = self.__get_functions_to_execute()
-            
-            for funktion in auszufuehrende_funktionen:
-                funktionsklasse = globals()[funktion]
-                f = funktionsklasse(self.task_config)
-                self.logger.info("Usecase "+ self.name + ": Funktion " + f.name + " wurde ausgeführt")
+        if self.is_task_valid:
+            self.logger.info("Start der Funktionsausführung")
+            try:            
+                f = Generierung(self.task_config, self.general_config)
+                self.logger.info("Funktion " + f.name + " wurde ausgeführt")
+        
+                auszufuehrende_funktionen = self.__get_functions_to_execute()
                 
-            self.logger.info("Der Import-Task " + unicode(self.task_id) + " wurde erfolgreich durchgeführt!")
-        except Exception as e:
-            self.logger.error(e.message.decode("iso-8859-1"))
-        finally: # Die Ausputzer-Funktion muss immer ausgeführt werden.
-            f = Ausputzer(self.task_config)
-            self.logger.info("Funktion " + f.name + " wurde ausgeführt")
+                for funktion in auszufuehrende_funktionen:
+                    funktionsklasse = globals()[funktion]
+                    f = funktionsklasse(self.task_config)
+                    self.logger.info("Usecase "+ self.name + ": Funktion " + f.name + " wurde ausgeführt")
+                    
+                self.logger.info("Der Import-Task " + unicode(self.task_id) + " wurde erfolgreich durchgeführt!")
+            except Exception as e:
+                self.logger.error(e.message.decode("iso-8859-1"))
+            finally: # Die Ausputzer-Funktion muss immer ausgeführt werden.
+                f = Ausputzer(self.task_config)
+                self.logger.info("Funktion " + f.name + " wurde ausgeführt")
+        else:
+            self.logger.error("Task-ID " + unicode(self.task_id) + " ist nicht gültig!")
+            self.logger.error("Import wird abgebrochen")
+            
+    def __get_task_status(self):
+        '''
+        Prüft ob der übergebene Import-Task gültig ist, d.h. ob er
+        überhaupt in der Tabelle TB_TASK enthalten ist und ob er den
+        Status 1 oder 2 aufweist.
+        '''
+        username = self.general_config['users']['geodb_dd']['username']
+        password = self.general_config['users']['geodb_dd']['password']
+        schema = self.general_config['users']['geodb_dd']['schema']
+        db = self.general_config['instances']['team']
+        status_query = "SELECT TASK_STATUS FROM " + schema + ".TB_TASK where TASK_OBJECTID=" + unicode(self.task_config['task_id'])
+
+        task_status = False
+        query_result = iLader.helpers.Helpers.db_connect(db, username, password, status_query)
+        if len(query_result) == 1:
+            tb_task_status = query_result[0][0]
+            if tb_task_status in (1,2):
+                task_status = True
+        return task_status
             
     def __get_functions_to_execute(self):
         db = self.task_config['instances']['team']
