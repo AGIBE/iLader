@@ -19,7 +19,6 @@ class IndicesVek2(TemplateFunction):
     def __init__(self, task_config):
         '''
         Constructor
-        :param logger: vom Usecase initialisierter logger (logging.logger)
         :param task_config: Vom Usecase initialisierte task_config (Dictionary)
         '''
         self.name = "IndicesVek2"
