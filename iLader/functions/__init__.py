@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from .TemplateFunction import TemplateFunction
 from .Generierung import Generierung
-from .CheckscriptNormierung import CheckscriptNormierung
+from .CheckscriptHaltung import CheckscriptHaltung
 from .DeltaChecker import DeltaChecker
 from .QAFramework import QAFramework
 from .QSStatus import QSStatus

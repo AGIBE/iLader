@@ -2,13 +2,13 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 from .TemplateFunction import TemplateFunction
 
-class CheckscriptNormierung(TemplateFunction):
+class CheckscriptHaltung(TemplateFunction):
     '''
-    Das Checkscript Normierung wird ausgeführt. Der Rückgabewert übernommen und in der
+    Das Checkscript Haltung wird ausgeführt. Der Rückgabewert übernommen und in der
     task_config abgelegt. Bei dieser Funktion handelt es sich nur um den Aufruf eines bereits
     bestehenden Tools und die Weiterverarbeitung des Rückgabewertes dieses Tools.
     
-    Diese Funktion ruft das Checkscript Normierung auf. Das Checkscript gibt einen Rückgabewert
+    Diese Funktion ruft das Checkscript Haltung auf. Das Checkscript gibt einen Rückgabewert
     ``bestanden`` / ``nicht bestanden`` zurück. Dieser Rückgabewert wird in
     ``task_config["qs"]["checkscript_passed"]`` festgehalten (``TRUE`` oder ``FALSE``).
     '''
@@ -19,7 +19,7 @@ class CheckscriptNormierung(TemplateFunction):
         :param logger: vom Usecase initialisierter logger (logging.logger)
         :param task_config: Vom Usecase initialisierte task_config (Dictionary)
         '''
-        self.name = "CheckscriptNormierung"
+        self.name = "CheckscriptHaltung"
         TemplateFunction.__init__(self, task_config)
         
         if self.name in self.task_config['ausgefuehrte_funktionen'] and self.task_config['task_config_load_from_JSON']:
