@@ -49,8 +49,8 @@ class GPOrdner(TemplateFunction):
         #TODO: Verzeichnis Zusatzdaten erstellen
         # Verzeichnis-Pfade zusammensetzen
         gpr_dir = self.task_config['ziel']['ziel_begleitdaten_gpr']
-        mxd_dir = os.path.join(gpr_dir, "mxd") #TODO: Verzeichnisname aus task_config auslesen
-        symbol_dir = os.path.join(gpr_dir, "symbol") #TODO: Verzeichnisname aus task_config auslesen
+        mxd_dir = self.task_config['ziel']['ziel_begleitdaten_mxd']
+        symbol_dir = self.task_config['ziel']['ziel_begleitdaten_symbol']
         
         # Prüfen ob das Geoprodukt-Verzeichnis existiert
         if os.path.exists(gpr_dir):
