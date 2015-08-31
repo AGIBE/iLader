@@ -13,6 +13,7 @@ Release builden
 * in iLader/__init__.py die Version erhöhen
 * Commit und Push
 * Create Tag und Push Tag
+* build-Verzeichnis leeren: ``python setup.py clean --all`` (im root-Verzeichnis ausführen; ist wichtig, wenn Files gelöscht oder umbenannt werden)
 * wheel erzeugen: ``python setup.py bdist_wheel``  (im root-Verzeichnis ausführen)
 * neues wheel liegt im Unterverzeichnis ``dist``
 * wheel installieren (s. :doc:`installation`)
