@@ -69,11 +69,11 @@ def get_import_tasks():
     tasks = []
     
     for row in task_query_result:
-        task_objectid = unicode(row[0]).decode('cp1252')
-        uc_bezeichnung = unicode(row[1]).decode('cp1252')
-        gpr_bezeichnung = unicode(row[2]).decode('cp1252')
-        gzs_jahr = unicode(row[3]).decode('cp1252')
-        gzs_version = unicode(row[4]).decode('cp1252')
+        task_objectid = unicode(row[0])
+        uc_bezeichnung = unicode(row[1].decode('cp1252'))
+        gpr_bezeichnung = unicode(row[2].decode('cp1252'))
+        gzs_jahr = unicode(row[3])
+        gzs_version = unicode(row[4])
         #Abmachung: alle Zeichen vor dem ersten Doppelpunkt entsprechen der Task-ID
         parameter_string = task_objectid + ": " + gpr_bezeichnung + " " + gzs_jahr + "_" + gzs_version + " (" + uc_bezeichnung + ")"
         
