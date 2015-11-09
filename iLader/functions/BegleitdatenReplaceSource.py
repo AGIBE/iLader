@@ -45,7 +45,7 @@ class BegleitdatenReplaceSource(TemplateFunction):
         :param sde_conn_ras: SDE-Connection fuer Rasterdaten (RAS1)
         :param is_zeitstand: Gehoert das Objekt zu einem Zeitstand? true oder false. Dieser Parameter
         steuert die Parameter der Funktion arcpy.replaceDataSource.
-        :param is_mxd: Ist das Objekt ein mxd? true oder false. Dieser Parameter war n??, weil 
+        :param is_mxd: Ist das Objekt ein mxd? true oder false. Dieser Parameter war noetig, weil 
         die Legendenfiles in mxd's bereits gemappt sind.
         '''
         self.legende = legende
