@@ -24,7 +24,7 @@ Submodules
     :undoc-members:
     :show-inheritance:
 
-.. automodule:: iLader.functions.CheckscriptNormierung
+.. automodule:: iLader.functions.CheckscriptHaltung
     :members:
     :undoc-members:
     :show-inheritance:
