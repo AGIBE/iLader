@@ -34,6 +34,8 @@ class TransferVek1(TemplateFunction):
         target_connection = self.task_config['connections']['sde_conn_vek1_oereb"']
         
         #TODO: Nicht ganze Transferstruktur kopieren sondern nur Liefereinheit (Auslesen aus tb_task)
+        # Dies geht aber nicht mit MakeTableView, da es keine SDE-Tabellen sind (die WHERE-Clause
+        # wird nicht berücksichtigt). Daher entweder mit cx_Oracle oder FME.
         
         for tabelle in self.task_config['oereb_tabellen']:
             source = os.path.join(source_connection, tabelle)
