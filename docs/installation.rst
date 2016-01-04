@@ -20,24 +20,26 @@ Neuinstallation
 
    * pycrypto kann nicht mit pip installiert werden, da das Paket dabei kompiliert wird. Die notwendigen Compiler-Tools sind aber auf den PCs nicht installiert. Deshalb muss eine kompilierte Version via Setup installiert werden.
    * exe ausführen. Vorkompilierte Binaires gibt es hier: http://www.voidspace.org.uk/python/modules.shtml#pycrypto
-   * richtige Python-Installation auswählen
+   * richtige Python-Installation (2.7) auswählen
 
 #. Installation pip
 
+   * Systemvariable PATH ergänzen um Pfad zum Python-Binary (``C:\Prog\Python27\ArcGIS10.2``).
+   * Systemvariable PATH ergänzen um Pfad zum iLader.exe und pip.exe (``C:\Prog\Python27\ArcGIS10.2\Scripts``).
    * ``python get-pip.py``
-   * Umgebungsvariable PATH ergänzen um Pfad zum Python-Binary (``C:\Prog\Python27\ArcGIS10.2``).
-   * Umgebungsvariable PATH ergänzen um Pfad zum iLader.exe und pip.exe (``C:\Prog\Python27\ArcGIS10.2\Scripts``).
+   * Kontrolle: pip list
 
 #. Installation iLader
 
    * ``pip install iLader-x.x-py2-none-any.whl``
    * damit werden die übrigen Requirements automatisch mitinstalliert.
+   * Kontrolle (der Version): pip list
 
 #. Konfiguration iLader
 
    * Umgebungsvariable ``GEODBIMPORTHOME`` setzen (``Freigabe\Anwendungen\iLader``)
    * Umgebungsvariable ``GEODBIMPORTSECRET`` setzen (``P:\iLader``)
-   * Schlüssel kopieren (Files ``meta`` und ``1``) nach ``GEODBIMPORTSECRET``
+   * Schlüssel von ``K:\Anwend\GeoDBAdmin" (Files ``meta`` und ``1``) nach ``GEODBIMPORTSECRET`` kopieren
    * connections-Verzeichnisse von ``K:\Anwend\GeoDBAdmin\iLader\config_master`` kopieren nach ``GEODBIMPORTSECRET`` und umbenennen auf ``connections``
    * Toolbox einbinden (t.b.d.)
 
