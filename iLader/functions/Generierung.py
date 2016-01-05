@@ -372,8 +372,10 @@ class Generierung(TemplateFunction):
         self.userpwDict['gdbp'] = self.general_config['users']['gdbp']['password']
         
     def __get_oereb_infos(self):
+        self.oereb_dict = {}
+        self.logger.info("ÖREBK-Infos werden geholt.")
         oereb_tables_sql = "select ebecode, filter_field from oereb.gpr where GPRCODE='OEREB'"
-        self.oereb_tables = []
+        oereb_tables = []
         username = self.general_config['users']['oereb']['username']
         pw = self.general_config['users']['oereb']['password']
         db = self.general_config['instances']['workh']
@@ -386,7 +388,7 @@ class Generierung(TemplateFunction):
             tbl_dict = {}
             tbl_dict['tablename'] = table[0]
             tbl_dict['filter_field'] = table[1]
-            self.oereb_tables.append(tbl_dict)
+            oereb_tables.append(tbl_dict)
         
         # ÖREB-Tickets des zu importierenden Geoprodukts holen
         # Wenn es keine zugehörigen Tickets hat, wird ein 
@@ -396,19 +398,18 @@ class Generierung(TemplateFunction):
         oereb_liefereinheiten_sql = "select ticket.id from ticket left join liefereinheit on ticket.liefereinheit=liefereinheit.id where status=4 and liefereinheit.gprcode='" + self.gpr + "'"
         ora_cursor.execute(oereb_liefereinheiten_sql)
         liefereinheiten = ora_cursor.fetchall()
-        self.liefereinheiten_string = ""
+        liefereinheiten_string = ""
         liefereinheiten_list = []
         for liefereinheit in liefereinheiten:
             liefereinheiten_list.append(liefereinheit[0])
-            
         if len(liefereinheiten_list) > 0:
             # Doppelte Liefereinheiten entfernen
             liefereinheiten_list =  list(set(liefereinheiten_list))
-            self.liefereinheiten_string = "(" + ",".join(liefereinheiten_list) + ")"
-            
+            liefereinheiten_string = "(" + ",".join(liefereinheiten_list) + ")"
         ora_cursor.close()
-        ora_conn.close()    
-
+        ora_conn.close()
+        self.oereb_dict['tabellen'] = oereb_tables
+        self.oereb_dict['liefereinheiten'] = liefereinheiten_string
                 
     def __execute(self):
         '''
@@ -461,8 +462,7 @@ class Generierung(TemplateFunction):
         self.task_config['default_tolerance'] = self.default_tolerance
         self.task_config['default_resolution'] = self.default_resolution
         self.task_config['spatial_reference'] = self.spatial_reference
-        self.task_config['oereb']['liefereinheiten'] = self.liefereinheiten_string
-        self.task_config['oereb']['tabellen'] = self.oereb_tables
+        self.task_config['oereb'] = self.oereb_dict
         self.finish()  
        
     def __load_task_config(self):
