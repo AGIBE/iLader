@@ -3,10 +3,14 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 from .TemplateFunction import TemplateFunction
 import arcpy
 import os
+import cx_Oracle
 
 class TransferVek2(TemplateFunction):
     '''
-    Kopiert die Transferstruktur nach Vek2, bestehende Objekt werden ersetzt.
+    Kopiert die ÖREBK-Transferstruktur nach Vek2. Es werden nur diejenigen Teile der
+    Transferstruktur kopiert, die zum importierten Geoprodukt gehören.
+    Wenn zu diesem Geoprodukt keine ÖREBK-Tickets gefunden wurden, wird die ÖREBK-
+    Transferstruktur gar nicht kopiert.
     '''
 
     def __init__(self, task_config):
@@ -32,45 +36,65 @@ class TransferVek2(TemplateFunction):
         self.logger.info("ÖREBK-Transferstruktur wird nach VEK2 kopiert.")
         source_connection = self.task_config['connections']['sde_conn_team_oereb']
         target_connection = self.task_config['connections']['sde_conn_vek2_oereb"']
+        oereb_tables = self.task_config['oereb']['tabellen']
+        liefereinheiten = self.task_config['oereb']['liefereinheiten']
         
-        #TODO: Nicht ganze Transferstruktur kopieren sondern nur Liefereinheit (Auslesen aus tb_task)
+        if liefereinheiten == '':
+            self.logger.info('Für diesen Import konnten keine ÖREBK-Liefereinheiten ermittelt werden.')
+            self.logger.info('Die ÖREBK-Transferstruktur wird daher nicht importiert.')
+        else:
+            for oereb_table in oereb_tables:
+                oereb_tablename = oereb_table['tablename']
+                oereb_table_filter_field = oereb_table['filter_field']
+                username = self.task_config['schema']['oereb']
+                password = self.task_config['users']['oereb']
+                db = self.task_config['instances']['vek2']
+                
+                oereb_delete_sql = "DELETE FROM %s WHERE %s IN %s" % (oereb_tablename, oereb_table_filter_field, liefereinheiten)
+                self.logger.info("Deleting...")
+                self.logger.info(oereb_delete_sql)
+                vek2_connection_string = username + "/" + password + "@" + db
+                # Mit dem With-Statement wird sowohl committed als auch die
+                # Connection- und Cursor-Objekte automatisch geschlossen
+                with cx_Oracle.connect(vek2_connection_string) as conn:
+                    cur = conn.cursor()
+                    cur.execute(oereb_delete_sql)
+                
+                source = os.path.join(source_connection, username + "." + oereb_tablename)
+                source_layer = oereb_tablename + "_source_layer"
+                target = os.path.join(target_connection, username + "." + oereb_tablename)
+                target_layer = oereb_tablename + "_target_layer"
+                where_clause = oereb_table_filter_field + " IN " + liefereinheiten
+                self.logger.info("WHERE-Clause: " + where_clause)
+                if arcpy.Describe(source).datasetType=='Table':
+                    # MakeTableView funktioniert nicht, da mangels OID-Feld keine Selektionen gemacht werden können
+                    # MakeQueryTable funktioniert, da hier ein virtuelles OID-Feld erstellt wird. Im Gegenzug wird die
+                    # Tabelle temporär zwischengespeichert.
+                    arcpy.MakeQueryTable_management(source, source_layer, 'ADD_VIRTUAL_KEY_FIELD', '#', '#',  where_clause)
+                else:
+                    arcpy.MakeFeatureLayer_management(source, source_layer, where_clause)
+                    
+                self.logger.info("Appending...")
+                arcpy.Append_management(source_layer, target, "TEST")
+                # Die QueryTables/FeatureLayers müssen nach dem Append gemacht werden,
+                # da der QueryTable nicht mehr live auf die Daten zugreift, sondern
+                # auf der Festplatte zwischengespeichert ist.
+                if arcpy.Describe(source).datasetType=='Table':
+                    arcpy.MakeQueryTable_management(target, target_layer, 'ADD_VIRTUAL_KEY_FIELD', '#', '#',  where_clause)
+                else:
+                    arcpy.MakeFeatureLayer_management(target, target_layer, where_clause)
+                    
+                self.logger.info("Counting..")
+                source_count = int(arcpy.GetCount_management(source_layer)[0])
+                self.logger.info("Anzahl Features im Quell-Layer: " + unicode(source_count))
+                target_count = int(arcpy.GetCount_management(target_layer)[0])
+                self.logger.info("Anzahl Features im Ziel-Layer: " + unicode(target_count))
+                if source_count!=target_count:
+                    self.logger.error("Fehler beim Kopieren. Anzahl Features in der Quelle und im Ziel sind nicht identisch!")
+                    self.logger.error("Release wird abgebrochen!")
+                    raise Exception
+                self.logger.info("Die Tabelle " + oereb_tablename + " wurde kopiert.")
+                        
+            self.logger.info("Die ÖREBK-Transferstruktur wurde kopiert.")       
+            self.finish()
         
-        for tabelle in self.task_config['oereb_tabellen']:
-            source = os.path.join(source_connection, tabelle)
-            target = os.path.join(target_connection, tabelle) 
-            self.logger.info("Tabelle " + tabelle + " wird nach VEK2 kopiert.")
-            self.logger.info("Quelle: " + source)
-            self.logger.info("Ziel: " + target)
-            if not arcpy.Exists(source):
-                # Existiert die Quell-Ebene nicht, Abbruch mit Fehlermeldung und Exception
-                self.logger.error("Quell-Ebene " + source + " existiert nicht!")
-                raise Exception
-            if not arcpy.Exists(target):
-                # Gibt es die Ziel-Ebene noch nicht, Abbruch mit Fehlermeldung und Exception
-                self.logger.error("Ziel-Ebene " + target + " existiert nicht!")
-                raise Exception
-            
-            self.logger.info("Tabelle " + target + " wird geleert (Truncate).")
-            arcpy.TruncateTable_management(target)
-            
-            self.logger.info("Tabelle " + target + " wird aufgefüllt mit Tabelle " + source)
-            # APPEND wird mit dem Parameter TEST ausgeführt. Allfällige (eigentlich nicht
-            # erlaubte) Datenmodelländerungen würden so doch noch bemerkt.
-            arcpy.Append_management(source, target, "TEST")
-            
-            # Check ob in Quelle und Ziel die gleiche Anzahl Records vorhanden sind
-            count_source = int(arcpy.GetCount_management(source))
-            self.logger.info("Anzahl Objekte in Quell-Ebene: " + unicode(count_source))
-            count_target = int(arcpy.GetCount_management(target))
-            self.logger.info("Anzahl Objekte in Ziel-Ebene: " + unicode(count_target))
-            
-            if count_source != count_target:
-                self.logger.error("Anzahl Objekte in Quelle und Ziel unterschiedlich!")
-                raise Exception
-            else:
-                self.logger.info("Anzahl Objekte in Quelle und Ziel identisch!")
-            
-            self.logger.info("Tabelle " + tabelle + " wurde ersetzt")
-        
-        self.logger.info("Alle ÖREBK-Tabellen wurden ersetzt.")       
-        self.finish()
