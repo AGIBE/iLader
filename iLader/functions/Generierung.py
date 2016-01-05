@@ -395,13 +395,13 @@ class Generierung(TemplateFunction):
         # leerer String übergeben
         # Wenn es ein oder mehrere Tickets hat, werden sie als
         # kommagetrennter-String übergeben. 
-        oereb_liefereinheiten_sql = "select ticket.id from ticket left join liefereinheit on ticket.liefereinheit=liefereinheit.id where status=4 and liefereinheit.gprcode='" + self.gpr + "'"
+        oereb_liefereinheiten_sql = "select ticket.liefereinheit from ticket left join liefereinheit on ticket.liefereinheit=liefereinheit.id where status=4 and liefereinheit.gprcode='" + self.gpr + "'"
         ora_cursor.execute(oereb_liefereinheiten_sql)
         liefereinheiten = ora_cursor.fetchall()
         liefereinheiten_string = ""
         liefereinheiten_list = []
         for liefereinheit in liefereinheiten:
-            liefereinheiten_list.append(liefereinheit[0])
+            liefereinheiten_list.append(unicode(liefereinheit[0]))
         if len(liefereinheiten_list) > 0:
             # Doppelte Liefereinheiten entfernen
             liefereinheiten_list =  list(set(liefereinheiten_list))
