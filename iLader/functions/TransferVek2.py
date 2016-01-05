@@ -91,10 +91,9 @@ class TransferVek2(TemplateFunction):
                 self.logger.info("Anzahl Features im Ziel-Layer: " + unicode(target_count))
                 if source_count!=target_count:
                     self.logger.error("Fehler beim Kopieren. Anzahl Features in der Quelle und im Ziel sind nicht identisch!")
-                    self.logger.error("Release wird abgebrochen!")
                     raise Exception
+                
                 self.logger.info("Die Tabelle " + oereb_tablename + " wurde kopiert.")
                         
             self.logger.info("Die ÖREBK-Transferstruktur wurde kopiert.")       
             self.finish()
-        
