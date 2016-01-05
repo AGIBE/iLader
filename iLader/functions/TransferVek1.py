@@ -35,7 +35,7 @@ class TransferVek1(TemplateFunction):
         '''
         self.logger.info("ÖREBK-Transferstruktur wird nach VEK1 kopiert.")
         source_connection = self.task_config['connections']['sde_conn_team_oereb']
-        target_connection = self.task_config['connections']['sde_conn_vek1_oereb"']
+        target_connection = self.task_config['connections']['sde_conn_vek1_oereb']
         oereb_tables = self.task_config['oereb']['tabellen']
         liefereinheiten = self.task_config['oereb']['liefereinheiten']
         
