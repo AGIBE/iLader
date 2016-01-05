@@ -400,7 +400,10 @@ class Generierung(TemplateFunction):
         liefereinheiten_list = []
         for liefereinheit in liefereinheiten:
             liefereinheiten_list.append(liefereinheit[0])
+            
         if len(liefereinheiten_list) > 0:
+            # Doppelte Liefereinheiten entfernen
+            liefereinheiten_list =  list(set(liefereinheiten_list))
             self.liefereinheiten_string = "(" + ",".join(liefereinheiten_list) + ")"
             
         ora_cursor.close()
