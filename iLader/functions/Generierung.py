@@ -351,6 +351,7 @@ class Generierung(TemplateFunction):
         self.instanceDict['ras1'] = self.general_config['instances']['ras1']
         self.instanceDict['ras2'] = self.general_config['instances']['ras2']
         self.instanceDict['work'] = self.general_config['instances']['work']
+        self.instanceDict['workh'] = self.general_config['instances']['workh']
         self.schemaDict = {}
         self.schema_geodb = self.general_config['users']['geodb']['schema']
         self.schema_geodb_dd = self.general_config['users']['geodb_dd']['schema']
