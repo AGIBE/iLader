@@ -61,9 +61,9 @@ class TransferVek1(TemplateFunction):
                     cur.execute(oereb_delete_sql)
                 
                 source = os.path.join(source_connection, username + "." + oereb_tablename)
-                source_layer = oereb_tablename + "_source_layer"
+                source_layer = oereb_tablename + "_source_layer_vek1"
                 target = os.path.join(target_connection, username + "." + oereb_tablename)
-                target_layer = oereb_tablename + "_target_layer"
+                target_layer = oereb_tablename + "_target_layer_vek1"
                 where_clause = oereb_table_filter_field + " IN " + liefereinheiten
                 self.logger.info("WHERE-Clause: " + where_clause)
                 if arcpy.Describe(source).datasetType=='Table':
