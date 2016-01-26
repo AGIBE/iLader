@@ -55,6 +55,7 @@ class Usecase():
                     self.logger.info("Usecase "+ self.name + ": Funktion " + f.name + " wurde ausgeführt")
                     
                 self.logger.info("Der Import-Task " + unicode(self.task_id) + " wurde erfolgreich durchgeführt!")
+                print("Import SUCCESSFUL!")
             except Exception as e:
                 self.logger.error(e.message.decode("iso-8859-1"))
             finally: # Die Ausputzer-Funktion muss immer ausgeführt werden.

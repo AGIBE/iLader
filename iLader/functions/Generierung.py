@@ -12,6 +12,7 @@ class Generierung(TemplateFunction):
     - DataDictionary
     - General Config
     - GeoDBProzess
+    - ÖREB-Kataster
     Die Informationen werden in die task_config geschrieben.
     '''
 # TODO: Parameter einfügen für task_config: bestehende Daten überschreiben, per Default = JA
@@ -351,6 +352,7 @@ class Generierung(TemplateFunction):
         self.instanceDict['ras1'] = self.general_config['instances']['ras1']
         self.instanceDict['ras2'] = self.general_config['instances']['ras2']
         self.instanceDict['work'] = self.general_config['instances']['work']
+        self.instanceDict['workh'] = self.general_config['instances']['workh']
         self.schemaDict = {}
         self.schema_geodb = self.general_config['users']['geodb']['schema']
         self.schema_geodb_dd = self.general_config['users']['geodb_dd']['schema']
@@ -369,7 +371,45 @@ class Generierung(TemplateFunction):
         self.userpwDict['geodb_dd'] = self.general_config['users']['geodb_dd']['password']
         self.userpwDict['gdbp'] = self.general_config['users']['gdbp']['password']
         
-
+    def __get_oereb_infos(self):
+        self.oereb_dict = {}
+        self.logger.info("ÖREBK-Infos werden geholt.")
+        oereb_tables_sql = "select ebecode, filter_field from oereb.gpr where GPRCODE='OEREB'"
+        oereb_tables = []
+        username = self.general_config['users']['oereb']['username']
+        pw = self.general_config['users']['oereb']['password']
+        db = self.general_config['instances']['workh']
+        ora_conn = ora.connect(username, pw, db)
+        ora_cursor = ora_conn.cursor()
+        # Tabellennamen und Liefereinheiten-Feld holen
+        ora_cursor.execute(oereb_tables_sql)
+        tables = ora_cursor.fetchall()
+        for table in tables:
+            tbl_dict = {}
+            tbl_dict['tablename'] = table[0]
+            tbl_dict['filter_field'] = table[1]
+            oereb_tables.append(tbl_dict)
+        
+        # ÖREB-Tickets des zu importierenden Geoprodukts holen
+        # Wenn es keine zugehörigen Tickets hat, wird ein 
+        # leerer String übergeben
+        # Wenn es ein oder mehrere Tickets hat, werden sie als
+        # kommagetrennter-String übergeben. 
+        oereb_liefereinheiten_sql = "select ticket.liefereinheit from ticket left join liefereinheit on ticket.liefereinheit=liefereinheit.id where status=4 and liefereinheit.gprcode='" + self.gpr + "'"
+        ora_cursor.execute(oereb_liefereinheiten_sql)
+        liefereinheiten = ora_cursor.fetchall()
+        liefereinheiten_string = ""
+        liefereinheiten_list = []
+        for liefereinheit in liefereinheiten:
+            liefereinheiten_list.append(unicode(liefereinheit[0]))
+        if len(liefereinheiten_list) > 0:
+            # Doppelte Liefereinheiten entfernen
+            liefereinheiten_list =  list(set(liefereinheiten_list))
+            liefereinheiten_string = "(" + ",".join(liefereinheiten_list) + ")"
+        ora_cursor.close()
+        ora_conn.close()
+        self.oereb_dict['tabellen'] = oereb_tables
+        self.oereb_dict['liefereinheiten'] = liefereinheiten_string
                 
     def __execute(self):
         '''
@@ -397,6 +437,7 @@ class Generierung(TemplateFunction):
         self.__get_leg_dd()        
         self.__get_fak_begleitdaten()
         self.__define_qs()
+        self.__get_oereb_infos()
         
         self.task_config['connections'] = self.connDict
         self.task_config['instances'] = self.instanceDict
@@ -421,6 +462,7 @@ class Generierung(TemplateFunction):
         self.task_config['default_tolerance'] = self.default_tolerance
         self.task_config['default_resolution'] = self.default_resolution
         self.task_config['spatial_reference'] = self.spatial_reference
+        self.task_config['oereb'] = self.oereb_dict
         self.finish()  
        
     def __load_task_config(self):
