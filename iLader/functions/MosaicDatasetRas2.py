@@ -8,7 +8,10 @@ class MosaicDatasetRas2(TemplateFunction):
     '''
     Die Funktion prüft, ob in der Instanz ras2p bereits ein MosaicDataset vorhanden ist und
     erstellt es gegebenenfalls.
-    Anschliessend werden das entsprechende Zeitstands.csv geladen und Statistiken gerechnet.
+    Anschliessend wird das entsprechende Zeitstands.csv geladen. Vor dem Import der einzelnen
+    Kacheln werden im MD bereits bestehende aktuelle Kacheln selektiert und mit BIS_JAHR und
+    BIS_VERSION der neuen Version versehen.
+    Am Anschluss an den Import werden Statistiken berechnet.
     
     Die Angaben zu den Ebenen sind in task_config:
     
