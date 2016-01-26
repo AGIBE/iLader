@@ -154,39 +154,6 @@ class BegleitdatenReplaceSource(TemplateFunction):
                 self.lyr = lyr
                 self.__replace(self.lyr, self.sde_conn_vek3_geo, self.sde_conn_ras1_geo, "true", "true")
             mxd_mapping.save()
-        self.logger.info("alle MXD-Files sind umgehängt.")
-        
-        # Bis Umstellung auf ArcGIS 10.2.2; dann wieder entfernen
-        for legende in self.task_config["legende"]:
-            lyr = arcpy.mapping.Layer(legende["ziel_akt"])
-            temp_legende_name = os.path.basename(legende["ziel_akt"])
-            temp_legende = os.path.join(self.task_config["ziel"]["ziel_begleitdaten_gpr"], temp_legende_name)
-            self.logger.info(temp_legende)
-            lyr.saveACopy(temp_legende, "10.0")
-            shutil.copyfile(temp_legende, legende["ziel_akt"])
-            os.remove(temp_legende)
-            
-            lyr = arcpy.mapping.Layer(legende["ziel_zs"])
-            temp_legende_name = os.path.basename(legende["ziel_zs"])
-            temp_legende = os.path.join(self.task_config["ziel"]["ziel_begleitdaten_gpr"], temp_legende_name)
-            self.logger.info(temp_legende)
-            lyr.saveACopy(temp_legende, "10.0")
-            shutil.copyfile(temp_legende, legende["ziel_zs"])
-            os.remove(temp_legende)
-        
-
-        for mxd in self.task_config["mxd"]:
-            mxd_file = arcpy.mapping.MapDocument(mxd["ziel_akt"])
-            temp_mxd_akt = os.path.basename(mxd["ziel_akt"])
-            temp_mxd = os.path.join(self.task_config["ziel"]["ziel_begleitdaten_gpr"], temp_mxd_akt)
-            self.logger.info(temp_mxd)
-            mxd_file.saveACopy(temp_mxd, "10.0")
-            
-        
-            mxd_file = arcpy.mapping.MapDocument(mxd["ziel_zs"])
-            temp_mxd_zs = os.path.basename(mxd["ziel_zs"])
-            temp_mxd = os.path.join(self.task_config["ziel"]["ziel_begleitdaten_gpr"], temp_mxd_zs)
-            self.logger.info(temp_mxd)
-            mxd_file.saveACopy(temp_mxd, "10.0")
+        self.logger.info("alle MXD-Files sind umgehängt.")       
        
         self.finish()
