@@ -120,7 +120,7 @@ class Generierung(TemplateFunction):
             ziel_ras1_akt = os.path.join(self.sde_conn_ras1, ziel_schema_gpr_ebe) 
             ziel_ras1_zs = os.path.join(self.sde_conn_ras1, ziel_schema_gpr_ebe_zs)
             ziel_ras2 = os.path.join(self.sde_conn_ras2, ziel_schema_gpr_ebe)
-            if datentyp != 'Rastermosaik' and datentyp != 'Rasterkatalog': #TODO: Datentyp MosaicDataset einfügen
+            if datentyp != 'Rastermosaik' and datentyp != 'Rasterkatalog' and datentyp != 'MosaicDataset':
                 self.sql_ind_gdbp = "SELECT b.felder, b." + '"unique"' + " from gdbp.index_attribut b join gdbp.geoprodukte a on b.id_geoprodukt = a.id_geoprodukt where a.code = '" + gpr + "' and b.ebene = '" + ebe + "'"
                 self.__db_connect('work', 'gdbp', self.sql_ind_gdbp)
                 self.indList = []
@@ -161,6 +161,19 @@ class Generierung(TemplateFunction):
                          
                 
     def __get_leg_dd(self):
+        '''
+        Diese Funktion definiert die Legendenfiles für alle Ebenen gemäss den Einträgen im DataDictionary
+        Die Bezeichnung eines Legendenfiles setzt sich normalerweise zusammen aus:
+        - Geoproduktcode
+        - Ebenencode
+        - Legendencode
+        - Sprachkürzel
+        
+        Eine Ausnahme bilden die Legendenfiles von MosaicDatasets. Diese beinhalten zusätzlich die Information zum Zeitstand (Jahr_Version).
+        Aus zwei Gründen zeigen sie ausserdem bereits auf die Publikationsinstanzen:
+        - der Import der Rasterkacheln erfolgt direkt nach RAS2P (Effizienz) 
+        - ein Umhängen der Datenquelle von MosaicDatasets lässt diese ihre Symbolisierungsinformationen verschwinden
+        '''
         self.sql_dd_ebe = "SELECT a.gpr_bezeichnung, c.ebe_bezeichnung, b.gzs_jahr, b.gzs_version, f.leg_bezeichnung, h.spr_kuerzel, g.dat_objectid from geodb_dd.tb_ebene_zeitstand d join geodb_dd.tb_ebene c on d.ebe_objectid = c.ebe_objectid join geodb_dd.tb_geoprodukt_zeitstand b on d.gzs_objectid = b.gzs_objectid join geodb_dd.tb_geoprodukt a on b.gpr_objectid = a.gpr_objectid join geodb_dd.tb_datentyp g on c.dat_objectid = g.dat_objectid JOIN geodb_dd.tb_legende f on f.ezs_objectid = d.ezs_objectid JOIN geodb_dd.tb_sprache h on h.spr_objectid = f.spr_objectid where b.gzs_objectid = '" + self.gzs_objectid + "'"   
         self.__db_connect('team', 'geodb_dd', self.sql_dd_ebe)
         for row in self.result:
@@ -177,10 +190,7 @@ class Generierung(TemplateFunction):
             self.spr = row[5].decode('cp1252')
             self.datentyp = unicode(row[6])
             self.symbol_name = self.gpr + "_" + self.ebe + "_" + self.leg + "_" + self.spr + ".lyr"
-            if self.datentyp == 2:
-                self.symbol_name_akt = self.gpr + "_" + self.ebe + "_" + self.zeitstand + "_" + self.leg + "_" + self.spr + ".lyr"
-            else:
-                self.symbol_name_akt = "AKTUELL_" + self.gpr + "_" + self.ebe + "_" + self.leg + "_" + self.spr + ".lyr"
+            self.symbol_name_akt = "AKTUELL_" + self.gpr + "_" + self.ebe + "_" + self.leg + "_" + self.spr + ".lyr"
             self.symbol_name_zs = self.gpr + "_" + self.ebe + "_" + self.zeitstand + "_" + self.leg + "_" + self.spr + ".lyr"
             self.logger.info(self.symbol_name)
             self.quelle_symbol =  os.path.join(self.quelle_begleitdaten_symbol, self.symbol_name)
@@ -191,6 +201,14 @@ class Generierung(TemplateFunction):
             self.legDict['ziel_akt'] = self.ziel_symbol_akt.upper()
             self.legDict['ziel_zs'] = self.ziel_symbol_zs.upper()
             self.legList.append(self.legDict)
+            if self.datentyp == 9:
+                self.symbol_name = self.gpr + "_" + self.ebe + "_" + self.zeitstand + "_" + self.leg + "_" + self.spr + ".lyr"
+                self.symbol_name_zs = self.gpr + "_" + self.ebe + "_" + self.zeitstand + "_" + self.leg + "_" + self.spr + ".lyr"
+                self.symbol_name_akt = "AKTUELL_" + self.gpr + "_" + self.ebe + "_" + self.leg + "_" + self.spr + ".lyr"
+                self.legDict['name'] = self.symbol_name.lower()
+                self.legDict['quelle'] = self.quelle_symbol.lower()
+                self.legDict['ziel_akt'] = self.ziel_symbol_akt.upper()
+                self.legDict['ziel_zs'] = self.ziel_symbol_zs.upper()
 
     
     def __get_mxd_dd(self, lang):
