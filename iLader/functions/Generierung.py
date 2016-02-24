@@ -120,7 +120,7 @@ class Generierung(TemplateFunction):
             ziel_ras1_akt = os.path.join(self.sde_conn_ras1, ziel_schema_gpr_ebe) 
             ziel_ras1_zs = os.path.join(self.sde_conn_ras1, ziel_schema_gpr_ebe_zs)
             ziel_ras2 = os.path.join(self.sde_conn_ras2, ziel_schema_gpr_ebe)
-            if datentyp != 'Rastermosaik' and datentyp != 'Rasterkatalog' and datentyp != 'MosaicDataset':
+            if datentyp != 'Rastermosaik' and datentyp != 'Rasterkatalog' and datentyp != 'Mosaicdataset':
                 self.sql_ind_gdbp = "SELECT b.felder, b." + '"unique"' + " from gdbp.index_attribut b join gdbp.geoprodukte a on b.id_geoprodukt = a.id_geoprodukt where a.code = '" + gpr + "' and b.ebene = '" + ebe + "'"
                 self.__db_connect('work', 'gdbp', self.sql_ind_gdbp)
                 self.indList = []
@@ -150,14 +150,14 @@ class Generierung(TemplateFunction):
                 ebeRasDict['ziel_ras1']= ziel_ras1_akt
                 ebeRasDict['ziel_ras1_zs']= ziel_ras1_zs
                 self.ebeRasList.append(ebeRasDict)
-            elif datentyp == 'Rasterkatalog' or datentyp == 'MosaicDataset': # TODO neuer Datentyp MosaicDataset einfügen (hier Rasterkatalog nur zu Testzwecken
-                ebeRasDict['datentyp'] = datentyp
-                ebeRasDict['gpr_ebe'] = gpr_ebe
-                rasterkacheln_pfad = os.path.join(self.general_config['quelle_begleitdaten'], gpr, self.general_config['quelle_begleitdaten_work'], self.general_config['raster']['quelle_rasterkacheln'], self.general_config['raster']['historisch'])
-                rasterkacheln_csv = gpr_ebe + "_" + zeitstand + ".csv"
-                ebeRasDict['quelle'] = os.path.join(rasterkacheln_pfad, rasterkacheln_csv)
-                ebeRasDict['ziel_ras2'] = ziel_ras2
-                self.ebeRasList.append(ebeRasDict)          
+#             elif datentyp == 'Rasterkatalog' or datentyp == 'Mosaicdataset':
+#                 ebeRasDict['datentyp'] = datentyp
+#                 ebeRasDict['gpr_ebe'] = gpr_ebe
+#                 rasterkacheln_pfad = os.path.join(self.general_config['quelle_begleitdaten'], gpr, self.general_config['quelle_begleitdaten_work'], self.general_config['raster']['quelle_rasterkacheln'], self.general_config['raster']['historisch'])
+#                 rasterkacheln_csv = gpr_ebe + "_" + zeitstand + ".csv"
+#                 ebeRasDict['quelle'] = os.path.join(rasterkacheln_pfad, rasterkacheln_csv)
+#                 ebeRasDict['ziel_ras2'] = ziel_ras2
+#                 self.ebeRasList.append(ebeRasDict)          
                          
                 
     def __get_leg_dd(self):
@@ -188,7 +188,7 @@ class Generierung(TemplateFunction):
             self.zeitstand = self.jahr + "_" + self.version
             self.leg = row[4].decode('cp1252')
             self.spr = row[5].decode('cp1252')
-            self.datentyp = unicode(row[6])
+            self.datentyp = row[6]
             self.symbol_name = self.gpr + "_" + self.ebe + "_" + self.leg + "_" + self.spr + ".lyr"
             self.symbol_name_akt = "AKTUELL_" + self.gpr + "_" + self.ebe + "_" + self.leg + "_" + self.spr + ".lyr"
             self.symbol_name_zs = self.gpr + "_" + self.ebe + "_" + self.zeitstand + "_" + self.leg + "_" + self.spr + ".lyr"
@@ -204,8 +204,11 @@ class Generierung(TemplateFunction):
             if self.datentyp == 9:
                 self.symbol_name = self.gpr + "_" + self.ebe + "_" + self.zeitstand + "_" + self.leg + "_" + self.spr + ".lyr"
                 self.symbol_name_zs = self.gpr + "_" + self.ebe + "_" + self.zeitstand + "_" + self.leg + "_" + self.spr + ".lyr"
-                self.symbol_name_akt = "AKTUELL_" + self.gpr + "_" + self.ebe + "_" + self.leg + "_" + self.spr + ".lyr"
+                self.symbol_name_akt = "DELETE_" + self.gpr + "_" + self.ebe + "_" + self.leg + "_" + self.spr + ".lyr"
                 self.legDict['name'] = self.symbol_name.lower()
+                self.quelle_symbol =  os.path.join(self.quelle_begleitdaten_symbol, self.symbol_name)
+                self.ziel_symbol_akt = os.path.join(self.ziel_begleitdaten_symbol, self.symbol_name_akt)
+                self.ziel_symbol_zs = os.path.join(self.ziel_begleitdaten_symbol, self.symbol_name_zs)
                 self.legDict['quelle'] = self.quelle_symbol.lower()
                 self.legDict['ziel_akt'] = self.ziel_symbol_akt.upper()
                 self.legDict['ziel_zs'] = self.ziel_symbol_zs.upper()

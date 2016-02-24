@@ -68,51 +68,54 @@ class BegleitdatenReplaceSource(TemplateFunction):
             # lyr.dataSource gibt die sde-Connection aus, mit welche Daten geladen wurden, diese existiert nicht immer
             # deshalb wird der Pfad hier mit lyr.datasetName und der Norm-Connection gebildet
             dataSource = os.path.join(self.sde_conn_norm, lyr.datasetName)
-            desc = arcpy.Describe(dataSource)
-            datentyp = desc.dataType
-            self.logger.info("Datentyp: " + datentyp)
-            self.logger.info("Name in der Ziel-Instanz: " + gpr_ebe_publ)           
-            if datentyp == "FeatureClass":
-                try:
-                    self.logger.info('Haenge Quelle nach ' + self.sde_conn_vek + ' um.')
-                    # Kniff: zuerst auf vek2 umhängen, wo die Quelle existiert (wenn Parameter=False wird Schema GEODB nicht ??nommmen.)
-                    lyr.replaceDataSource(self.sde_conn_vek, "SDE_WORKSPACE", gpr_ebe_publ, True)
-                    if self.is_mxd == "false":
-                        lyr.save()
-                    if self.is_zeitstand == "false":
-                        # Filter, damit nur die aktuellen Zeitst寤e nach auch noch auf vek1 umgeh寧t werden
-                        self.logger.info('Haenge Quelle nach ' + self.sde_conn_vek1_geo +' um.')
-                        lyr.replaceDataSource(self.sde_conn_vek1_geo, "SDE_WORKSPACE", gpr_ebe_publ, False)
+            if arcpy.Exists(dataSource):
+                desc = arcpy.Describe(dataSource)
+                datentyp = desc.dataType
+                self.logger.info("Datentyp: " + datentyp)
+                self.logger.info("Name in der Ziel-Instanz: " + gpr_ebe_publ)           
+                if datentyp == "FeatureClass":
+                    try:
+                        self.logger.info('Haenge Quelle nach ' + self.sde_conn_vek + ' um.')
+                        # Kniff: zuerst auf vek2 umhängen, wo die Quelle existiert (wenn Parameter=False wird Schema GEODB nicht ??nommmen.)
+                        lyr.replaceDataSource(self.sde_conn_vek, "SDE_WORKSPACE", gpr_ebe_publ, True)
                         if self.is_mxd == "false":
                             lyr.save()
-                    if self.is_mxd == "false" and self.is_zeitstand == "true":
-                        self.logger.info("Fuege der Bezeichnung den Zeitstand an.")
-                        lyr_bezeichnung = lyr.name
-                        lyr_bezeichnung_zs = lyr_bezeichnung + ", " + self.task_config['zeitstand']
-                        lyr.name = lyr_bezeichnung_zs
-                        lyr.save()
-                except Exception as e:
-                    self.logger.warn('FEHLER: Die Datenquelle konnte nicht umgehaengt werden!')
-                    self.logger.warn(e)
-                if self.is_mxd == "false":
-                    lyr.save()    
-            elif datentyp == "RasterDataset":
-                try:
-                    self.logger.info("Haenge Quelle nach " + self.sde_conn_ras + " um.")
-                    # Parameter auf False gesetzt, da z.T. unexpected error (verm. weil Raster und nicht DC auf workp...
-                    lyr.replaceDataSource(self.sde_conn_ras, "SDE_WORKSPACE", gpr_ebe_publ, False)
-                    if self.is_mxd == "false":
-                        lyr.save()
-                        if self.is_zeitstand == "true":
+                        if self.is_zeitstand == "false":
+                            # Filter, damit nur die aktuellen Zeitst寤e nach auch noch auf vek1 umgeh寧t werden
+                            self.logger.info('Haenge Quelle nach ' + self.sde_conn_vek1_geo +' um.')
+                            lyr.replaceDataSource(self.sde_conn_vek1_geo, "SDE_WORKSPACE", gpr_ebe_publ, False)
+                            if self.is_mxd == "false":
+                                lyr.save()
+                        if self.is_mxd == "false" and self.is_zeitstand == "true":
                             self.logger.info("Fuege der Bezeichnung den Zeitstand an.")
                             lyr_bezeichnung = lyr.name
                             lyr_bezeichnung_zs = lyr_bezeichnung + ", " + self.task_config['zeitstand']
                             lyr.name = lyr_bezeichnung_zs
                             lyr.save()
-                except Exception as e:
-                    self.logger.warn("FEHLER: Die Datenquelle konnte nicht umgehaengt werden!")
-                    self.logger.warn(e)
-
+                    except Exception as e:
+                        self.logger.warn('FEHLER: Die Datenquelle konnte nicht umgehaengt werden!')
+                        self.logger.warn(e)
+                    if self.is_mxd == "false":
+                        lyr.save()    
+                elif datentyp == "RasterDataset":
+                    try:
+                        self.logger.info("Haenge Quelle nach " + self.sde_conn_ras + " um.")
+                        # Parameter auf False gesetzt, da z.T. unexpected error (verm. weil Raster und nicht DC auf workp...
+                        lyr.replaceDataSource(self.sde_conn_ras, "SDE_WORKSPACE", gpr_ebe_publ, False)
+                        if self.is_mxd == "false":
+                            lyr.save()
+                            if self.is_zeitstand == "true":
+                                self.logger.info("Fuege der Bezeichnung den Zeitstand an.")
+                                lyr_bezeichnung = lyr.name
+                                lyr_bezeichnung_zs = lyr_bezeichnung + ", " + self.task_config['zeitstand']
+                                lyr.name = lyr_bezeichnung_zs
+                                lyr.save()
+                    except Exception as e:
+                        self.logger.warn("FEHLER: Die Datenquelle konnte nicht umgehaengt werden!")
+                        self.logger.warn(e)
+            else:
+                self.logger.warn("Datenquelle nicht in der Instanz " + self.sde_conn_norm)
+                self.logger.warn("Die Quelle kann nicht umgehängt werden.")
     def __execute(self):
         '''
         Führt den eigentlichen Funktionsablauf aus.
