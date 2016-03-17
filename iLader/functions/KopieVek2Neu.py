@@ -53,6 +53,7 @@ class KopieVek2Neu(TemplateFunction):
         for ebene in self.task_config['vektor_ebenen']:
             source = ebene['quelle']
             target = ebene['ziel_vek2']
+            target2 =ebene['ziel_vek1']
             ebename = ebene['gpr_ebe']
             self.logger.info("Ebene " + ebename + " wird nach VEK2 kopiert.")
             self.logger.info("Quelle: " + source)
@@ -69,6 +70,12 @@ class KopieVek2Neu(TemplateFunction):
             # Berechtigungen setzen
             self.logger.info("Berechtigungen für Ebene " + target + " werden gesetzt: Rolle " + rolle)
             arcpy.ChangePrivileges_management(target, rolle, "GRANT")
+            # Falls eine Feature Class im Vek1 noch nicht existiert, wird sie kopiert um ein unnöties
+            # Umhängen der Begleitdaten im Anschluss an die Wippe zu verhindern
+            if not arcpy.Exists(target2):
+                self.logger.info("Ebene existiert noch nicht in vek1 und wird deshalb kopiert.")
+                arcpy.Copy_management(source, target2)
+                arcpy.ChangePrivileges_management(target2, rolle, "GRANT")
             
             # Check ob in Quelle und Ziel die gleiche Anzahl Records vorhanden sind
             count_source = int(arcpy.GetCount_management(source)[0])
