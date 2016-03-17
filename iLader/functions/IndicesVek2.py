@@ -31,6 +31,22 @@ class IndicesVek2(TemplateFunction):
             self.start()
             self.__execute()
         
+    def __delete_indices(self, table):
+        '''
+        Löscht alle attributiven Indices einer Tabelle/Featureclass. Nicht gelöscht wird der räumliche Index sowie
+        der attributive Index auf der Spalte OBJECTID, den ArcSDE selbständig anlegt.
+        :param table: Vollständiger Pfad zur Tabelle/Featureclass bei der die Indices gelöscht werden sollen.
+        '''
+        indices = arcpy.ListIndexes(table)
+        for index in indices:
+            if "SDE_ROWID_UK" not in index.name.upper():
+                if not index.name.upper().endswith("_IX1"):
+                    self.logger.info("Lösche Index " + index.name)
+                    try:
+                        arcpy.RemoveIndex_management(table, index.name)
+                    except Exception as e:
+                        self.logger.warn("Fehler beim Löschen des Index " + index.name)
+                        self.logger.info(e)
 
     def __execute(self):
         '''
@@ -39,9 +55,13 @@ class IndicesVek2(TemplateFunction):
         aufgeführten Indizes für die Instanz VEK2.
         '''
         for ebene in self.task_config['vektor_ebenen']:
+                target = ebene['ziel_vek2']
+                ebename = ebene['gpr_ebe']
+
+                self.logger.info("Lösche bestehende Indices für " + ebename + " im VEK2.")
+                self.__delete_indices(target)
+
                 if len(ebene["indices"]) > 0:
-                    target = ebene['ziel_vek2']
-                    ebename = ebene['gpr_ebe']
                     self.logger.info("Erstelle Index für " + ebename + " im VEK2.")           
                     for index in ebene["indices"]:
                         try:
