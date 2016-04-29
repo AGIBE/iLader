@@ -13,6 +13,7 @@ Requirements
 - python-keyczar (inkl. pycrypto)
 - configobj
 - chromalog
+- ArcSDE Command Line Tools
 
 Neuinstallation
 ---------------
