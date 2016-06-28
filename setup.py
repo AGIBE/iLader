@@ -10,7 +10,7 @@ setup(
       packages = find_packages(),
       version = __version__,
       # .pyt-Files werden von Python nicht erkannt. Deshalb müssen sie explizit als Package-Inhalt aufgelistet werden.
-      package_data={'': ["*.pyt"]},
+      package_data={'': ["esri/toolboxes/*.*"]},
       # Abhängigkeiten
       install_requires = ["configobj==5.0.6", "cx-Oracle==5.1.3", "python-keyczar==0.715", "chromalog==1.0.4"],
       # PyPI metadata
