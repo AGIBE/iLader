@@ -350,6 +350,9 @@ class Generierung(TemplateFunction):
         self.sde_conn_team_oereb = os.path.join(self.sde_connection_directory, 'team_oereb.sde')
         self.sde_conn_vek1_oereb = os.path.join(self.sde_connection_directory, 'vek1_oereb.sde')
         self.sde_conn_vek2_oereb = os.path.join(self.sde_connection_directory, 'vek2_oereb.sde')      
+        self.sde_conn_team_oereb2 = os.path.join(self.sde_connection_directory, 'team_oereb2.sde')
+        self.sde_conn_vek1_oereb2 = os.path.join(self.sde_connection_directory, 'vek1_oereb2.sde')
+        self.sde_conn_vek2_oereb2 = os.path.join(self.sde_connection_directory, 'vek2_oereb2.sde')
         self.connDict['sde_conn_team_dd'] = self.sde_conn_team_dd
         self.connDict['sde_conn_vek1'] = self.sde_conn_vek1
         self.connDict['sde_conn_vek2'] = self.sde_conn_vek2
@@ -364,6 +367,9 @@ class Generierung(TemplateFunction):
         self.connDict['sde_conn_team_oereb'] = self.sde_conn_team_oereb
         self.connDict['sde_conn_vek1_oereb'] = self.sde_conn_vek1_oereb
         self.connDict['sde_conn_vek2_oereb'] = self.sde_conn_vek2_oereb        
+        self.connDict['sde_conn_team_oereb2'] = self.sde_conn_team_oereb2
+        self.connDict['sde_conn_vek1_oereb2'] = self.sde_conn_vek1_oereb2
+        self.connDict['sde_conn_vek2_oereb2'] = self.sde_conn_vek2_oereb2       
         
         self.instanceDict = {}
         self.instanceDict['team'] = self.general_config['instances']['team']
@@ -379,15 +385,18 @@ class Generierung(TemplateFunction):
         self.schema_geodb_dd = self.general_config['users']['geodb_dd']['schema']
         self.schema_norm = self.general_config['users']['norm']['schema']
         self.schema_oereb = self.general_config['users']['oereb']['schema']
+        self.schema_oereb2 = self.general_config['users']['oereb2']['schema']
         self.schema_gdbp = self.general_config['users']['gdbp']['schema']
         self.schemaDict['geodb'] = self.schema_geodb
         self.schemaDict['geodb_dd'] = self.schema_geodb_dd
         self.schemaDict['norm'] = self.schema_norm
         self.schemaDict['oereb'] = self.schema_oereb
+        self.schemaDict['oereb2'] = self.schema_oereb2
         self.schemaDict['gdbp'] = self.schema_gdbp
         self.userpwDict = {}
         self.userpwDict['norm'] = self.general_config['users']['norm']['password']
         self.userpwDict['oereb'] = self.general_config['users']['oereb']['password']
+        self.userpwDict['oereb2'] = self.general_config['users']['oereb2']['password']
         self.userpwDict['geodb'] = self.general_config['users']['geodb']['password']
         self.userpwDict['geodb_dd'] = self.general_config['users']['geodb_dd']['password']
         self.userpwDict['gdbp'] = self.general_config['users']['gdbp']['password']
@@ -395,10 +404,10 @@ class Generierung(TemplateFunction):
     def __get_oereb_infos(self):
         self.oereb_dict = {}
         self.logger.info("ÖREBK-Infos werden geholt.")
-        oereb_tables_sql = "select ebecode, filter_field from oereb.gpr where GPRCODE='OEREB'"
+        oereb_tables_sql = "select ebecode, filter_field from gpr where GPRCODE='OEREB'"
         oereb_tables = []
-        username = self.general_config['users']['oereb']['username']
-        pw = self.general_config['users']['oereb']['password']
+        username = self.general_config['users']['oereb2']['username']
+        pw = self.general_config['users']['oereb2']['password']
         db = self.general_config['instances']['workh']
         ora_conn = ora.connect(username, pw, db)
         ora_cursor = ora_conn.cursor()
@@ -416,7 +425,7 @@ class Generierung(TemplateFunction):
         # leerer String übergeben
         # Wenn es ein oder mehrere Tickets hat, werden sie als
         # kommagetrennter-String übergeben. 
-        oereb_liefereinheiten_sql = "select ticket.liefereinheit from ticket left join liefereinheit on ticket.liefereinheit=liefereinheit.id where status=4 and liefereinheit.gprcode='" + self.gpr + "'"
+        oereb_liefereinheiten_sql = "select ticket.liefereinheit from ticket left join liefereinheit on ticket.liefereinheit=liefereinheit.id left join workflow_gpr on liefereinheit.workflow=workflow_gpr.workflow where status=4 and workflow_gpr.gprcode='" + self.gpr + "'"
         ora_cursor.execute(oereb_liefereinheiten_sql)
         liefereinheiten = ora_cursor.fetchall()
         liefereinheiten_string = ""
