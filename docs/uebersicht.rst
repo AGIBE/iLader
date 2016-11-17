@@ -39,8 +39,10 @@ Die Funktionen sind einerseits in der Tabelle TB_FUNCTION definiert und anderers
 #. :py:mod:`.KopieVek3Neu`                                                               
 #. :py:mod:`.IndicesVek3`                                                               
 #. :py:mod:`.KopieVek3Ersatz`         
-#. :py:mod:`.TransferVek2`       
+#. :py:mod:`.TransferVek2`
+#. :py:mod:`.Transfer2Vek2`
 #. :py:mod:`.TransferVek1`
+#. :py:mod:`.Transfer2Vek1`
 #. :py:mod:`.KopieRas1Neu`                                                                                            
 #. :py:mod:`.KopieRas1Ersatz`                                               
 #. :py:mod:`.AktuellerZeitstand`                                                               

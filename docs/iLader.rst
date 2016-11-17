@@ -6,6 +6,7 @@ Subpackages
 
 .. toctree::
 
+    iLader.esri
     iLader.functions
     iLader.helpers
     iLader.usecases

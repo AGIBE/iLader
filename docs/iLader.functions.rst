@@ -144,6 +144,16 @@ Submodules
     :undoc-members:
     :show-inheritance:
 
+.. automodule:: iLader.functions.Transfer2Vek1
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+.. automodule:: iLader.functions.Transfer2Vek2
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 .. automodule:: iLader.functions.TransferVek1
     :members:
     :undoc-members:
