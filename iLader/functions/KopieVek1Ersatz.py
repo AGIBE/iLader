@@ -79,13 +79,13 @@ class KopieVek1Ersatz(TemplateFunction):
             
             self.logger.info("Ebene " + ebename + " wurde ersetzt")
             
-            # Statistiken neu berechnen
-            self.logger.info("Statistiken werden neu berechnet in VEK1.")
-            try:
-                TemplateFunction.renew_statistics(self,'vek1')
-            except Exception as e:
-                self.logger.warn("Fehler beim Erstellen der Statistik auf VEK1.")
-                self.logger.warn(e)
+        # Statistiken neu berechnen
+        self.logger.info("Statistiken werden neu berechnet in VEK1.")
+        try:
+            TemplateFunction.renew_statistics(self,'vek1')
+        except Exception as e:
+            self.logger.warn("Fehler beim Erstellen der Statistik auf VEK1.")
+            self.logger.warn(e)
         
         self.logger.info("Alle Ebenen wurden ersetzt.")       
         self.finish()
