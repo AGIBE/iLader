@@ -2,6 +2,7 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 import json
 from iLader.helpers.Crypter import Crypter
+import iLader.helpers.Helpers
 import copy
 import logging
 import cx_Oracle
@@ -43,55 +44,45 @@ class TemplateFunction(object):
         json.dump(encrypted_task_config, f, indent=4)
         f.close()
         
-    def get_old_statistics(self,connection):
+    def get_old_statistics(self,instance,username,password):
         index_tables = []
-        cursor = connection.cursor()
-        #Prüfen ob veraltete Statistiken vorhanden sind
         index_tables_sql = "select table_name from DBA_TAB_STATISTICS where owner='GEODB' and table_name not like '%_IDX$%' and (stale_stats='YES' or stale_stats is null)" 
-        cursor.execute(index_tables_sql)
-        result_list = cursor.fetchall()
+        result_list = iLader.helpers.Helpers.db_connect(instance, username, password, index_tables_sql)   
         for result in result_list:
             index_tables.append(result[0])
-        cursor.close()
         return index_tables
     
-    def get_indexes_of_table(self,indexed_table,connection):
+    def get_indexes_of_table(self,indexed_table,instance,username,password):
         indexes = []
-        cursor = connection.cursor()
-        indexes_sql = "select index_name from DBA_INDEXES where table_name='" + indexed_table + "' and table_owner='GEODB' and index_type='NORMAL'" 
-        cursor.execute(indexes_sql)
-        result_list = cursor.fetchall()
+        indexes_sql = "select index_name from DBA_INDEXES where table_name='" + indexed_table + "' and table_owner='GEODB' and index_type='NORMAL'"       
+        result_list = iLader.helpers.Helpers.db_connect(instance, username, password, indexes_sql)
         for result in result_list:
             indexes.append(result[0])
-        cursor.close()
         return indexes
     
     def renew_statistics(self,dbname):
         '''
-        Die Funktion wird nach dem Ersatz von Daten im Vek1 und Vek2 ausgeführt. So dass Statistiken jeweils aktuell sind, insbesondere auch für tagesaktuelle Geoprodukte.
+        Die Funktion wird nach dem Reinladen (Ersatz oder Neu) von Daten im Vek1, Vek2 und Vek3 ausgeführt. So dass Statistiken jeweils aktuell sind, insbesondere auch für tagesaktuelle Geoprodukte.
         '''
-        db = self.task_config['instances'][dbname]
+        instance = self.task_config['instances'][dbname]
         username = 'gdbp'
         password = self.task_config['users'][username]
         username = 'SYSOEM'
-        connection = cx_Oracle.connect(username, password, db)
          
-        index_tables = self.get_old_statistics(connection)
+        index_tables = self.get_old_statistics(instance,username,password)
         
         db = self.task_config['instances'][dbname]
-        username = 'geodb'
-        password = self.task_config['users'][username]
-        conn = cx_Oracle.connect(username, password, db)  
+        username2 = 'geodb'
+        password2 = self.task_config['users'][username2]
+        conn = cx_Oracle.connect(username2, password2, db)  
         cursor = conn.cursor()
         
         for index_table in index_tables:
             # alle Indices rebuilden (ausser Spatial Index und LOB-Index)
-            indexes = self.get_indexes_of_table(index_table,connection)
+            indexes = self.get_indexes_of_table(index_table,instance,username,password)
             for index in indexes:
-                #log.write("Rebuild Index " + index + "\n")
                 index_sql = "ALTER INDEX " + index + " REBUILD" 
                 cursor.execute(index_sql)
-
                 cursor.callproc(name="dbms_stats.delete_table_stats", keywordParameters={'cascade_columns': True, 'cascade_indexes': True, 'ownname':'geodb', 'tabname': index_table})
                 plsql = """ 
                     begin
@@ -99,7 +90,6 @@ class TemplateFunction(object):
                     end;""" 
                 cursor.execute(plsql, table=index_table)
         cursor.close()
-        connection.close()
         conn.close()
         return 'OK'
     
