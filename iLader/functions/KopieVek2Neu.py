@@ -96,7 +96,7 @@ class KopieVek2Neu(TemplateFunction):
         try:
             TemplateFunction.renew_statistics(self,'vek2')
         except Exception as e:
-            self.logger.warn("Fehler beim Erstellen der Statistik auf VEK1.")
+            self.logger.warn("Fehler beim Erstellen der Statistik auf VEK2.")
             self.logger.warn(e)
             
         self.logger.info("Alle Ebenen wurden kopiert.")        
