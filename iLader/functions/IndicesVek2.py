@@ -39,14 +39,13 @@ class IndicesVek2(TemplateFunction):
         '''
         indices = arcpy.ListIndexes(table)
         for index in indices:
-            if "SDE_ROWID_UK" not in index.name.upper():
-                if not index.name.upper().endswith("_IX1"):
-                    self.logger.info("Lösche Index " + index.name)
-                    try:
-                        arcpy.RemoveIndex_management(table, index.name)
-                    except Exception as e:
-                        self.logger.warn("Fehler beim Löschen des Index " + index.name)
-                        self.logger.info(e)
+            if ("SDE_ROWID_UK" not in index.name.upper()) and (not index.name.upper().endswith("_IX1")) and (not index.name.upper().startswith("UUID_")):
+                self.logger.info("Lösche Index " + index.name)
+                try:
+                    arcpy.RemoveIndex_management(table, index.name)
+                except Exception as e:
+                    self.logger.warn("Fehler beim Löschen des Index " + index.name)
+                    self.logger.info(e)
 
     def __execute(self):
         '''
