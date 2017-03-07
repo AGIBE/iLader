@@ -387,12 +387,14 @@ class Generierung(TemplateFunction):
         self.schema_oereb = self.general_config['users']['oereb']['schema']
         self.schema_oereb2 = self.general_config['users']['oereb2']['schema']
         self.schema_gdbp = self.general_config['users']['gdbp']['schema']
+        self.schema_sysoem = self.general_config['users']['sysoem']['schema']
         self.schemaDict['geodb'] = self.schema_geodb
         self.schemaDict['geodb_dd'] = self.schema_geodb_dd
         self.schemaDict['norm'] = self.schema_norm
         self.schemaDict['oereb'] = self.schema_oereb
         self.schemaDict['oereb2'] = self.schema_oereb2
         self.schemaDict['gdbp'] = self.schema_gdbp
+        self.schemaDict['sysoem'] = self.schema_sysoem
         self.userpwDict = {}
         self.userpwDict['norm'] = self.general_config['users']['norm']['password']
         self.userpwDict['oereb'] = self.general_config['users']['oereb']['password']
@@ -400,6 +402,7 @@ class Generierung(TemplateFunction):
         self.userpwDict['geodb'] = self.general_config['users']['geodb']['password']
         self.userpwDict['geodb_dd'] = self.general_config['users']['geodb_dd']['password']
         self.userpwDict['gdbp'] = self.general_config['users']['gdbp']['password']
+        self.userpwDict['sysoem'] = self.general_config['users']['sysoem']['password']
         
     def __get_oereb_infos(self):
         self.oereb_dict = {}
