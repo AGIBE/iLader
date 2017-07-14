@@ -250,14 +250,16 @@ class Generierung(TemplateFunction):
                     fontDict['ziel_akt'] = self.font_akt.upper()
                     self.font_zs = os.path.join(self.ziel_begleitdaten_symbol, self.gpr + "_" + self.zeitstand + "_" + file)
                     fontDict['ziel_zs'] = self.font_zs.upper()
-                    self.fontList.append(fontDict)
-            for dir in dirs:
-                zusatzDict = {}
-                if dir == "zusatzdaten":
-                    zusatzDict['quelle'] = os.path.join(self.quelle_begleitdaten_gpr, self.general_config['quelle_begleitdaten_zusatzdaten'])
-                    zusatzDict['ziel'] = os.path.join(self.ziel_begleitdaten_gpr, self.general_config['ziel_begleitdaten_zusatzdaten'])
-                    self.zusatzList.append(zusatzDict)         
-
+                    self.fontList.append(fontDict)      
+    
+    def __get_fak_zusatzdaten(self):
+        self.logger.info("Prüfe ob Zusatzdaten vorhanden auf:")
+        if os.path.exists(self.quelle_begleitdaten_zusatzdaten):
+            self.logger.info("Zusatzdaten vorhanden")
+            self.zusatzDict = {}
+            self.zusatzDict['quelle'] = os.path.join(self.quelle_begleitdaten_gpr, self.general_config['quelle_begleitdaten_zusatzdaten'])
+            self.zusatzDict['ziel'] = os.path.join(self.ziel_begleitdaten_gpr, self.general_config['ziel_begleitdaten_zusatzdaten'], self.zeitstand)
+            
     def __define_quelle_ziel_begleitdaten(self):
             self.zielDict = {}
             self.quelle_begleitdaten_gpr = os.path.join(self.general_config['quelle_begleitdaten'], self.gpr, self.general_config['quelle_begleitdaten_work'])
@@ -458,7 +460,6 @@ class Generierung(TemplateFunction):
         self.mxdList = []
         self.styleList = []
         self.fontList = []
-        self.zusatzList = []
         self.__define_connections()               
         self.__get_importe_dd()
         self.__get_gpr_info()
@@ -469,6 +470,7 @@ class Generierung(TemplateFunction):
         self.__get_mxd_dd("FR")
         self.__get_leg_dd()        
         self.__get_fak_begleitdaten()
+        self.__get_fak_zusatzdaten()
         self.__define_qs()
         self.__get_oereb_infos()
         
@@ -489,7 +491,7 @@ class Generierung(TemplateFunction):
         self.task_config['ziel'] = {'ziel_begleitdaten_gpr': self.ziel_begleitdaten_gpr, 'ziel_begleitdaten_mxd': self.ziel_begleitdaten_mxd, 'ziel_begleitdaten_symbol': self.ziel_begleitdaten_symbol, 'ziel_begleitdaten_zusatzdaten': self.ziel_begleitdaten_zusatzdaten}
         self.task_config['style'] = self.styleList
         self.task_config['font'] = self.fontList
-        self.task_config['zusatzdaten'] = self.zusatzList
+        self.task_config['zusatzdaten'] = self.zusatzDict
         self.task_config['ziel'] = self.zielDict
         self.task_config['qs'] = self.qsDict
         self.task_config['default_tolerance'] = self.default_tolerance
