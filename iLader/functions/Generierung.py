@@ -254,9 +254,9 @@ class Generierung(TemplateFunction):
     
     def __get_fak_zusatzdaten(self):
         self.logger.info("Prüfe ob Zusatzdaten vorhanden auf:")
+        self.zusatzDict = {}
         if os.path.exists(self.quelle_begleitdaten_zusatzdaten):
             self.logger.info("Zusatzdaten vorhanden")
-            self.zusatzDict = {}
             self.zusatzDict['quelle'] = os.path.join(self.quelle_begleitdaten_gpr, self.general_config['quelle_begleitdaten_zusatzdaten'])
             self.zusatzDict['ziel'] = os.path.join(self.ziel_begleitdaten_gpr, self.general_config['ziel_begleitdaten_zusatzdaten'], self.zeitstand)
             
