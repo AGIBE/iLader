@@ -349,9 +349,6 @@ class Generierung(TemplateFunction):
         self.sde_conn_vek2_geo = os.path.join(self.sde_connection_directory, 'vek2_geo.sde')
         self.sde_conn_vek3_geo = os.path.join(self.sde_connection_directory, 'vek3_geo.sde')
         self.sde_conn_ras1_geo = os.path.join(self.sde_connection_directory, 'ras1_geo.sde')        
-        self.sde_conn_team_oereb = os.path.join(self.sde_connection_directory, 'team_oereb.sde')
-        self.sde_conn_vek1_oereb = os.path.join(self.sde_connection_directory, 'vek1_oereb.sde')
-        self.sde_conn_vek2_oereb = os.path.join(self.sde_connection_directory, 'vek2_oereb.sde')      
         self.sde_conn_team_oereb2 = os.path.join(self.sde_connection_directory, 'team_oereb2.sde')
         self.sde_conn_vek1_oereb2 = os.path.join(self.sde_connection_directory, 'vek1_oereb2.sde')
         self.sde_conn_vek2_oereb2 = os.path.join(self.sde_connection_directory, 'vek2_oereb2.sde')
@@ -366,9 +363,6 @@ class Generierung(TemplateFunction):
         self.connDict['sde_conn_vek2_geo'] = self.sde_conn_vek2_geo
         self.connDict['sde_conn_vek3_geo'] = self.sde_conn_vek3_geo
         self.connDict['sde_conn_ras1_geo'] = self.sde_conn_ras1_geo
-        self.connDict['sde_conn_team_oereb'] = self.sde_conn_team_oereb
-        self.connDict['sde_conn_vek1_oereb'] = self.sde_conn_vek1_oereb
-        self.connDict['sde_conn_vek2_oereb'] = self.sde_conn_vek2_oereb        
         self.connDict['sde_conn_team_oereb2'] = self.sde_conn_team_oereb2
         self.connDict['sde_conn_vek1_oereb2'] = self.sde_conn_vek1_oereb2
         self.connDict['sde_conn_vek2_oereb2'] = self.sde_conn_vek2_oereb2       
@@ -385,20 +379,17 @@ class Generierung(TemplateFunction):
         self.schema_geodb = self.general_config['users']['geodb']['schema']
         self.schema_geodb_dd = self.general_config['users']['geodb_dd']['schema']
         self.schema_norm = self.general_config['users']['norm']['schema']
-        self.schema_oereb = self.general_config['users']['oereb']['schema']
         self.schema_oereb2 = self.general_config['users']['oereb2']['schema']
         self.schema_gdbp = self.general_config['users']['gdbp']['schema']
         self.schema_sysoem = self.general_config['users']['sysoem']['schema']
         self.schemaDict['geodb'] = self.schema_geodb
         self.schemaDict['geodb_dd'] = self.schema_geodb_dd
         self.schemaDict['norm'] = self.schema_norm
-        self.schemaDict['oereb'] = self.schema_oereb
         self.schemaDict['oereb2'] = self.schema_oereb2
         self.schemaDict['gdbp'] = self.schema_gdbp
         self.schemaDict['sysoem'] = self.schema_sysoem
         self.userpwDict = {}
         self.userpwDict['norm'] = self.general_config['users']['norm']['password']
-        self.userpwDict['oereb'] = self.general_config['users']['oereb']['password']
         self.userpwDict['oereb2'] = self.general_config['users']['oereb2']['password']
         self.userpwDict['geodb'] = self.general_config['users']['geodb']['password']
         self.userpwDict['geodb_dd'] = self.general_config['users']['geodb_dd']['password']
@@ -412,7 +403,7 @@ class Generierung(TemplateFunction):
         oereb_tables = []
         username = self.general_config['users']['oereb2']['username']
         pw = self.general_config['users']['oereb2']['password']
-        db = self.general_config['instances']['workh']
+        db = self.general_config['instances']['work']
         ora_conn = ora.connect(username, pw, db)
         ora_cursor = ora_conn.cursor()
         # Tabellennamen und Liefereinheiten-Feld holen
