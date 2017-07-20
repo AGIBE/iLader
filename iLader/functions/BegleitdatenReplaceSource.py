@@ -59,7 +59,7 @@ class BegleitdatenReplaceSource(TemplateFunction):
         else:
             lyr = self.legende
         change_src = True
-        if self.task_config['instances']['ras2'] in lyr.serviceProperties.get('Server'):
+        if ('ras2' in lyr.serviceProperties.get('Server')):
             # Ist es MosaicDataset? Dann müssen Datenquellen nicht umgehängt werden
             change_src = False
         if lyr.supports("DATASOURCE") and lyr.supports("DATASETNAME") and change_src:
