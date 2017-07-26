@@ -30,7 +30,7 @@ class BegleitdatenReplaceSource(TemplateFunction):
         if self.name in self.task_config['ausgefuehrte_funktionen'] and self.task_config['task_config_load_from_JSON']:
             self.logger.info("Funktion " + self.name + " wird ausgelassen.")
         else:
-            self.logger.info("Funktion " + self.name + " wird ausgef??.")
+            self.logger.info("Funktion " + self.name + " wird ausgeführt.")
             self.start()
             self.__execute()
             
@@ -58,7 +58,11 @@ class BegleitdatenReplaceSource(TemplateFunction):
             lyr = arcpy.mapping.Layer(self.legende)
         else:
             lyr = self.legende
-        if lyr.supports("DATASOURCE") and lyr.supports("DATASETNAME"):
+        change_src = True
+        if ('ras2' in lyr.serviceProperties.get('Server')):
+            # Ist es MosaicDataset? Dann müssen Datenquellen nicht umgehängt werden
+            change_src = False
+        if lyr.supports("DATASOURCE") and lyr.supports("DATASETNAME") and change_src:
             gpr_ebe = lyr.datasetName
             gpr_ebe_publ = gpr_ebe.replace(self.task_config['schema']['norm'], self.task_config['schema']['geodb'])
             if self.is_zeitstand == "false":
@@ -116,6 +120,8 @@ class BegleitdatenReplaceSource(TemplateFunction):
             else:
                 self.logger.warn("Datenquelle nicht in der Instanz " + self.sde_conn_norm)
                 self.logger.warn("Die Quelle kann nicht umgehängt werden.")
+        else:
+            self.logger.info("Es handelt sich um ein MosaicDataset. Datenquelle muss nicht umgehängt werden.")
     def __execute(self):
         '''
         Führt den eigentlichen Funktionsablauf aus.

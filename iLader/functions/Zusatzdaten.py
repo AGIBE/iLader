@@ -38,13 +38,18 @@ class Zusatzdaten(TemplateFunction):
         '''
         
         if len(self.task_config["zusatzdaten"]) > 0:
-            src_dir = self.task_config["zusatzdaten"]["quelle"]
-            target_dir = self.task_config["zusatzdaten"]["ziel"]
-            if os.path.exists(target_dir):
-                self.logger.info("Zielverzeichnis " + target_dir + " existiert bereits. Es wird gelöscht.")
-                shutil.rmtree(target_dir)
-            self.logger.info("Zusatzdaten-Verzeichnis " + src_dir + " wird nach " + target_dir + " kopiert.")
-            shutil.copytree(src_dir, target_dir)
+            try:
+                src_dir = self.task_config["zusatzdaten"]["quelle"]
+                # workaround: nach löschen kann selbes Verzeichnis sonst nicht kopiert werden.
+                target_dir_rm = self.task_config["zusatzdaten"]["ziel"]
+                target_dir = self.task_config["zusatzdaten"]["ziel"]
+                if os.path.exists(target_dir):
+                    self.logger.info("Zielverzeichnis " + target_dir_rm + " existiert bereits. Es wird gelöscht.")
+                    shutil.rmtree(target_dir_rm)
+                self.logger.info("Zusatzdaten-Verzeichnis " + src_dir + " wird nach " + target_dir + " kopiert.")
+                shutil.copytree(src_dir, target_dir)
+            except OSError as e:
+                self.logger.error("Zusatzdaten konnten nicht kopiert werden: " + str(e))
         else:
             self.logger.info("Keine Zusatzdaten vorhanden. Es wird nichts kopiert.")
         
