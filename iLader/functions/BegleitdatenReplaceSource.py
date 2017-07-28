@@ -59,9 +59,10 @@ class BegleitdatenReplaceSource(TemplateFunction):
         else:
             lyr = self.legende
         change_src = True
-        if ('ras2' in lyr.serviceProperties.get('Server')):
-            # Ist es MosaicDataset? Dann müssen Datenquellen nicht umgehängt werden
-            change_src = False
+        if lyr.supports("SERVICEPROPERTIES"):
+            if ('ras2' in lyr.serviceProperties.get('Server')):
+                # Ist es MosaicDataset? Dann müssen Datenquellen nicht umgehängt werden
+                change_src = False
         if lyr.supports("DATASOURCE") and lyr.supports("DATASETNAME") and change_src:
             gpr_ebe = lyr.datasetName
             gpr_ebe_publ = gpr_ebe.replace(self.task_config['schema']['norm'], self.task_config['schema']['geodb'])
