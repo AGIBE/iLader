@@ -2,9 +2,7 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 from .TemplateFunction import TemplateFunction
 import arcpy
-import fmeobjects
 import os
-import sys
 from iLader.helpers import fme_helper, PostgresHelper
 
 class KopieVek2Ersatz_PG(TemplateFunction):
@@ -89,7 +87,7 @@ class KopieVek2Ersatz_PG(TemplateFunction):
             # Daten kopieren
             # Copy-Script
             fme_logfile = fme_helper.prepare_fme_log(fme_script, (self.task_config['log_file']).rsplit('\\',1)[0])
-            runner = fmeobjects.FMEWorkspaceRunner()
+            
             # Der FMEWorkspaceRunner akzeptiert keine Unicode-Strings!
             # Daher müssen workspace und parameters umgewandelt werden!
             parameters = {
@@ -104,15 +102,7 @@ class KopieVek2Ersatz_PG(TemplateFunction):
                 'INPUT_SDE': str(source_sde)
             }
             # FME-Skript starten
-            try:
-                # Das FME-Skript führt vor dem Erstellen der Tabelle ein DROP aus
-                runner.runWithParameters(str(fme_script), parameters)
-                pass
-            except fmeobjects.FMEException as ex:
-                self.logger.error("FME-Workbench " + fme_script + " konnte nicht ausgeführt werden!")
-                self.logger.error(ex)
-                self.logger.error("Import wird abgebrochen!")
-                sys.exit()
+            fme_helper.fme_runner(str(fme_script), parameters)
             
             # Berechtigungen setzen
             self.logger.info("Berechtigungen für Ebene " + table + " wird gesetzt: Rolle " + rolle)
