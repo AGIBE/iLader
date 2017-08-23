@@ -7,7 +7,7 @@ import os
 import sys
 from iLader.helpers import fme_helper, PostgresHelper
 
-class KopieVek2Neu_PG(TemplateFunction):
+class KopieVek2Ersatz_PG(TemplateFunction):
     '''
     Kopiert sämtliche Vektorebenen aus der Instanz TEAM in die Instanz vek2 (PostgreSQL). Folgende Typen
     werden kopiert:
@@ -16,10 +16,8 @@ class KopieVek2Neu_PG(TemplateFunction):
     - Tabellen (Standalone oder Werte-)
     - Annotations
     
-    In der Zielinstanz vek2 sind die Ebenen nicht vorhanden. Da aber z.B. aufgrund eines
-    abgebrochenen Imports durchaus verwaiste Ebenen vorhanden sein kännen, muss diese 
-    Funktion vorgängig prüfen, ob die Ebenen schon existieren und sie gegebenenfalls
-    löschen.
+    In der Zielinstanz vek2 sind die Ebenen bereits vorhanden und müssen vorgängig
+    gelöscht werden.
     
     Die Angaben zu den Ebenen sind in task_config:
     
@@ -37,7 +35,7 @@ class KopieVek2Neu_PG(TemplateFunction):
         Constructor
         :param task_config: Vom Usecase initialisierte task_config (Dictionary)
         '''
-        self.name = "KopieVek2Neu_PG"
+        self.name = "KopieVek2Ersatz_PG"
         TemplateFunction.__init__(self, task_config)
         
         if self.name in self.task_config['ausgefuehrte_funktionen'] and self.task_config['task_config_load_from_JSON']:
@@ -79,6 +77,14 @@ class KopieVek2Neu_PG(TemplateFunction):
                 # Existiert die Quell-Ebene nicht, Abbruch mit Fehlermeldung und Exception
                 self.logger.error("Quell-Ebene " + source + " existiert nicht!")
                 raise Exception
+#             table_sp = table.split('.')
+#             sql_query = "SELECT 1 FROM information_schema.tables WHERE table_schema = '" + table_sp[0] + "' AND table_name = '" + table_sp[1] + "'"
+#             result_vek1 = PostgresHelper.db_sql(host, db, db_user, port, pw, sql_query, True)
+#             if result_vek1 == 1:
+#                 # Gibt es die Ziel-Ebene bereits, muss sie geloescht werden
+#                 self.logger.info("Ebene " + target + " wird nun geloescht!")
+#                 sql_query = "DROP TABLE " + table
+#                 PostgresHelper.db_sql(host, db, db_user, port, pw, sql_query)
                 
             # Daten kopieren
             # Copy-Script
@@ -107,7 +113,7 @@ class KopieVek2Neu_PG(TemplateFunction):
                 self.logger.error(ex)
                 self.logger.error("Import wird abgebrochen!")
                 sys.exit()
-      
+            
             # Berechtigungen setzen
             self.logger.info("Berechtigungen für Ebene " + table + " wird gesetzt: Rolle " + rolle)
             sql_query = 'GRANT SELECT ON ' + table + ' TO ' + rolle
@@ -117,7 +123,7 @@ class KopieVek2Neu_PG(TemplateFunction):
             self.logger.info("Primary Key für Ebene " + table + " wird gesetzt.")
             sql_query = 'ALTER TABLE ' + table + ' ADD CONSTRAINT ' + ebename + '_objectid_pk PRIMARY KEY (objectid)'
             PostgresHelper.db_sql(host, db, db_user, port, pw, sql_query)
-          
+            
             # Im Moment wird dies nicht umgesetzt, da die lyr-Files nie auf die PostgreSQL zeigen
             # Falls eine Feature Class im Vek1 noch nicht existiert, wird sie kopiert um ein unnötiges
             # Umhängen der Begleitdaten im Anschluss an die Wippe zu verhindern
@@ -128,7 +134,7 @@ class KopieVek2Neu_PG(TemplateFunction):
 #                  self.logger.info("Ebene existiert noch nicht in vek1 und wird deshalb kopiert.")
 #                  arcpy.Copy_management(source, target2)
 #                  arcpy.ChangePrivileges_management(target2, rolle, "GRANT")
-               
+            
             # Check ob in Quelle und Ziel die gleiche Anzahl Records vorhanden sind
             count_source = int(arcpy.GetCount_management(source)[0])
               
@@ -145,7 +151,5 @@ class KopieVek2Neu_PG(TemplateFunction):
                    
             self.logger.info("Ebene " + ebename + " wurde kopiert")
             
-            
-        self.logger.info("Alle Ebenen wurden kopiert.")        
-       
+        self.logger.info("Alle Ebenen wurden kopiert.")       
         self.finish()
