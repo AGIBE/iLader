@@ -5,35 +5,29 @@ import arcpy
 import os
 from iLader.helpers import fme_helper, PostgresHelper
 
-class KopieVek2Ersatz_PG(TemplateFunction):
+class KopieVek1Ersatz_PG(TemplateFunction):
     '''
-    Kopiert sämtliche Vektorebenen aus der Instanz TEAM in die Instanz vek2 (PostgreSQL). Folgende Typen
+    Kopiert saemtliche Vektorebenen aus der Instanz TEAM in die Instanz vek1 (PostgreSQL). Folgende Typen
     werden kopiert:
     
     - Vektor-FeatureClasses
     - Tabellen (Standalone oder Werte-)
     - Annotations
     
-    In der Zielinstanz vek2 sind die Ebenen bereits vorhanden und müssen vorgängig
-    gelöscht werden.
+    In der Zielinstanz vek1 sind die Ebenen bereits vorhanden. Da keine Datenmodellaenderungen vorkommen kann, wird vor dem INSERT ein TRUNCATE ausgefuehrt (FME). 
     
     Die Angaben zu den Ebenen sind in task_config:
     
     - ``task_config["vektor_ebenen"]``
     
-    Nach dem Kopiervorgang setzt die Funktion auch noch die korrekten Berechtigungen d.h.
-    sie vergibt SELECT-Rechte an eine Rolle. Die Rolle ist in task_config abgelegt:
-    
-    - ``task_config["rolle"]``
-    
-    Auf das explizite Berechnen des räumlichen Indexes wird verzichtet.
+    Der raeumlichen Indexes kann ebenfalls aufgrund der Locks nicht neu berechnet werden.
     '''
     def __init__(self, task_config):
         '''
         Constructor
         :param task_config: Vom Usecase initialisierte task_config (Dictionary)
         '''
-        self.name = "KopieVek2Ersatz_PG"
+        self.name = "KopieVek1Ersatz_PG"
         TemplateFunction.__init__(self, task_config)
         
         if self.name in self.task_config['ausgefuehrte_funktionen'] and self.task_config['task_config_load_from_JSON']:
@@ -43,30 +37,28 @@ class KopieVek2Ersatz_PG(TemplateFunction):
             self.start()
             self.__execute()
         
-
+        
     def __execute(self):
         '''
-        Führt den eigentlichen Funktionsablauf aus
+        Fuehrt den eigentlichen Funktionsablauf aus
         '''
-        rolle = self.task_config['rolle']
-        db = self.task_config['db_vek2_pg']
+        db = self.task_config['db_vek1_pg']
         port = self.task_config['port_pg']
         host = self.task_config['instances']['oereb']
         db_user = 'geodb'
         schema = self.task_config['schema']['geodb']
         pw = self.task_config['users']['geodb']
         source_sde = self.task_config['connections']['sde_conn_norm']
-        # TODO: in Variable auslagern
         fme_script = os.path.abspath(os.path.join(os.path.dirname( __file__ ), '..')) + "\\helpers\\" + "EsriGeodatabase2PostGIS.fmw"
         
         # Jede Ebene durchgehen
         for ebene in self.task_config['vektor_ebenen']:
             source = ebene['quelle']       
             source_table = source.rsplit('\\',1)[1]
-            table = ebene['ziel_vek2'].rsplit('\\',1)[1]
+            table = ebene['ziel_vek1'].lower().rsplit('\\',1)[1]
             ebename = ebene['gpr_ebe'].lower()
             
-            self.logger.info("Ebene " + ebename + " wird nach vek2 kopiert.")
+            self.logger.info("Ebene " + ebename + " wird nach vek1 kopiert.")
             self.logger.info("Quelle: " + source)
             self.logger.info("Ziel: " + host + "/" + db +" "+ table)
             
@@ -75,20 +67,22 @@ class KopieVek2Ersatz_PG(TemplateFunction):
                 # Existiert die Quell-Ebene nicht, Abbruch mit Fehlermeldung und Exception
                 self.logger.error("Quell-Ebene " + source + " existiert nicht!")
                 raise Exception
-#             table_sp = table.split('.')
-#             sql_query = "SELECT 1 FROM information_schema.tables WHERE table_schema = '" + table_sp[0] + "' AND table_name = '" + table_sp[1] + "'"
-#             result_vek1 = PostgresHelper.db_sql(host, db, db_user, port, pw, sql_query, True)
-#             if result_vek1 == 1:
-#                 # Gibt es die Ziel-Ebene bereits, muss sie geloescht werden
-#                 self.logger.info("Ebene " + target + " wird nun geloescht!")
-#                 sql_query = "DROP TABLE " + table
-#                 PostgresHelper.db_sql(host, db, db_user, port, pw, sql_query)
-                
+        
+            # Pruefen ob es die target Tabelle gibt
+            table_sp = table.split('.')
+            sql_query = "SELECT 1 FROM information_schema.tables WHERE table_schema = '" + table_sp[0] + "' AND table_name = '" + table_sp[1] + "'"
+            result_vek1 = PostgresHelper.db_sql(host, db, db_user, port, pw, sql_query, True)
+            if result_vek1 is None:
+                # Gibt es die Ziel-Ebene noch nicht, Abbruch mit Fehlermeldung und Exception
+                self.logger.error("Ziel-Ebene " + table + " existiert nicht!")
+                raise Exception
+            
             # Daten kopieren
-            # Copy-Script
+            # Copy-Script, Table Handling auf Truncate umstellen, damit Tabelle nicht gelöscht wird
+            self.logger.info("Ebene " + host + "/" + db +" "+ table + " wird geleert (Truncate) und aufgefuellt (Insert).")
             fme_logfile = fme_helper.prepare_fme_log(fme_script, (self.task_config['log_file']).rsplit('\\',1)[0])
             # Der FMEWorkspaceRunner akzeptiert keine Unicode-Strings!
-            # Daher müssen workspace und parameters umgewandelt werden!
+            # Daher muessen workspace und parameters umgewandelt werden!
             parameters = {
                 'TABELLEN': str(source_table),
                 'POSTGIS_DB': str(db),
@@ -98,31 +92,11 @@ class KopieVek2Ersatz_PG(TemplateFunction):
                 'SCHEMA_NAME': str(schema),
                 'POSTGIS_PASSWORD': str(pw),
                 'LOGFILE': str(fme_logfile),
-                'INPUT_SDE': str(source_sde)
+                'INPUT_SDE': str(source_sde),
+                'TABLE_HANDLING': "TRUNCATE_EXISTING" 
             }
             # FME-Skript starten
             fme_helper.fme_runner(str(fme_script), parameters)
-            
-            # Berechtigungen setzen
-            self.logger.info("Berechtigungen für Ebene " + table + " wird gesetzt: Rolle " + rolle)
-            sql_query = 'GRANT SELECT ON ' + table + ' TO ' + rolle
-            PostgresHelper.db_sql(host, db, db_user, port, pw, sql_query)
-            
-            # Set Primary Key
-            self.logger.info("Primary Key für Ebene " + table + " wird gesetzt.")
-            sql_query = 'ALTER TABLE ' + table + ' ADD CONSTRAINT ' + ebename + '_objectid_pk PRIMARY KEY (objectid)'
-            PostgresHelper.db_sql(host, db, db_user, port, pw, sql_query)
-            
-            # Im Moment wird dies nicht umgesetzt, da die lyr-Files nie auf die PostgreSQL zeigen
-            # Falls eine Feature Class im Vek1 noch nicht existiert, wird sie kopiert um ein unnötiges
-            # Umhängen der Begleitdaten im Anschluss an die Wippe zu verhindern
-#              table_sp = table.split('.')
-#              sql_query = "SELECT 1 FROM information_schema.tables WHERE table_schema = '" + table_sp[0] + "' AND table_name = '" + table_sp[1] + "'"
-#              result_vek1 = PostgresHelper.db_sql(host, db, db_user, port, pw, sql_query)
-#              if not result_vek1:
-#                  self.logger.info("Ebene existiert noch nicht in vek1 und wird deshalb kopiert.")
-#                  arcpy.Copy_management(source, target2)
-#                  arcpy.ChangePrivileges_management(target2, rolle, "GRANT")
             
             # Check ob in Quelle und Ziel die gleiche Anzahl Records vorhanden sind
             count_source = int(arcpy.GetCount_management(source)[0])
@@ -137,8 +111,10 @@ class KopieVek2Ersatz_PG(TemplateFunction):
                 raise Exception
             else:
                 self.logger.info("Anzahl Objekte in Quelle und Ziel identisch!")
-                   
-            self.logger.info("Ebene " + ebename + " wurde kopiert")
             
-        self.logger.info("Alle Ebenen wurden kopiert.")       
+            self.logger.info("Ebene " + ebename + " wurde ersetzt")
+            
+            # TODO: Evtl. muessen die Indices neu berechnet werden
+        
+        self.logger.info("Alle Ebenen wurden ersetzt.")       
         self.finish()

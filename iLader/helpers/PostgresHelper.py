@@ -20,7 +20,9 @@ def db_sql(host, db, db_user, port, pw, sql_query, fetch=False):
  
     # retrieve the records from the database
     if fetch:
-        records = cursor.fetchone()[0]
+        records = cursor.fetchone()
+        if records:
+            records = records[0]
     else:
         conn.commit()
     

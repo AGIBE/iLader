@@ -32,3 +32,6 @@ from .Ausputzer import Ausputzer
 from .BegleitdatenReplaceSource import BegleitdatenReplaceSource
 from .GeoDBProzess import GeoDBProzess
 from .MosaicDatasetRas2 import MosaicDatasetRas2
+from .KopieVek2Neu_PG import KopieVek2Neu_PG
+from .KopieVek2Ersatz_PG import KopieVek2Ersatz_PG
+from .KopieVek1Ersatz_PG import KopieVek1Ersatz_PG

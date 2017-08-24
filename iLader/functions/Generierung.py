@@ -375,6 +375,7 @@ class Generierung(TemplateFunction):
         self.instanceDict['ras1'] = self.general_config['instances']['ras1']
         self.instanceDict['ras2'] = self.general_config['instances']['ras2']
         self.instanceDict['work'] = self.general_config['instances']['work']
+        self.instanceDict['oereb'] = self.general_config['instances']['oereb']
         self.schemaDict = {}
         self.schema_geodb = self.general_config['users']['geodb']['schema']
         self.schema_geodb_dd = self.general_config['users']['geodb_dd']['schema']
@@ -395,6 +396,9 @@ class Generierung(TemplateFunction):
         self.userpwDict['geodb_dd'] = self.general_config['users']['geodb_dd']['password']
         self.userpwDict['gdbp'] = self.general_config['users']['gdbp']['password']
         self.userpwDict['sysoem'] = self.general_config['users']['sysoem']['password']
+        self.task_config['db_vek1_pg'] = self.general_config['db_vek1_pg']
+        self.task_config['db_vek2_pg'] = self.general_config['db_vek2_pg']
+        self.task_config['port_pg'] = self.general_config['port_pg']
         
     def __get_oereb_infos(self):
         self.oereb_dict = {}
