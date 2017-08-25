@@ -2,6 +2,7 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 import os
 import datetime
+import sys
 import fmeobjects
 
 def prepare_fme_log(fme_script, log_directory):
@@ -19,7 +20,8 @@ def fme_runner(fme_script, parameters):
         runner.runWithParameters(str(fme_script), parameters)
         pass
     except fmeobjects.FMEException as ex:
-        self.logger.error("FME-Workbench " + fme_script + " konnte nicht ausgeführt werden!")
-        self.logger.error(ex)
-        self.logger.error("Import wird abgebrochen!")
+        # TODO: normale logs
+        print("FME-Workbench " + fme_script + " konnte nicht ausgeführt werden!")
+        print(ex)
+        print("Import wird abgebrochen!")
         sys.exit()

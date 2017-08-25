@@ -2,7 +2,7 @@ import psycopg2
 import sys
 
 
-def db_sql(host, db, db_user, port, pw, sql_query, fetch=False):
+def db_sql(host, db, db_user, port, pw, sql_query, fetch=False, fetchall=False):
     conn_string = "host='" + host + "' dbname='" + db + "' port ='" + port + "' user='" + db_user + "' password='" + pw + "'"
  
     try:
@@ -18,11 +18,14 @@ def db_sql(host, db, db_user, port, pw, sql_query, fetch=False):
     # execute our Query
     cursor.execute(sql_query)
  
-    # retrieve the records from the database
+    # retrieve all or one records from the database or commit
     if fetch:
-        records = cursor.fetchone()
-        if records:
-            records = records[0]
+        if fetchall:
+            records = cursor.fetchall()
+        else:
+            records = cursor.fetchone()
+            if records:
+                records = records[0]
     else:
         conn.commit()
     
