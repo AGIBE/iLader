@@ -28,6 +28,7 @@ class IndicesVek2_PG(TemplateFunction):
             self.logger.info("Funktion " + self.name + " wird ausgefuehrt.")
             self.start()
             self.__execute()
+            
         
     def __delete_indices(self, host, db, db_user, port, pw, table):
         '''
@@ -41,13 +42,14 @@ class IndicesVek2_PG(TemplateFunction):
                     WHERE t.oid = ix.indrelid and i.oid = ix.indexrelid and a.attrelid = t.oid and a.attnum = ANY(ix.indkey) and t.relkind = 'r' \
                     AND t.relname in ('" + table_sp[1] + "') and a.attname not in ('objectid', 'shape') "
         
-        indices = PostgresHelper.db_sql(host, db, db_user, port, pw, sql_query, True, True)
+        indices = PostgresHelper.db_sql(self, host, db, db_user, port, pw, sql_query, True, True)
         
         if indices:
             for index in indices:
                 self.logger.info("Loesche Index " + index[0])
                 sql_query = 'DROP INDEX ' + index[0]
-                PostgresHelper.db_sql(host, db, db_user, port, pw, sql_query)
+                PostgresHelper.db_sql(self, host, db, db_user, port, pw, sql_query)
+
 
     def __execute(self):
         '''
@@ -83,6 +85,6 @@ class IndicesVek2_PG(TemplateFunction):
                         indextyp = 'UNIQUE'
                     self.logger.info("Index: " + index_attribute + ": " + indextyp) 
                     sql_query = 'CREATE ' + indextyp + ' INDEX ' +indexname + ' ON ' + table + ' (' + index_attribute + ')'
-                    PostgresHelper.db_sql(host, db, db_user, port, pw, sql_query)
+                    PostgresHelper.db_sql(self, host, db, db_user, port, pw, sql_query)
        
         self.finish()

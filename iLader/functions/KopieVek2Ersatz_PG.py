@@ -3,7 +3,8 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 from .TemplateFunction import TemplateFunction
 import arcpy
 import os
-from iLader.helpers import fme_helper, PostgresHelper
+from iLader.helpers import PostgresHelper
+from iLader.helpers import FME_helper
 
 class KopieVek2Ersatz_PG(TemplateFunction):
     '''
@@ -53,10 +54,9 @@ class KopieVek2Ersatz_PG(TemplateFunction):
         port = self.task_config['port_pg']
         host = self.task_config['instances']['oereb']
         db_user = 'geodb'
+        pw = self.task_config['users'][db_user]
         schema = self.task_config['schema']['geodb']
-        pw = self.task_config['users']['geodb']
         source_sde = self.task_config['connections']['sde_conn_norm']
-        # TODO: in Variable auslagern
         fme_script = os.path.abspath(os.path.join(os.path.dirname( __file__ ), '..')) + "\\helpers\\" + "EsriGeodatabase2PostGIS.fmw"
         
         # Jede Ebene durchgehen
@@ -75,61 +75,43 @@ class KopieVek2Ersatz_PG(TemplateFunction):
                 # Existiert die Quell-Ebene nicht, Abbruch mit Fehlermeldung und Exception
                 self.logger.error("Quell-Ebene " + source + " existiert nicht!")
                 raise Exception
-#             table_sp = table.split('.')
-#             sql_query = "SELECT 1 FROM information_schema.tables WHERE table_schema = '" + table_sp[0] + "' AND table_name = '" + table_sp[1] + "'"
-#             result_vek1 = PostgresHelper.db_sql(host, db, db_user, port, pw, sql_query, True)
-#             if result_vek1 == 1:
-#                 # Gibt es die Ziel-Ebene bereits, muss sie geloescht werden
-#                 self.logger.info("Ebene " + target + " wird nun geloescht!")
-#                 sql_query = "DROP TABLE " + table
-#                 PostgresHelper.db_sql(host, db, db_user, port, pw, sql_query)
                 
             # Daten kopieren
             # Copy-Script
-            fme_logfile = fme_helper.prepare_fme_log(fme_script, (self.task_config['log_file']).rsplit('\\',1)[0])
+            fme_logfile = FME_helper.prepare_fme_log(fme_script, (self.task_config['log_file']).rsplit('\\',1)[0])
             # Der FMEWorkspaceRunner akzeptiert keine Unicode-Strings!
-            # Daher müssen workspace und parameters umgewandelt werden!
+            # Daher muessen workspace und parameters umgewandelt werden!
+            # Gibt es die Ziel-Ebene bereits, muss sie geloescht werden (TABLE_HANDLING)
             parameters = {
                 'TABELLEN': str(source_table),
                 'POSTGIS_DB': str(db),
                 'POSTGIS_HOST': str(host),
                 'POSTGIS_PORT': str(port),
                 'POSTGIS_USER': str(db_user),
-                'SCHEMA_NAME': str(schema),
                 'POSTGIS_PASSWORD': str(pw),
+                'SCHEMA_NAME': str(schema),
                 'LOGFILE': str(fme_logfile),
-                'INPUT_SDE': str(source_sde)
+                'INPUT_SDE': str(source_sde),
+                'TABLE_HANDLING': "DROP_CREATE"
             }
             # FME-Skript starten
-            fme_helper.fme_runner(str(fme_script), parameters)
+            FME_helper.fme_runner(self, str(fme_script), parameters)
             
             # Berechtigungen setzen
             self.logger.info("Berechtigungen für Ebene " + table + " wird gesetzt: Rolle " + rolle)
             sql_query = 'GRANT SELECT ON ' + table + ' TO ' + rolle
-            PostgresHelper.db_sql(host, db, db_user, port, pw, sql_query)
+            PostgresHelper.db_sql(self, host, db, db_user, port, pw, sql_query)
             
-            # Set Primary Key
+            # Primary Key setzen
             self.logger.info("Primary Key für Ebene " + table + " wird gesetzt.")
             sql_query = 'ALTER TABLE ' + table + ' ADD CONSTRAINT ' + ebename + '_objectid_pk PRIMARY KEY (objectid)'
-            PostgresHelper.db_sql(host, db, db_user, port, pw, sql_query)
-            
-            # Im Moment wird dies nicht umgesetzt, da die lyr-Files nie auf die PostgreSQL zeigen
-            # Falls eine Feature Class im Vek1 noch nicht existiert, wird sie kopiert um ein unnötiges
-            # Umhängen der Begleitdaten im Anschluss an die Wippe zu verhindern
-#              table_sp = table.split('.')
-#              sql_query = "SELECT 1 FROM information_schema.tables WHERE table_schema = '" + table_sp[0] + "' AND table_name = '" + table_sp[1] + "'"
-#              result_vek1 = PostgresHelper.db_sql(host, db, db_user, port, pw, sql_query)
-#              if not result_vek1:
-#                  self.logger.info("Ebene existiert noch nicht in vek1 und wird deshalb kopiert.")
-#                  arcpy.Copy_management(source, target2)
-#                  arcpy.ChangePrivileges_management(target2, rolle, "GRANT")
+            PostgresHelper.db_sql(self, host, db, db_user, port, pw, sql_query)
             
             # Check ob in Quelle und Ziel die gleiche Anzahl Records vorhanden sind
             count_source = int(arcpy.GetCount_management(source)[0])
-              
             self.logger.info("Anzahl Objekte in Quell-Ebene: " + unicode(count_source))
             sql_query = 'SELECT COUNT(*) FROM ' + table
-            count_target = PostgresHelper.db_sql(host, db, db_user, port, pw, sql_query, True)
+            count_target = PostgresHelper.db_sql(self, host, db, db_user, port, pw, sql_query, True)
             self.logger.info("Anzahl Objekte in Ziel-Ebene: " + unicode(count_target))
                
             if count_source != int(count_target):

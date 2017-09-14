@@ -3,7 +3,8 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 from .TemplateFunction import TemplateFunction
 import arcpy
 import os
-from iLader.helpers import fme_helper, PostgresHelper
+from iLader.helpers import PostgresHelper
+from iLader.helpers import FME_helper
 
 class KopieVek1Ersatz_PG(TemplateFunction):
     '''
@@ -36,7 +37,7 @@ class KopieVek1Ersatz_PG(TemplateFunction):
             self.logger.info("Funktion " + self.name + " wird ausgefuehrt.")
             self.start()
             self.__execute()
-        
+            
         
     def __execute(self):
         '''
@@ -71,7 +72,7 @@ class KopieVek1Ersatz_PG(TemplateFunction):
             # Pruefen ob es die target Tabelle gibt
             table_sp = table.split('.')
             sql_query = "SELECT 1 FROM information_schema.tables WHERE table_schema = '" + table_sp[0] + "' AND table_name = '" + table_sp[1] + "'"
-            result_vek1 = PostgresHelper.db_sql(host, db, db_user, port, pw, sql_query, True)
+            result_vek1 = PostgresHelper.db_sql(self, host, db, db_user, port, pw, sql_query, True)
             if result_vek1 is None:
                 # Gibt es die Ziel-Ebene noch nicht, Abbruch mit Fehlermeldung und Exception
                 self.logger.error("Ziel-Ebene " + table + " existiert nicht!")
@@ -80,7 +81,7 @@ class KopieVek1Ersatz_PG(TemplateFunction):
             # Daten kopieren
             # Copy-Script, Table Handling auf Truncate umstellen, damit Tabelle nicht gelöscht wird
             self.logger.info("Ebene " + host + "/" + db +" "+ table + " wird geleert (Truncate) und aufgefuellt (Insert).")
-            fme_logfile = fme_helper.prepare_fme_log(fme_script, (self.task_config['log_file']).rsplit('\\',1)[0])
+            fme_logfile = FME_helper.prepare_fme_log(fme_script, (self.task_config['log_file']).rsplit('\\',1)[0])
             # Der FMEWorkspaceRunner akzeptiert keine Unicode-Strings!
             # Daher muessen workspace und parameters umgewandelt werden!
             parameters = {
@@ -96,14 +97,14 @@ class KopieVek1Ersatz_PG(TemplateFunction):
                 'TABLE_HANDLING': "TRUNCATE_EXISTING" 
             }
             # FME-Skript starten
-            fme_helper.fme_runner(str(fme_script), parameters)
+            FME_helper.fme_runner(self, str(fme_script), parameters)
             
             # Check ob in Quelle und Ziel die gleiche Anzahl Records vorhanden sind
             count_source = int(arcpy.GetCount_management(source)[0])
               
             self.logger.info("Anzahl Objekte in Quell-Ebene: " + unicode(count_source))
             sql_query = 'SELECT COUNT(*) FROM ' + table
-            count_target = PostgresHelper.db_sql(host, db, db_user, port, pw, sql_query, True)
+            count_target = PostgresHelper.db_sql(self, host, db, db_user, port, pw, sql_query, True)
             self.logger.info("Anzahl Objekte in Ziel-Ebene: " + unicode(count_target))
                
             if count_source != int(count_target):
@@ -113,8 +114,6 @@ class KopieVek1Ersatz_PG(TemplateFunction):
                 self.logger.info("Anzahl Objekte in Quelle und Ziel identisch!")
             
             self.logger.info("Ebene " + ebename + " wurde ersetzt")
-            
-            # TODO: Evtl. muessen die Indices neu berechnet werden
         
         self.logger.info("Alle Ebenen wurden ersetzt.")       
         self.finish()
