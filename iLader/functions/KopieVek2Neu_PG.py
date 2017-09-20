@@ -3,8 +3,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 from .TemplateFunction import TemplateFunction
 import arcpy
 import os
-from iLader.helpers import PostgresHelper
-from iLader.helpers import FME_helper
+from iLader.helpers import PostgresHelper, FME_helper, DummyHandler
 
 class KopieVek2Neu_PG(TemplateFunction):
     '''
@@ -67,6 +66,7 @@ class KopieVek2Neu_PG(TemplateFunction):
             source_table = source.rsplit('\\',1)[1]
             table = ebene['ziel_vek2'].rsplit('\\',1)[1]
             ebename = ebene['gpr_ebe'].lower()
+            dummy_entry = False
             
             self.logger.info("Ebene " + ebename + " wird nach vek2 kopiert.")
             self.logger.info("Quelle: " + source)
@@ -77,6 +77,13 @@ class KopieVek2Neu_PG(TemplateFunction):
                 # Existiert die Quell-Ebene nicht, Abbruch mit Fehlermeldung und Exception
                 self.logger.error("Quell-Ebene " + source + " existiert nicht!")
                 raise Exception
+                
+            # Prüfen ob die source Tabelle leer ist
+            count_source = int(arcpy.GetCount_management(source)[0])
+            if count_source == 0:
+                self.logger.warn("Quell-Ebene " + source + " ist leer. Es wird ein Dummy-Eintrag erstellt.")
+                DummyHandler.create_dummy(source)
+                dummy_entry = True
                 
             # Daten kopieren
             # Copy-Script
@@ -97,6 +104,11 @@ class KopieVek2Neu_PG(TemplateFunction):
             # FME-Skript starten
             FME_helper.fme_runner(self, str(fme_script), parameters)
       
+            # Dummy-Eintrag entfernen
+            if dummy_entry:
+                self.logger.info("Dummy-Eintrag wird wieder entfernt.")
+                DummyHandler.delete_dummy(self, source, table, host, db, db_user, port, pw)
+            
             # Berechtigungen setzen
             self.logger.info("Berechtigungen für Ebene " + table + " wird gesetzt: Rolle " + rolle)
             sql_query = 'GRANT SELECT ON ' + table + ' TO ' + rolle

@@ -69,7 +69,7 @@ class IndicesVek2_PG(TemplateFunction):
             table = ebene['ziel_vek1'].lower().rsplit('\\',1)[1]
             ebename = ebene['gpr_ebe'].lower()
             # Indices loeschen
-            self.logger.info("Loesche bestehende Indices fuer " + source_table + " im vek2.")
+            self.logger.info("Loesche bestehende Indices fuer " + ebename + " im vek2.")
             self.__delete_indices(host, db, db_user, port, pw, table)
 
             if len(ebene["indices"]) > 0:

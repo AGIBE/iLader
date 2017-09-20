@@ -10,7 +10,7 @@ class Transfer2Vek1_PG(TemplateFunction):
     '''
     Kopiert die ÖREBK-Transferstruktur (OEREB2) nach vek1 (PostgreSQL). Es werden nur diejenigen Teile der
     Transferstruktur kopiert, die zum importierten Geoprodukt gehoeren.
-    Wenn zu diesem Geoprodukt keine ÖREBK-Tickets gefunden wurden, wird die �REBK-
+    Wenn zu diesem Geoprodukt keine ÖREBK-Tickets gefunden wurden, wird die ÖREBK-
     Transferstruktur gar nicht kopiert.
     '''
 
