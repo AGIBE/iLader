@@ -2,6 +2,7 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 from .TemplateFunction import TemplateFunction
 import md5
+import arcpy
 from iLader.helpers import PostgresHelper
 
 class IndicesVek2_PG(TemplateFunction):
@@ -40,7 +41,7 @@ class IndicesVek2_PG(TemplateFunction):
         sql_query= "SELECT i.relname as index_name\
                     FROM pg_class t, pg_class i, pg_index ix, pg_attribute a\
                     WHERE t.oid = ix.indrelid and i.oid = ix.indexrelid and a.attrelid = t.oid and a.attnum = ANY(ix.indkey) and t.relkind = 'r' \
-                    AND t.relname in ('" + table_sp[1] + "') and a.attname not in ('objectid', 'shape') "
+                    AND t.relname in ('" + table_sp[1] + "') and a.attname not in ('shape') "
         
         indices = PostgresHelper.db_sql(self, host, db, db_user, port, pw, sql_query, True, True)
         
@@ -68,12 +69,32 @@ class IndicesVek2_PG(TemplateFunction):
             source_table = source.rsplit('\\',1)[1]
             table = ebene['ziel_vek1'].lower().rsplit('\\',1)[1]
             ebename = ebene['gpr_ebe'].lower()
+            pk = False
+            
+            # Liste Primary Keys auf
+            indices = arcpy.ListIndexes(ebene['quelle'])
+            for index in indices:
+                if ("SDE_ROWID_UK" in index.name.upper()):
+                    pk = index
+            
             # Indices loeschen
             self.logger.info("Loesche bestehende Indices fuer " + ebename + " im vek2.")
             self.__delete_indices(host, db, db_user, port, pw, table)
 
+            # Primary Key erstellen
+            if pk is not False:
+                self.logger.info("Erstelle Primary Key fuer " + ebename + " im vek2.")
+                pk_attributes = pk.fields
+                if len(pk_attributes) == 1:
+                    pk_attribute = pk_attributes[0].name.lower()
+                    sql_query = 'ALTER TABLE ' + table + ' ADD CONSTRAINT ' + ebename + '_' + pk_attribute + '_pk PRIMARY KEY (' + pk_attribute + ')'
+                    PostgresHelper.db_sql(self, host, db, db_user, port, pw, sql_query)
+                elif len(pk_attributes) > 1:
+                    self.logger.error("Primary Key konnte nicht erstellt werden fuer " + ebename + ", da PK auf mehrere Spalten verteilt. " + str(pk.name))
+            
+            #Restliche Indizes erstellen
             if len(ebene["indices"]) > 0:
-                self.logger.info("Erstelle Index fuer " + ebename + " im vek2.")           
+                self.logger.info("Erstelle Index fuer " + ebename + " im vek2.")
                 for index in ebene["indices"]:
                     # Jeden Index erstellen
                     index_attribute = index['attribute'].replace(", ", ";").lower()

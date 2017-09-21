@@ -113,11 +113,6 @@ class KopieVek2Neu_PG(TemplateFunction):
             self.logger.info("Berechtigungen für Ebene " + table + " wird gesetzt: Rolle " + rolle)
             sql_query = 'GRANT SELECT ON ' + table + ' TO ' + rolle
             PostgresHelper.db_sql(self, host, db, db_user, port, pw, sql_query)
-            
-            # Set Primary Key
-            self.logger.info("Primary Key für Ebene " + table + " wird gesetzt.")
-            sql_query = 'ALTER TABLE ' + table + ' ADD CONSTRAINT ' + ebename + '_objectid_pk PRIMARY KEY (objectid)'
-            PostgresHelper.db_sql(self, host, db, db_user, port, pw, sql_query)
                
             # Check ob in Quelle und Ziel die gleiche Anzahl Records vorhanden sind
             count_source = int(arcpy.GetCount_management(source)[0])
