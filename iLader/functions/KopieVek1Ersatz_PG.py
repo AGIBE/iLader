@@ -78,6 +78,15 @@ class KopieVek1Ersatz_PG(TemplateFunction):
                 self.logger.error("Ziel-Ebene " + table + " existiert nicht!")
                 raise Exception
             
+            # Eine Liste der Attribute mit Typ Date erstellen (FME braucht diese Info, damit leere Datumsfelder fuer Postgres richtig gesetzt werden koennen)
+            datefields = arcpy.ListFields(source,field_type='Date')
+            dfield = None
+            for datefield in datefields:
+                if dfield is None:
+                    dfield = datefield.name
+                else:
+                    dfield = dfield + ', ' + datefield.name
+            
             # Daten kopieren
             # Copy-Script, Table Handling auf Truncate umstellen, damit Tabelle nicht gelöscht wird
             self.logger.info("Ebene " + host + "/" + db +" "+ table + " wird geleert (Truncate) und aufgefuellt (Insert).")
@@ -94,7 +103,8 @@ class KopieVek1Ersatz_PG(TemplateFunction):
                 'POSTGIS_PASSWORD': str(pw),
                 'LOGFILE': str(fme_logfile),
                 'INPUT_SDE': str(source_sde),
-                'TABLE_HANDLING': "TRUNCATE_EXISTING" 
+                'TABLE_HANDLING': "TRUNCATE_EXISTING",
+                'DATEFIELDS': str(dfield)
             }
             # FME-Skript starten
             FME_helper.fme_runner(self, str(fme_script), parameters)

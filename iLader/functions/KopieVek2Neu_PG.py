@@ -55,8 +55,8 @@ class KopieVek2Neu_PG(TemplateFunction):
         port = self.task_config['port_pg']
         host = self.task_config['instances']['oereb']
         db_user = 'geodb'
-        schema = self.task_config['schema']['geodb']
         pw = self.task_config['users']['geodb']
+        schema = self.task_config['schema']['geodb']
         source_sde = self.task_config['connections']['sde_conn_norm']
         fme_script = os.path.abspath(os.path.join(os.path.dirname( __file__ ), '..')) + "\\helpers\\" + "EsriGeodatabase2PostGIS.fmw"
         
@@ -84,7 +84,16 @@ class KopieVek2Neu_PG(TemplateFunction):
                 self.logger.warn("Quell-Ebene " + source + " ist leer. Es wird ein Dummy-Eintrag erstellt.")
                 DummyHandler.create_dummy(source)
                 dummy_entry = True
-                
+             
+            # Eine Liste der Attribute mit Typ Date erstellen (FME braucht diese Info, damit leere Datumsfelder fuer Postgres richtig gesetzt werden koennen)
+            datefields = arcpy.ListFields(source,field_type='Date')
+            dfield = None
+            for datefield in datefields:
+                if dfield is None:
+                    dfield = datefield.name
+                else:
+                    dfield = dfield + ', ' + datefield.name
+               
             # Daten kopieren
             # Copy-Script
             fme_logfile = FME_helper.prepare_fme_log(fme_script, (self.task_config['log_file']).rsplit('\\',1)[0])
@@ -99,7 +108,9 @@ class KopieVek2Neu_PG(TemplateFunction):
                 'SCHEMA_NAME': str(schema),
                 'POSTGIS_PASSWORD': str(pw),
                 'LOGFILE': str(fme_logfile),
-                'INPUT_SDE': str(source_sde)
+                'INPUT_SDE': str(source_sde),
+                'TABLE_HANDLING': "DROP_CREATE",
+                'DATEFIELDS': str(dfield)
             }
             # FME-Skript starten
             FME_helper.fme_runner(self, str(fme_script), parameters)

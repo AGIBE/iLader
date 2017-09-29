@@ -83,6 +83,15 @@ class KopieVek2Ersatz_PG(TemplateFunction):
                 DummyHandler.create_dummy(source)
                 dummy_entry = True
                 
+            # Eine Liste der Attribute mit Typ Date erstellen (FME braucht diese Info, damit leere Datumsfelder fuer Postgres richtig gesetzt werden koennen)
+            datefields = arcpy.ListFields(source,field_type='Date')
+            dfield = None
+            for datefield in datefields:
+                if dfield is None:
+                    dfield = datefield.name
+                else:
+                    dfield = dfield + ', ' + datefield.name
+                    
             # Daten kopieren
             # Copy-Script
             fme_logfile = FME_helper.prepare_fme_log(fme_script, (self.task_config['log_file']).rsplit('\\',1)[0])
@@ -99,7 +108,8 @@ class KopieVek2Ersatz_PG(TemplateFunction):
                 'SCHEMA_NAME': str(schema),
                 'LOGFILE': str(fme_logfile),
                 'INPUT_SDE': str(source_sde),
-                'TABLE_HANDLING': "DROP_CREATE"
+                'TABLE_HANDLING': "DROP_CREATE",
+                'DATEFIELDS': str(dfield)
             }
             # FME-Skript starten
             FME_helper.fme_runner(self, str(fme_script), parameters)

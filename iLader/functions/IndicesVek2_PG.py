@@ -66,7 +66,6 @@ class IndicesVek2_PG(TemplateFunction):
         
         for ebene in self.task_config['vektor_ebenen']:
             source = ebene['quelle']       
-            source_table = source.rsplit('\\',1)[1]
             table = ebene['ziel_vek1'].lower().rsplit('\\',1)[1]
             ebename = ebene['gpr_ebe'].lower()
             pk = False
@@ -97,7 +96,7 @@ class IndicesVek2_PG(TemplateFunction):
                 self.logger.info("Erstelle Index fuer " + ebename + " im vek2.")
                 for index in ebene["indices"]:
                     # Jeden Index erstellen
-                    index_attribute = index['attribute'].replace(", ", ";").lower()
+                    index_attribute = index['attribute'].lower()
                     hashfunc = md5.new(ebename.upper() + "." + index_attribute.upper())
                     indexname = "geodb_" + hashfunc.hexdigest()[0:10]
                     if index['unique'] == "False":
