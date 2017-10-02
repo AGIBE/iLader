@@ -48,7 +48,11 @@ class IndicesVek2_PG(TemplateFunction):
         if indices:
             for index in indices:
                 self.logger.info("Loesche Index " + index[0])
-                sql_query = 'DROP INDEX ' + index[0]
+                # Pruefen ob Primary Key
+                if index[0].endswith('_pk'):
+                    sql_query = 'ALTER TABLE ' + table + ' DROP CONSTRAINT ' + index[0]
+                else:
+                    sql_query = 'DROP INDEX ' + index[0]
                 PostgresHelper.db_sql(self, host, db, db_user, port, pw, sql_query)
 
 
