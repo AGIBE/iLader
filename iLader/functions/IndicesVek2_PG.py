@@ -38,7 +38,7 @@ class IndicesVek2_PG(TemplateFunction):
         :param table: Vollstaendiger Pfad zur Tabelle bei der die Indices geloescht werden sollen.
         '''
         table_sp = table.split('.')
-        sql_query= "SELECT i.relname as index_name\
+        sql_query= "SELECT DISTINCT i.relname as index_name\
                     FROM pg_class t, pg_class i, pg_index ix, pg_attribute a\
                     WHERE t.oid = ix.indrelid and i.oid = ix.indexrelid and a.attrelid = t.oid and a.attnum = ANY(ix.indkey) and t.relkind = 'r' \
                     AND t.relname in ('" + table_sp[1] + "') and a.attname not in ('shape') "
