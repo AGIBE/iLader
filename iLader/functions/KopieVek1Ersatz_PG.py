@@ -85,7 +85,7 @@ class KopieVek1Ersatz_PG(TemplateFunction):
                 if dfield is None:
                     dfield = datefield.name
                 else:
-                    dfield = dfield + ', ' + datefield.name
+                    dfield = dfield + ' ' + datefield.name
             
             # Daten kopieren
             # Copy-Script, Table Handling auf Truncate umstellen, damit Tabelle nicht gelöscht wird

@@ -90,7 +90,7 @@ class KopieVek2Ersatz_PG(TemplateFunction):
                 if dfield is None:
                     dfield = datefield.name
                 else:
-                    dfield = dfield + ', ' + datefield.name
+                    dfield = dfield + ' ' + datefield.name
                     
             # Daten kopieren
             # Copy-Script
