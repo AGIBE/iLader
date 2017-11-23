@@ -81,7 +81,7 @@ class KopieVek2Neu_PG(TemplateFunction):
             # Prüfen ob die source Tabelle leer ist
             count_source = int(arcpy.GetCount_management(source)[0])
             if count_source == 0:
-                self.logger.warn("Quell-Ebene " + source + " ist leer. Es wird ein Dummy-Eintrag erstellt.")
+                self.logger.info("Quell-Ebene " + source + " ist leer. Es wird ein Dummy-Eintrag erstellt.")
                 DummyHandler.create_dummy(source)
                 dummy_entry = True
              

@@ -56,6 +56,7 @@ class IndicesVek2(TemplateFunction):
         for ebene in self.task_config['vektor_ebenen']:
                 target = ebene['ziel_vek2']
                 ebename = ebene['gpr_ebe']
+                table = target.rsplit('\\',1)[1]
 
                 self.logger.info("Lösche bestehende Indices für " + ebename + " im VEK2.")
                 self.__delete_indices(target)
@@ -66,7 +67,7 @@ class IndicesVek2(TemplateFunction):
                         try:
                             self.logger.info("Index: ") 
                             index_attribute = index['attribute'].replace(", ", ";")
-                            hashfunc = md5.new(ebename.upper() + "." + index_attribute.upper())
+                            hashfunc = md5.new(table.upper() + "." + index_attribute.upper())
                             indexname = "GEODB_" + hashfunc.hexdigest()[0:10]
                             if index['unique'] == "False":
                                 indextyp = 'NON_UNIQUE'

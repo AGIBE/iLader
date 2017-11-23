@@ -3,7 +3,6 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 from .TemplateFunction import TemplateFunction
 import md5
 import arcpy
-from numpy.core.defchararray import startswith
 
 class IndicesVek3(TemplateFunction):
     '''
@@ -56,6 +55,7 @@ class IndicesVek3(TemplateFunction):
         for ebene in self.task_config['vektor_ebenen']:
                 target = ebene['ziel_vek3']
                 ebename = ebene['gpr_ebe']
+                table = target.rsplit('\\',1)[1]
 
                 self.logger.info("Lösche bestehende Indices für " + ebename + " im VEK3.")
                 self.__delete_indices(target)
@@ -66,7 +66,7 @@ class IndicesVek3(TemplateFunction):
                         try:
                             self.logger.info("Index: ") 
                             index_attribute = index['attribute'].replace(", ", ";")
-                            hashfunc = md5.new(ebename.upper() + "." + index_attribute.upper())
+                            hashfunc = md5.new(table.upper() + "." + index_attribute.upper())
                             indexname = "GEODB_" + hashfunc.hexdigest()[0:10]
                             if index['unique'] == "False":
                                 indextyp = 'NON_UNIQUE'
