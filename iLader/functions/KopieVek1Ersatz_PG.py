@@ -87,9 +87,17 @@ class KopieVek1Ersatz_PG(TemplateFunction):
                 else:
                     dfield = dfield + ' ' + datefield.name
             
+            # Anzahl Records in Source
+            count_source = int(arcpy.GetCount_management(source)[0])
+            
             # Daten kopieren
             # Copy-Script, Table Handling auf Truncate umstellen, damit Tabelle nicht gelöscht wird
             self.logger.info("Ebene " + host + "/" + db +" "+ table + " wird geleert (Truncate) und aufgefuellt (Insert).")
+            # Extra truncate bei 0 Quell-Records, da FME bei 0 Quelldaten kein Truncate macht.
+            if count_source == 0:
+                sql_query = 'TRUNCATE ' + table
+                PostgresHelper.db_sql(self, host, db, db_user, port, pw, sql_query)
+            
             fme_logfile = FME_helper.prepare_fme_log(fme_script, (self.task_config['log_file']).rsplit('\\',1)[0])
             # Der FMEWorkspaceRunner akzeptiert keine Unicode-Strings!
             # Daher muessen workspace und parameters umgewandelt werden!
@@ -110,8 +118,6 @@ class KopieVek1Ersatz_PG(TemplateFunction):
             FME_helper.fme_runner(self, str(fme_script), parameters)
             
             # Check ob in Quelle und Ziel die gleiche Anzahl Records vorhanden sind
-            count_source = int(arcpy.GetCount_management(source)[0])
-              
             self.logger.info("Anzahl Objekte in Quell-Ebene: " + unicode(count_source))
             sql_query = 'SELECT COUNT(*) FROM ' + table
             count_target = PostgresHelper.db_sql(self, host, db, db_user, port, pw, sql_query, True)
