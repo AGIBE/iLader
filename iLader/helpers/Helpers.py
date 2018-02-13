@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import cx_Oracle
 import os
 import configobj
-from iLader.helpers import Crypter
+from iLader.helpers import Crypter, OracleHelper
 
 def get_general_configfile_from_envvar():
     '''
@@ -12,7 +12,7 @@ def get_general_configfile_from_envvar():
     der Konfigurationsdatei zurück.
     '''
     config_directory = os.environ['GEODBIMPORTHOME']
-    config_filename = "config.ini"
+    config_filename = "config_test.ini"
     
     config_file = os.path.join(config_directory, config_filename)
     
@@ -61,7 +61,7 @@ def get_import_tasks():
     schema = general_config['users']['geodb_dd']['schema']
     sql = "SELECT t.TASK_OBJECTID, u.UC_BEZEICHNUNG, g.GPR_BEZEICHNUNG, z.GZS_JAHR, z.GZS_VERSION FROM " + schema + ".TB_TASK t LEFT JOIN " + schema + ".TB_USECASE u ON t.UC_OBJECTID=u.UC_OBJECTID LEFT JOIN " + schema + ".TB_GEOPRODUKT_ZEITSTAND z ON z.GZS_OBJECTID = t.GZS_OBJECTID LEFT JOIN " + schema + ".TB_GEOPRODUKT g ON z.GPR_OBJECTID = g.GPR_OBJECTID WHERE t.TASK_STATUS=1 ORDER BY g.GPR_BEZEICHNUNG ASC"
     
-    task_query_result = db_connect(db, user, pw, sql)
+    task_query_result = OracleHelper.readOracleSQL(db, user, pw, sql)
     
     tasks = []
     
