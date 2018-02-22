@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 from .TemplateFunction import TemplateFunction
 import arcpy
 import os
-import cx_Oracle
+from iLader.helpers import OracleHelper
 
 class Transfer2Vek2(TemplateFunction):
     '''
@@ -53,12 +53,8 @@ class Transfer2Vek2(TemplateFunction):
                 oereb_delete_sql = "DELETE FROM %s WHERE %s IN %s" % (oereb_tablename, oereb_table_filter_field, liefereinheiten)
                 self.logger.info("Deleting...")
                 self.logger.info(oereb_delete_sql)
-                vek2_connection_string = username + "/" + password + "@" + db
-                # Mit dem With-Statement wird sowohl committed als auch die
-                # Connection- und Cursor-Objekte automatisch geschlossen
-                with cx_Oracle.connect(vek2_connection_string) as conn:
-                    cur = conn.cursor()
-                    cur.execute(oereb_delete_sql)
+                
+                OracleHelper.writeOracleSQL(db, username, password, oereb_delete_sql)
                 
                 source = os.path.join(source_connection, username + "." + oereb_tablename)
                 source_layer = oereb_tablename + "_source_layer_vek2_2"

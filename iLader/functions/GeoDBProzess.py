@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function, unicode_literals
 from .TemplateFunction import TemplateFunction
-import cx_Oracle
-from arcpy.arcobjects.arcobjects import Schema
+from iLader.helpers import OracleHelper
 
 class GeoDBProzess(TemplateFunction):
     '''
@@ -38,19 +37,6 @@ class GeoDBProzess(TemplateFunction):
         sql = "UPDATE " + schema + ".GEOPRODUKTE SET TASK_ID=" + unicode(task_id) + " WHERE CODE='" + gpr_code + "'"
         self.logger.info("SQL-Update wird ausgeführt: " + sql)
         
-        connection = cx_Oracle.connect(username, password, db)  
-        cursor = connection.cursor()
-        cursor.execute(sql)
- 
-        if cursor.rowcount == 1:
-            # Nur wenn genau 1 Zeile aktualisiert wurde, ist alles i.O. 
-            self.logger.info("Query wurde ausgeführt!")
-        else:
-            # Wenn nicht genau 1 Zeile aktualisiert wurde, wird Warnung ausgegeben
-            self.logger.warn("Query hat keinen oder mehr als einen Record aktualisiert!")
- 
-        connection.commit()
-        del cursor
-        del connection
+        OracleHelper.writeOracleSQL_check(self, db, username, password, sql, "Query hat keinen oder mehr als einen Record aktualisiert!", excep=False)
         
         self.finish()

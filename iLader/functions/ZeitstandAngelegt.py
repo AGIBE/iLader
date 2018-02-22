@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function, unicode_literals
 from .TemplateFunction import TemplateFunction
-import cx_Oracle
+from iLader.helpers import OracleHelper
 
 class ZeitstandAngelegt(TemplateFunction):
     '''
@@ -39,20 +39,6 @@ class ZeitstandAngelegt(TemplateFunction):
         sql = "UPDATE " + schema + ".TB_GEOPRODUKT_ZEITSTAND SET STA_OBJECTID=1 WHERE GZS_OBJECTID=" + gzs_objectid
         self.logger.info("SQL-Update wird ausgeführt: " + sql)
         
-        connection = cx_Oracle.connect(username, password, db)  
-        cursor = connection.cursor()
-        cursor.execute(sql)
-        if cursor.rowcount == 1:
-            # Nur wenn genau 1 Zeile aktualisiert wurde, ist alles i.O. 
-            self.logger.info("Query wurde ausgeführt!")
-            connection.commit()
-            del cursor
-            del connection
-        else:
-            # Wenn nicht genau 1 Zeile aktualisiert wurde, muss abgebrochen werden
-            self.logger.error("Query wurde nicht erfolgreich ausgeführt.")
-            self.logger.error("Status 'angelegt' konnte nicht gesetzt werden.")
-            del cursor
-            del connection
-            raise Exception       
+        OracleHelper.writeOracleSQL_check(self, db, username, password, sql, "Status 'angelegt' konnte nicht gesetzt werden.")
+           
         self.finish()

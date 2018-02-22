@@ -2,7 +2,7 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 import json
 from iLader.helpers.Crypter import Crypter
-import iLader.helpers.Helpers
+from iLader.helpers import OracleHelper
 import copy
 import logging
 import cx_Oracle
@@ -47,7 +47,7 @@ class TemplateFunction(object):
     def get_old_statistics(self,instance,username,password):
         index_tables = []
         index_tables_sql = "select table_name from DBA_TAB_STATISTICS where owner='GEODB' and table_name not like '%_IDX$%' and (stale_stats='YES' or stale_stats is null)" 
-        result_list = iLader.helpers.Helpers.db_connect(instance, username, password, index_tables_sql)   
+        result_list = OracleHelper.readOracleSQL(instance, username, password, index_tables_sql)   
         for result in result_list:
             index_tables.append(result[0])
         return index_tables
@@ -55,7 +55,7 @@ class TemplateFunction(object):
     def get_indexes_of_table(self,indexed_table,instance,username,password):
         indexes = []
         indexes_sql = "select index_name from DBA_INDEXES where table_name='" + indexed_table + "' and table_owner='GEODB' and index_type='NORMAL'"       
-        result_list = iLader.helpers.Helpers.db_connect(instance, username, password, indexes_sql)
+        result_list = OracleHelper.readOracleSQL(instance, username, password, indexes_sql)
         for result in result_list:
             indexes.append(result[0])
         return indexes

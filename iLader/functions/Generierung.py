@@ -5,6 +5,7 @@ import os
 import json
 import cx_Oracle as ora
 from iLader.helpers.Crypter import Crypter
+from iLader.helpers import OracleHelper
 
 class Generierung(TemplateFunction):
     '''
@@ -52,11 +53,7 @@ class Generierung(TemplateFunction):
         self.db = self.general_config['instances'][self.instance]
         self.logger.info("Username: " + self.username)
         self.logger.info("Verbindung herstellen mit der Instanz " + self.db)
-        self.connection = ora.connect(self.username, self.password, self.db)
-        self.cursor = self.connection.cursor()
-        self.cursor.execute(self.sql_name)
-        self.result = self.cursor.fetchall()
-        self.connection.close()    
+        self.result = OracleHelper.readOracleSQL(self.db, self.username, self.password, self.sql_name)  
     
     def __get_importe_dd(self):
         self.task_id = unicode(self.task_config['task_id'])

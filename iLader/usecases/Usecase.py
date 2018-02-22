@@ -4,7 +4,6 @@ import logging
 import chromalog
 import os
 import datetime
-import cx_Oracle
 from iLader.functions import *
 import iLader.helpers.Helpers
 import sys
@@ -79,7 +78,7 @@ class Usecase():
         status_query = "SELECT TASK_STATUS FROM " + schema + ".TB_TASK where TASK_OBJECTID=" + unicode(self.task_config['task_id'])
 
         task_status = False
-        query_result = iLader.helpers.Helpers.db_connect(db, username, password, status_query)
+        query_result = iLader.helpers.OracleHelper.readOracleSQL(db, username, password, status_query)
         if len(query_result) == 1:
             tb_task_status = query_result[0][0]
             if tb_task_status in (1,2):
@@ -95,23 +94,18 @@ class Usecase():
         
         sql_usecase = "select uc_objectid, uc_bezeichnung from " + schema + ".tb_usecase where uc_objectid in (select uc_objectid from " + schema + ".tb_task where task_objectid=" + unicode(self.task_id) + ")"
 
-        connection = cx_Oracle.connect(username, password, db)  
-        cursor = connection.cursor()
-        cursor.execute(sql_usecase)
-        
-        row = cursor.fetchone()
+        row = iLader.helpers.OracleHelper.readOracleSQL(db, username, password, sql_usecase, fetchall=False)
+
         uc_objectid = row[0]
         uc_bezeichnung = row[1].decode("iso-8859-1")
         self.name = uc_bezeichnung
         sql_functions = "SELECT " + schema + ".tb_function.fct_classname FROM " + schema + ".tb_usecase_function JOIN " + schema + ".tb_function on " + schema + ".tb_usecase_function.fct_objectid = " + schema + ".tb_function.fct_objectid where UC_OBJECTID=" + unicode(uc_objectid) + " order by " + schema + ".tb_function.FCT_ORDER"
-        cursor.execute(sql_functions)
         
-        rows = cursor.fetchall()
+        rows = iLader.helpers.OracleHelper.readOracleSQL(db, username, password, sql_functions)
+        
         for row in rows:
             functions.append(row[0])
         
-        cursor.close()
-        connection.close()
         return functions
     
     def __create_loghandler_stream(self):
