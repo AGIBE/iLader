@@ -78,5 +78,23 @@ class IndicesVek3(TemplateFunction):
                             self.logger.info("Fehler bei der Erstellung des Index " + index_attribute + ", " + indextyp)
                             self.logger.info(e)
         
-       
+                # Indices für Join und Relate-Felder
+                if len(ebene["indices_join"]) > 0:
+                    self.logger.info("Erstelle Join- oder Relate-Index für " + ebename + " im VEK3.")
+                    for index in ebene["indices_join"]:
+                        try:
+                            self.logger.info("Index (Join & Relate-Felder): ") 
+                            index_attribute = index['attribute'].replace(", ", ";")
+                            hashfunc = md5.new(index['table'].upper() + "." + index_attribute.upper())
+                            indexname = "GEODB_" + hashfunc.hexdigest()[0:10]
+                            if index['unique'] == "False":
+                                indextyp = 'NON_UNIQUE'
+                            elif index['unique'] == "True":
+                                indextyp = 'UNIQUE'
+                            arcpy.AddIndex_management(target, index_attribute, indexname, indextyp, "")
+                            self.logger.info(index_attribute + ": " + indextyp)
+                        except Exception as e:
+                            self.logger.info("Fehler bei der Erstellung des Index " + index_attribute + ", " + indextyp)
+                            self.logger.info(e)
+                                   
         self.finish()

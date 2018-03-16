@@ -94,20 +94,42 @@ class IndicesVek2_PG(TemplateFunction):
                 elif len(pk_attributes) > 1:
                     self.logger.error("Primary Key konnte nicht erstellt werden fuer " + ebename + ", da PK auf mehrere Spalten verteilt. " + str(pk.name))
             
-            #Restliche Indizes erstellen
+            # Restliche Indizes erstellen
+            # Indices aus GeoDBProzess
             if len(ebene["indices"]) > 0:
                 self.logger.info("Erstelle Index fuer " + ebename + " im vek2.")
                 for index in ebene["indices"]:
-                    # Jeden Index erstellen
-                    index_attribute = index['attribute'].lower()
-                    hashfunc = md5.new(table.upper() + "." + index_attribute.upper())
-                    indexname = "geodb_" + hashfunc.hexdigest()[0:10]
-                    if index['unique'] == "False":
-                        indextyp = ''
-                    elif index['unique'] == "True":
-                        indextyp = 'UNIQUE'
-                    self.logger.info("Index: " + index_attribute + ": " + indextyp) 
-                    sql_query = 'CREATE ' + indextyp + ' INDEX ' +indexname + ' ON ' + table + ' (' + index_attribute + ')'
-                    PostgresHelper.db_sql(self, host, db, db_user, port, pw, sql_query)
-       
+                    try:
+                        # Jeden Index erstellen
+                        index_attribute = index['attribute'].lower()
+                        hashfunc = md5.new(table.upper() + "." + index_attribute.upper())
+                        indexname = "geodb_" + hashfunc.hexdigest()[0:10]
+                        if index['unique'] == "False":
+                            indextyp = ''
+                        elif index['unique'] == "True":
+                            indextyp = 'UNIQUE'
+                        self.logger.info("Index: " + index_attribute + ": " + indextyp) 
+                        sql_query = 'CREATE ' + indextyp + ' INDEX ' +indexname + ' ON ' + table + ' (' + index_attribute + ')'
+                        PostgresHelper.db_sql(self, host, db, db_user, port, pw, sql_query)
+                    except Exception as e:
+                        self.logger.info("Fehler bei der Erstellung des Index " + index_attribute + ", " + indextyp)
+                        self.logger.info(e)
+            # Indices für Join und Relate-Felder
+            if len(ebene["indices_join"]) > 0:
+                self.logger.info("Erstelle Join- oder Relate-Index für " + ebename + " im vek2.")
+                for index in ebene["indices_join"]:
+                    try:
+                        index_attribute = index['attribute'].lower()
+                        hashfunc = md5.new(table.upper() + "." + index_attribute.upper())
+                        indexname = "GEODB_" + hashfunc.hexdigest()[0:10]
+                        if index['unique'] == "False":
+                            indextyp = ''
+                        elif index['unique'] == "True":
+                            indextyp = 'UNIQUE'
+                        self.logger.info("Index: " + index_attribute + ": " + indextyp) 
+                        sql_query = 'CREATE ' + indextyp + ' INDEX ' +indexname + ' ON ' + table + ' (' + index_attribute + ')'
+                        PostgresHelper.db_sql(self, host, db, db_user, port, pw, sql_query)
+                    except Exception as e:
+                        self.logger.info("Fehler bei der Erstellung des Index " + index_attribute + ", " + indextyp)
+                        self.logger.info(e)
         self.finish()
