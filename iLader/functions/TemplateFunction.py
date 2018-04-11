@@ -82,7 +82,11 @@ class TemplateFunction(object):
             for index in indexes:
                 index_sql = "ALTER INDEX " + index + " REBUILD" 
                 cursor.execute(index_sql)
-                cursor.callproc(name="dbms_stats.delete_table_stats", keywordParameters={'cascade_columns': True, 'cascade_indexes': True, 'ownname':'geodb', 'tabname': index_table})
+            plsql = """ 
+                begin
+                  dbms_stats.delete_table_stats(cascade_columns=> True, cascade_indexes=> True, ownname=> 'geodb', tabname=>:table);
+                end;""" 
+            cursor.execute(plsql, table=index_table)
             plsql = """ 
                 begin
                   dbms_stats.gather_table_stats(ownname=>'geodb', estimate_percent=>dbms_stats.auto_sample_size, cascade=>TRUE, method_opt=>'for all columns size repeat', tabname=>:table);
