@@ -12,7 +12,7 @@ setup(
       # .pyt-Files werden von Python nicht erkannt. Deshalb müssen sie explizit als Package-Inhalt aufgelistet werden.
       package_data={'': ["esri/toolboxes/*.*","*.fmw"]},
       # Abhängigkeiten
-      install_requires = ["configobj==5.0.6", "cx-Oracle==5.1.3", "python-keyczar==0.715", "chromalog==1.0.4", "psycopg2==2.7.3.1"],
+      install_requires = ["configobj==5.0.6", "cx-Oracle>=5.1.3", "python-keyczar==0.715", "chromalog==1.0.4", "psycopg2==2.7.3.1"],
       # PyPI metadata
       author = "Peter Schär, Manuela Uhlmann, Martina Köhli",
       author_email = "peter.schaer@bve.be.ch, martina.koehli@bve.be.ch",
