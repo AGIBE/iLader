@@ -47,23 +47,6 @@ class IndicesVek3(TemplateFunction):
                     self.logger.warn("Fehler beim Löschen des Index " + index.name)
                     self.logger.info(e)
 
-    def __deleteExistingIndex(self, tablename, attributname):
-        '''
-        Löscht Index auf ein Attribut, falls dieser vorhanden ist.
-        :param tablename: Vollständiger Pfad zur Tabelle/Featureclass bei der der Index gelöscht werden sollen.
-        :param attributname: Attributname der auf einen bestehenden Index geprüft werden soll.
-        ''' 
-        tabledescription = arcpy.Describe(tablename)
-         
-        for iIndex in tabledescription.indexes:
-            if (iIndex.Fields[0].Name == attributname):
-                try:
-                    arcpy.RemoveIndex_management(tablename, iIndex.Name)
-                    self.logger.info("Lösche Join- oder Relate-Index " + iIndex.name)
-                except Exception as e:
-                    self.logger.warn("Fehler beim Löschen des Join oder Relate-Index " + iIndex.name)
-                    self.logger.warn(e)
-                    
     def __execute(self):
         '''
         Iteriert durch alle Vektorebenen (inkl. Wertetabellen) und erstellt die dort
@@ -95,24 +78,5 @@ class IndicesVek3(TemplateFunction):
                             self.logger.info("Fehler bei der Erstellung des Index " + index_attribute + ", " + indextyp)
                             self.logger.info(e)
         
-                # Indices für Join und Relate-Felder
-                if len(ebene["indices_join"]) > 0:
-                    self.logger.info("Erstelle Join- oder Relate-Index für " + ebename + " im VEK3.")
-                    for index in ebene["indices_join"]:
-                        try:
-                            self.logger.info("Index (Join & Relate-Felder): ") 
-                            index_attribute = index['attribute'].replace(", ", ";")
-                            hashfunc = md5.new(index['table'].upper() + "." + index_attribute.upper())
-                            indexname = "GEODB_" + hashfunc.hexdigest()[0:10]
-                            if index['unique'] == "False":
-                                indextyp = 'NON_UNIQUE'
-                            elif index['unique'] == "True":
-                                indextyp = 'UNIQUE'
-                            self.__deleteExistingIndex(target, index_attribute)
-                            arcpy.AddIndex_management(target, index_attribute, indexname, indextyp, "")
-                            self.logger.info(index_attribute + ": " + indextyp)
-                        except Exception as e:
-                            self.logger.warn("Fehler bei der Erstellung des Index " + index_attribute + ", " + indextyp)
-                            self.logger.warn(e)
-                                   
+       
         self.finish()

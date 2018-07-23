@@ -139,6 +139,7 @@ class Generierung(TemplateFunction):
                 ebeVecDict['ziel_vek1'] = ziel_vek1
                 ebeVecDict['ziel_vek2'] = ziel_vek2
                 ebeVecDict['ziel_vek3'] = ziel_vek3
+                self.ebeVecList.append(ebeVecDict)            
             elif datentyp == 'Rastermosaik': #TODO: ev. später Rasterdataset
                 ebeRasDict['datentyp'] = datentyp
                 ebeRasDict['gpr_ebe'] = gpr_ebe
@@ -146,23 +147,6 @@ class Generierung(TemplateFunction):
                 ebeRasDict['ziel_ras1']= ziel_ras1_akt
                 ebeRasDict['ziel_ras1_zs']= ziel_ras1_zs
                 self.ebeRasList.append(ebeRasDict)
-            # Indices für Join- und Relate-Felder in Sourcetabelle
-            indListJoin = []
-            self.sql_ind_join = "SELECT EBE_BEZEICHNUNG as TAB, WTB_JOIN_FOREIGNKEY as ATTRIBUTE, 0 IS_UNIQUE FROM GEODB_DD.TB_EBENE_ZEITSTAND join GEODB_DD.TB_EBENE on TB_EBENE_ZEITSTAND.EBE_OBJECTID = TB_EBENE.EBE_OBJECTID join GEODB_DD.TB_WERTETABELLE on TB_EBENE_ZEITSTAND.EZS_OBJECTID = TB_WERTETABELLE.EZS_OBJECTID WHERE TB_EBENE_ZEITSTAND.GZS_OBJECTID = '" + self.gzs_objectid + "' AND EBE_BEZEICHNUNG = '" + ebe + "'"
-            self.__db_connect('team', 'geodb_dd', self.sql_ind_join)
-            for row in self.result:
-                indDict = {}
-                indDict['table'] = row[0].decode('cp1252')
-                indDict['attribute'] = row[1].decode('cp1252')
-                indextyp = unicode(row[2]).decode('cp1252')
-                if indextyp == "1":
-                    ind_unique = "True"
-                elif indextyp == "0":
-                    ind_unique = "False"
-                indDict['unique'] = ind_unique            
-                indListJoin.append(indDict)
-            ebeVecDict['indices_join'] = indListJoin
-            self.ebeVecList.append(ebeVecDict)
 #             elif datentyp == 'Rasterkatalog' or datentyp == 'Mosaicdataset':
 #                 ebeRasDict['datentyp'] = datentyp
 #                 ebeRasDict['gpr_ebe'] = gpr_ebe
@@ -290,16 +274,16 @@ class Generierung(TemplateFunction):
       
          
     def __get_wtb_dd(self):
-        self.sql_dd_wtb = "SELECT DISTINCT a.gpr_bezeichnung, b.gzs_jahr, b.gzs_version, e.wtb_bezeichnung from geodb_dd.tb_wertetabelle e join geodb_dd.tb_ebene_zeitstand d on e.ezs_objectid = d.ezs_objectid join geodb_dd.tb_ebene c on d.ebe_objectid = c.ebe_objectid join geodb_dd.tb_geoprodukt_zeitstand b on d.gzs_objectid = b.gzs_objectid join geodb_dd.tb_geoprodukt a on b.gpr_objectid = a.gpr_objectid where b.gzs_objectid = '" + self.gzs_objectid + "'"
+        self.sql_dd_wtb = "SELECT a.gpr_bezeichnung, c.ebe_bezeichnung, b.gzs_jahr, b.gzs_version, e.wtb_bezeichnung from geodb_dd.tb_wertetabelle e join geodb_dd.tb_ebene_zeitstand d on e.ezs_objectid = d.ezs_objectid join geodb_dd.tb_ebene c on d.ebe_objectid = c.ebe_objectid join geodb_dd.tb_geoprodukt_zeitstand b on d.gzs_objectid = b.gzs_objectid join geodb_dd.tb_geoprodukt a on b.gpr_objectid = a.gpr_objectid where b.gzs_objectid = '" + self.gzs_objectid + "'"
         self.__db_connect('team', 'geodb_dd', self.sql_dd_wtb)
         for row in self.result:
             wtbDict = {}
             self.logger.info(row)
             gpr = row[0].decode('cp1252')
             self.logger.info(type(gpr))
-            wtb = row[3].decode('cp1252')
-            jahr = unicode(row[1]).decode('cp1252')
-            version = unicode(row[2]).decode('cp1252')
+            wtb = row[4].decode('cp1252')
+            jahr = unicode(row[2]).decode('cp1252')
+            version = unicode(row[3]).decode('cp1252')
             version = version.zfill(2)
             zeitstand = jahr + "_" + version
             gpr_wtb = unicode(gpr) + "_" + unicode(wtb)            
@@ -325,23 +309,6 @@ class Generierung(TemplateFunction):
                 indDict['attribute'] = ind_attr
                 indDict['unique'] = ind_unique            
                 self.indList.append(indDict)
-            # Indices für Join- und Relate-Felder in Jointabelle
-            indListJoin = []
-            self.sql_ind_join = "SELECT DISTINCT WTB_BEZEICHNUNG as TAB, WTB_JOIN_PRIMARYKEY as ATTRIBUTE, CASE WHEN WTB_JOIN_TYP = 'esriLeftOuterJoin' THEN 1 ELSE 0 END IS_UNIQUE FROM GEODB_DD.TB_EBENE_ZEITSTAND join GEODB_DD.TB_WERTETABELLE on TB_EBENE_ZEITSTAND.EZS_OBJECTID = TB_WERTETABELLE.EZS_OBJECTID WHERE TB_EBENE_ZEITSTAND.GZS_OBJECTID = '" + self.gzs_objectid + "' AND WTB_BEZEICHNUNG = '" + wtb + "'"
-            self.__db_connect('team', 'geodb_dd', self.sql_ind_join)
-            for row in self.result:
-                indDict = {}
-                indDict['table'] = row[0].decode('cp1252')
-                indDict['attribute'] = row[1].decode('cp1252')
-                indextyp = unicode(row[2]).decode('cp1252')
-                if indextyp == "1":
-                    ind_unique = "True"
-                elif indextyp == "0":
-                    ind_unique = "False"
-                indDict['unique'] = ind_unique            
-                indListJoin.append(indDict)
-            #TODO: wird mehrmals ausgegeben
-            wtbDict['indices_join'] = indListJoin
             wtbDict['indices'] = self.indList
             wtbDict['datentyp']= "Tabelle"
             wtbDict['gpr_ebe'] = gpr_wtb
@@ -546,4 +513,4 @@ class Generierung(TemplateFunction):
                 crypter = Crypter()
                 for key, value in self.task_config['users'].iteritems():
                     self.task_config['users'][key] = crypter.decrypt(value)
-                    
+                
