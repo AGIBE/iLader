@@ -4,6 +4,10 @@ import cx_Oracle
 import os
 import configobj
 from iLader.helpers import Crypter, OracleHelper
+from iLader.__init__ import __version__  
+import csv
+import getpass
+import datetime
 
 def get_general_configfile_from_envvar():
     '''
@@ -52,6 +56,30 @@ def init_generalconfig():
     config_file.walk(decrypt_passwords)
     
     return config_file  
+
+def register_installations(general_config, logger):
+    '''
+    Legt die installierte Version inkl. Angabe zu User und PC zentral in csv-Datei ab.
+    '''
+    try:
+        instfile = general_config['INSTALLATION']['instreg']
+        usrlist = []
+        usr = getpass.getuser()
+        pc = os.environ['COMPUTERNAME']
+        # csv einlesen
+        with open(instfile, 'rb') as csvfile:
+            spamreader = csv.reader(csvfile, delimiter=str(u';'))
+            for row in spamreader:
+                usrlist.append([row[0], row[1], row[2]])
+        # csv allenfalls ergaenzen
+        if not [__version__, usr, pc] in usrlist:
+            with open(instfile, 'ab') as csvfile:
+                spamwriter = csv.writer(csvfile, delimiter=str(u';'))
+                spamwriter.writerow([__version__ , usr, pc, datetime.datetime.now().strftime("%d.%m.%Y %H:%M:%S")])
+    except Exception as e:
+        logger.warn('Installationsversion konnte nicht zentral abgelegt werden. ' + e)
+        pass
+
     
 def get_import_tasks():
     general_config = init_generalconfig()

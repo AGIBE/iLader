@@ -37,6 +37,9 @@ class Usecase():
         self.logger.info("Task-Directory: " + self.task_config['task_directory'])
         self.logger.info("Log-File: " + self.task_config['log_file'])
         
+        # Installation registrieren
+        iLader.helpers.Helpers.register_installations(self.general_config, self.logger)
+        
         self.is_task_valid = self.__get_task_status()
             
     def run(self):
