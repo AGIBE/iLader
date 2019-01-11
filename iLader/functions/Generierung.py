@@ -118,7 +118,7 @@ class Generierung(TemplateFunction):
             ziel_ras1_akt = os.path.join(self.sde_conn_ras1, ziel_schema_gpr_ebe) 
             ziel_ras1_zs = os.path.join(self.sde_conn_ras1, ziel_schema_gpr_ebe_zs)
             ziel_ras2 = os.path.join(self.sde_conn_ras2, ziel_schema_gpr_ebe)
-            if datentyp != 'Rastermosaik' and datentyp != 'Rasterkatalog' and datentyp != 'Mosaicdataset':
+            if datentyp != 'Rastermosaik' and datentyp != 'Rasterkatalog' and datentyp != 'Mosaicdataset' and datentyp != 'Cache':
                 self.sql_ind_gdbp = "SELECT b.felder, b." + '"unique"' + " from gdbp.index_attribut b join gdbp.geoprodukte a on b.id_geoprodukt = a.id_geoprodukt where a.code = '" + gpr + "' and b.ebene = '" + ebe + "'"
                 self.__db_connect('work', 'gdbp', self.sql_ind_gdbp)
                 self.indList = []
@@ -234,27 +234,29 @@ class Generierung(TemplateFunction):
             self.mxdList.append(self.mxdDict)
     
     def __get_fak_begleitdaten(self):
-        for root, dirs, files in os.walk(self.quelle_begleitdaten_symbol):
-            self.logger.info("Liste Files auf:")
-            for file in files:
+        # Es wird nur im SYMBOL-Verzeichnis gesucht. Unterverzeichnisse werden ignoriert.
+        symbol_dir_files = [f for f in os.listdir(self.quelle_begleitdaten_symbol) if os.path.isfile(os.path.join(self.quelle_begleitdaten_symbol, f))]
+        for symbol_dir_file in symbol_dir_files:
+            if symbol_dir_file.lower().endswith('.style'):
+                self.logger.info(symbol_dir_file)
                 styleDict = {}
+                styleDict['name'] = symbol_dir_file
+                styleDict['quelle'] = os.path.join(self.quelle_begleitdaten_symbol, symbol_dir_file)
+                self.style_ziel_akt = os.path.join(self.ziel_begleitdaten_symbol, self.gpr + "_" + symbol_dir_file)
+                styleDict['ziel_akt'] = self.style_ziel_akt.upper()
+                self.style_zs = os.path.join(self.ziel_begleitdaten_symbol, self.gpr + "_" + self.zeitstand + "_" + symbol_dir_file)
+                styleDict['ziel_zs'] = self.style_zs.upper()
+                self.styleList.append(styleDict)
+            elif symbol_dir_file.lower().endswith('.ttf'):
+                self.logger.info(symbol_dir_file)
                 fontDict = {}
-                if file.endswith('.STYLE') or file.endswith('.style'):
-                    styleDict['name'] = file
-                    styleDict['quelle'] = os.path.join(self.quelle_begleitdaten_symbol, file)
-                    self.style_ziel_akt = os.path.join(self.ziel_begleitdaten_symbol, self.gpr + "_" + file)
-                    styleDict['ziel_akt'] = self.style_ziel_akt.upper()
-                    self.style_zs = os.path.join(self.ziel_begleitdaten_symbol, self.gpr + "_" + self.zeitstand + "_" + file)
-                    styleDict['ziel_zs'] = self.style_zs.upper()
-                    self.styleList.append(styleDict)
-                elif file.endswith('.ttf') or file.endswith('.TTF'):
-                    fontDict['name'] = file
-                    fontDict['quelle'] = os.path.join(self.quelle_begleitdaten_symbol, file)
-                    self.font_akt = os.path.join(self.ziel_begleitdaten_symbol, self.gpr + "_" + file)
-                    fontDict['ziel_akt'] = self.font_akt.upper()
-                    self.font_zs = os.path.join(self.ziel_begleitdaten_symbol, self.gpr + "_" + self.zeitstand + "_" + file)
-                    fontDict['ziel_zs'] = self.font_zs.upper()
-                    self.fontList.append(fontDict)      
+                fontDict['name'] = symbol_dir_file
+                fontDict['quelle'] = os.path.join(self.quelle_begleitdaten_symbol, symbol_dir_file)
+                self.font_akt = os.path.join(self.ziel_begleitdaten_symbol, self.gpr + "_" + symbol_dir_file)
+                fontDict['ziel_akt'] = self.font_akt.upper()
+                self.font_zs = os.path.join(self.ziel_begleitdaten_symbol, self.gpr + "_" + self.zeitstand + "_" + symbol_dir_file)
+                fontDict['ziel_zs'] = self.font_zs.upper()
+                self.fontList.append(fontDict)      
     
     def __get_fak_zusatzdaten(self):
         self.logger.info("Prüfe ob Zusatzdaten vorhanden auf:")
@@ -485,6 +487,7 @@ class Generierung(TemplateFunction):
         self.task_config['rolle'] = self.rolle_freigabe
         self.task_config['vektor_ebenen'] = self.ebeVecList
         self.task_config['raster_ebenen'] = self.ebeRasList
+        self.task_config['cache_ebenen'] = self.ebeCacheList
         self.task_config['legende'] = self.legList
         self.task_config['mxd'] = self.mxdList
         self.task_config['ziel'] = {'ziel_begleitdaten_gpr': self.ziel_begleitdaten_gpr, 'ziel_begleitdaten_mxd': self.ziel_begleitdaten_mxd, 'ziel_begleitdaten_symbol': self.ziel_begleitdaten_symbol, 'ziel_begleitdaten_zusatzdaten': self.ziel_begleitdaten_zusatzdaten}
