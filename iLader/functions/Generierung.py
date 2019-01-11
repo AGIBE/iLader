@@ -99,6 +99,7 @@ class Generierung(TemplateFunction):
             self.logger.info(row)
             ebeVecDict = {}
             ebeRasDict = {}
+            ebeCacheDict = {}
             gpr = row[0].decode('cp1252')
             ebe = row[1].decode('cp1252')
             jahr = unicode(row[2]).decode('cp1252')
@@ -147,6 +148,12 @@ class Generierung(TemplateFunction):
                 ebeRasDict['ziel_ras1']= ziel_ras1_akt
                 ebeRasDict['ziel_ras1_zs']= ziel_ras1_zs
                 self.ebeRasList.append(ebeRasDict)
+            # Cache-Ebenen kommen nicht in die Liste der Vektor-Ebenen
+            # Damit werden diese Ebenen automatisch nirgends kopiert
+            elif datentyp == "Cache":
+                ebeCacheDict['gpr_ebe'] = gpr_ebe
+                ebeCacheDict['datentyp'] = datentyp
+                self.ebeCacheList.append(ebeCacheDict)
 #             elif datentyp == 'Rasterkatalog' or datentyp == 'Mosaicdataset':
 #                 ebeRasDict['datentyp'] = datentyp
 #                 ebeRasDict['gpr_ebe'] = gpr_ebe
@@ -447,6 +454,7 @@ class Generierung(TemplateFunction):
 
         self.ebeVecList = []
         self.ebeRasList = []
+        self.ebeCacheList = []
         self.legList = []
         self.mxdList = []
         self.styleList = []
