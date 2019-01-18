@@ -31,3 +31,4 @@ from .KopieVek1Ersatz_PG import KopieVek1Ersatz_PG
 from .IndicesVek2_PG import IndicesVek2_PG
 from .Transfer2Vek2_PG import Transfer2Vek2_PG
 from .Transfer2Vek1_PG import Transfer2Vek1_PG
+from .ViewsVek2 import ViewsVek2

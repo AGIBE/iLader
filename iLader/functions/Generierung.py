@@ -93,7 +93,7 @@ class Generierung(TemplateFunction):
        
     
     def __get_ebe_dd(self):
-        self.sql_dd_ebe = "SELECT a.gpr_bezeichnung, c.ebe_bezeichnung, b.gzs_jahr, b.gzs_version, g.dat_bezeichnung_de from geodb_dd.tb_ebene_zeitstand d join geodb_dd.tb_ebene c on d.ebe_objectid = c.ebe_objectid join geodb_dd.tb_geoprodukt_zeitstand b on d.gzs_objectid = b.gzs_objectid join geodb_dd.tb_geoprodukt a on b.gpr_objectid = a.gpr_objectid join geodb_dd.tb_datentyp g on c.dat_objectid = g.dat_objectid where b.gzs_objectid = '" + self.gzs_objectid + "'"   
+        self.sql_dd_ebe = "SELECT a.gpr_bezeichnung, c.ebe_bezeichnung, b.gzs_jahr, b.gzs_version, g.dat_bezeichnung_de, d.EZS_OBJECTID from geodb_dd.tb_ebene_zeitstand d join geodb_dd.tb_ebene c on d.ebe_objectid = c.ebe_objectid join geodb_dd.tb_geoprodukt_zeitstand b on d.gzs_objectid = b.gzs_objectid join geodb_dd.tb_geoprodukt a on b.gpr_objectid = a.gpr_objectid join geodb_dd.tb_datentyp g on c.dat_objectid = g.dat_objectid where b.gzs_objectid = '" + self.gzs_objectid + "'"   
         self.__db_connect('team', 'geodb_dd', self.sql_dd_ebe)
         for row in self.result:
             self.logger.info(row)
@@ -102,6 +102,7 @@ class Generierung(TemplateFunction):
             ebeCacheDict = {}
             gpr = row[0].decode('cp1252')
             ebe = row[1].decode('cp1252')
+            ezs_objectid = unicode(row[5])
             jahr = unicode(row[2]).decode('cp1252')
             version = unicode(row[3]).decode('cp1252')
             version = version.zfill(2)
@@ -140,6 +141,23 @@ class Generierung(TemplateFunction):
                 ebeVecDict['ziel_vek1'] = ziel_vek1
                 ebeVecDict['ziel_vek2'] = ziel_vek2
                 ebeVecDict['ziel_vek3'] = ziel_vek3
+                
+                # Wertetabellen-Infos auslesen
+                # Muss pro Ebene geschehen, da die View-Erstellung den Bezug zur Ebene braucht.
+                wertetabellenList = []
+                sql_wertetabellen = "select w.WTB_BEZEICHNUNG, w.WTB_JOIN_FOREIGNKEY, w.WTB_JOIN_PRIMARYKEY, w.wtb_join_typ from TB_WERTETABELLE w where w.EZS_OBJECTID=" + ezs_objectid
+                wertetabellen_results = OracleHelper.readOracleSQL(self.general_config['instances']['team'], self.general_config['users']['geodb_dd']['username'], self.general_config['users']['geodb_dd']['password'], sql_wertetabellen)
+                wertetabellenDict = {}
+                for wt in wertetabellen_results:
+                    wertetabellenDict = {
+                        "wtb_code": wt[0],
+                        "wtb_foreignkey": wt[1],
+                        "wtb_primarykey": wt[2],
+                        "wtb_jointype": wt[3]
+                    }
+                wertetabellenList.append(wertetabellenDict)
+                ebeVecDict['wertetabellen'] = wertetabellenList
+
                 self.ebeVecList.append(ebeVecDict)            
             elif datentyp == 'Rastermosaik': #TODO: ev. später Rasterdataset
                 ebeRasDict['datentyp'] = datentyp
@@ -319,7 +337,7 @@ class Generierung(TemplateFunction):
                 indDict['unique'] = ind_unique            
                 self.indList.append(indDict)
             wtbDict['indices'] = self.indList
-            wtbDict['datentyp']= "Tabelle"
+            wtbDict['datentyp']= "Wertetabelle"
             wtbDict['gpr_ebe'] = gpr_wtb
             wtbDict['quelle'] = quelle
             wtbDict['ziel_vek1'] = ziel_vek1
