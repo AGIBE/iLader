@@ -3,6 +3,8 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 from .TemplateFunction import TemplateFunction
 import iLader.helpers.OracleHelper
 import iLader.helpers.Helpers
+import arcpy
+import os
 
 class ViewsVek2(TemplateFunction):
     '''
@@ -57,11 +59,18 @@ class ViewsVek2(TemplateFunction):
         schema = self.task_config['schema']['geodb']
 
         for ebene in self.task_config['vektor_ebenen']:
+            view_name = ebene['gpr_ebe'] + "_VW"
+            view_name_vek2 = os.path.join(self.task_config['connections']['sde_conn_vek2'], view_name)
+            if arcpy.Exists(view_name_vek2):
+                self.logger.info("View existiert bereits. Er wird gelöscht.")
+                self.logger.info(view_name_vek2)
+                arcpy.Delete_management(view_name_vek2)
+
             if ebene['datentyp'] not in ['Wertetabelle', 'Annotation']:
                 self.logger.info("Für Ebene " + ebene['gpr_ebe'] + " wird ein View erstellt.")
                 wertetabellen = ebene['wertetabellen']
-
-                view_name = ebene['gpr_ebe'] + "_VW"
+                
+                self.logger.info("View-Name: " + view_name)
                 
                 ebene_fullname = schema + "." + ebene['gpr_ebe']
                 
@@ -122,8 +131,14 @@ class ViewsVek2(TemplateFunction):
                 self.logger.info(grant_sql)
                 iLader.helpers.OracleHelper.writeOracleSQL(self.general_config['instances']['vek2'], self.general_config['users']['geodb']['username'], self.general_config['users']['geodb']['password'], grant_sql)
 
+            elif ebene['datentyp'] == 'Annotation':
+                self.logger.info("Für die Ebene " + ebene['gpr_ebe'] + " wird kein View erstellt, weil sie eine Annotation ist. Sie wird stattdessen kopiert.")
+                self.logger.info("Quelle: " + ebene['ziel_vek2'])
+                self.logger.info("Ziel: " + view_name_vek2)
+                arcpy.Copy_management(ebene['ziel_vek2'], view_name_vek2)
+                arcpy.ChangePrivileges_management(view_name_vek2, rolle, "GRANT")
             else:
-                self.logger.info("Für die Ebene " + ebene['gpr_ebe'] + " wird kein View erstellt. Weil sie entweder eine Wertetabelle oder eine Annotation ist.")
+                self.logger.info("Für die Ebene " + ebene['gpr_ebe'] + " wird kein View erstellt, weil sie eine Wertetabelle ist.")
             
             self.logger.info("Für die Ebene " + ebene['gpr_ebe'] + " wurde der View erstellt.")    
             
