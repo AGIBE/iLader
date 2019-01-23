@@ -155,7 +155,8 @@ class Generierung(TemplateFunction):
                         "wtb_primarykey": wt[2],
                         "wtb_jointype": wt[3]
                     }
-                wertetabellenList.append(wertetabellenDict)
+                    wertetabellenList.append(wertetabellenDict)
+                
                 ebeVecDict['wertetabellen'] = wertetabellenList
 
                 self.ebeVecList.append(ebeVecDict)            
