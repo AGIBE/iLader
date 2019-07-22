@@ -90,6 +90,7 @@ class Generierung(TemplateFunction):
         self.default_tolerance = self.general_config['default_tolerance']  
         self.default_resolution = self.general_config['default_resolution']
         self.spatial_reference = self.general_config['spatial_reference']
+        self.quelle_begleitdatenraster = os.path.join(self.general_config['quelle_begleitdaten'], self.gpr, 'work', 'symbol','Rasterdataset')
        
     
     def __get_ebe_dd(self):
@@ -514,6 +515,7 @@ class Generierung(TemplateFunction):
         self.task_config['font'] = self.fontList
         self.task_config['zusatzdaten'] = self.zusatzDict
         self.task_config['ziel'] = self.zielDict
+        self.task_config['quelle_begleitdatenraster'] = self.quelle_begleitdatenraster
         self.task_config['qs'] = self.qsDict
         self.task_config['default_tolerance'] = self.default_tolerance
         self.task_config['default_resolution'] = self.default_resolution
