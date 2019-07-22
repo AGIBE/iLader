@@ -55,7 +55,7 @@ class KopieRas1Ersatz(TemplateFunction):
             source = ebene['quelle']
             target = ebene['ziel_ras1']
             # Dem aktuellen Zeitstand wird der Namenszusatz "_NEU angefügt"
-            target = target + "_NE"
+            target = target + "_NEU"
             target_zs = ebene['ziel_ras1_zs']
             ebename = ebene['gpr_ebe']
             self.logger.info("Ebene " + ebename + " wird nach RAS1 kopiert.")

@@ -2,7 +2,7 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 from .TemplateFunction import TemplateFunction
 import shutil
-import arcpy
+import os
 
 class Begleitdaten(TemplateFunction):
     '''
@@ -43,6 +43,22 @@ class Begleitdaten(TemplateFunction):
             shutil.copyfile(legende["quelle"], legende["ziel_akt"])
             shutil.copyfile(legende["quelle"], legende["ziel_zs"])
         
+        # Legenden für Rasterdatasets
+        # Kopiere lyr-Files für Rasterdatasets, die separat abgelegt sind
+        self.logger.info("Legendenfiles für Rasterdatasets kopieren (falls vorhanden)")
+        if os.path.exists(self.task_config['quelle_begleitdatenraster']):
+            for f in os.listdir(self.task_config['quelle_begleitdatenraster']):
+                if f.endswith((".lyr",".LYR")):
+                    self.logger.info("Rasterdataset-Legende " + f + " wird kopiert.")
+                    shutil.copyfile(os.path.join(self.task_config['quelle_begleitdatenraster'],f), os.path.join(self.task_config['ziel']['ziel_begleitdaten_symbol'], 'AKTUELL_' + f))
+        
+        # Temporäre Raster-lyr-Files löschen
+        self.logger.info("Temporäre lyr-Files von Rasterdatasets löschen (falls vorhanden)")
+        for f in os.listdir(self.task_config['ziel']['ziel_begleitdaten_symbol']):
+            if f.startswith(("DELETE_","delete_")):
+                self.logger.info("Temporäres lys-File " + f + " wird gelöscht.")
+                os.remove(os.path.join(self.task_config['ziel']['ziel_begleitdaten_symbol'],f))
+
         # MXDs
         self.logger.info("MXD-Files kopieren")
         for mxd in self.task_config["mxd"]:
