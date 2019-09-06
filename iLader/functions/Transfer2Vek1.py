@@ -36,10 +36,10 @@ class Transfer2Vek1(TemplateFunction):
         self.logger.info("ÖREBK-Transferstruktur (OEREB2) wird nach VEK1 kopiert.")
         source_connection = self.task_config['connections']['sde_conn_team_oereb2']
         target_connection = self.task_config['connections']['sde_conn_vek1_oereb2']
-        oereb_tables = self.task_config['oereb']['tabellen']
+        oereb_tables = self.task_config['oereb']['tabellen_ora']
         liefereinheiten = self.task_config['oereb']['liefereinheiten']
         
-        if liefereinheiten == '':
+        if liefereinheiten == '()':
             self.logger.info('Für diesen Import konnten keine ÖREBK-Liefereinheiten ermittelt werden.')
             self.logger.info('Die ÖREBK-Transferstruktur wird daher nicht importiert.')
         else:
