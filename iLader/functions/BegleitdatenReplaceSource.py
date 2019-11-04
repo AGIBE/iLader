@@ -149,6 +149,13 @@ class BegleitdatenReplaceSource(TemplateFunction):
             self.__replace(legende["ziel_zs"], self.sde_conn_vek3_geo, self.sde_conn_ras1_geo, "true", "false")   
         self.logger.info("alle Legendenfiles sind umgehängt.")
         
+        # Temporäre Raster-lyr-Files löschen
+        self.logger.info("Temporäre lyr-Files von Rasterdatasets löschen (falls vorhanden)")
+        for f in os.listdir(self.task_config['ziel']['ziel_begleitdaten_symbol']):
+            if f.startswith(("DELETE_","delete_")):
+                self.logger.info("Temporäres lys-File " + f + " wird gelöscht.")
+                os.remove(os.path.join(self.task_config['ziel']['ziel_begleitdaten_symbol'],f))
+        
         # MXDs
         self.logger.info("MXD-Files bearbeiten")
         for mxd in self.task_config["mxd"]:
