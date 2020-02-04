@@ -15,6 +15,7 @@ def readOracleSQL(db, username, password, sql, fetchall=True):
 
 def writeOracleSQL_check(self, db, username, password, sql, msg_err, excep=True):
     with cx_Oracle.connect(username, password, db) as conn:
+        conn.autocommit = True
         cur = conn.cursor()
         cur.execute(sql)
         
@@ -32,11 +33,13 @@ def writeOracleSQL(db, username, password, sql):
     # Mit dem With-Statement wird sowohl committed als auch die
     # Connection- und Cursor-Objekte automatisch geschlossen
     with cx_Oracle.connect(username, password, db) as conn:
+        conn.autocommit = True
         cur = conn.cursor()
         cur.execute(sql)
    
 def writeOracleSQL_multiple(db, username, password, sql):
     with cx_Oracle.connect(username, password, db) as conn:
+        conn.autocommit = True
         cur = conn.cursor()
         for sql_statement in sql:
             cur.execute(sql_statement)
