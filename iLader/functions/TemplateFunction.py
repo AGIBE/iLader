@@ -73,7 +73,8 @@ class TemplateFunction(object):
         db = self.task_config['instances'][dbname]
         username2 = 'geodb'
         password2 = self.task_config['users'][username2]
-        conn = cx_Oracle.connect(username2, password2, db)  
+        conn = cx_Oracle.connect(username2, password2, db)
+        conn.autocommit = True
         cursor = conn.cursor()
         
         for index_table in index_tables:
