@@ -60,7 +60,7 @@ class Usecase():
                 print("Import SUCCESSFUL!")
             except Exception as e:
                 print(e.message)
-                self.logger.error(e.message)
+                self.logger.error((e.message).decode('cp1252'))
 #             finally: # Die Ausputzer-Funktion muss immer ausgeführt werden.
 #                 f = Ausputzer(self.task_config)
 #                 self.logger.info("Funktion " + f.name + " wurde ausgeführt")
