@@ -6,6 +6,7 @@ import json
 import cx_Oracle as ora
 from iLader.helpers.Crypter import Crypter
 from iLader.helpers import OracleHelper
+from iLader.helpers import PostgresHelper
 
 class Generierung(TemplateFunction):
     '''
@@ -432,7 +433,7 @@ class Generierung(TemplateFunction):
 
     def __get_oereb_tables(self, oereb_tables_sql):
         oereb_tables = []
-        tables = OracleHelper.readOracleSQL(self.general_config['instances']['work'], self.general_config['users']['oereb2']['username'], self.general_config['users']['oereb2']['password'], oereb_tables_sql)
+        tables = PostgresHelper.db_sql(self=self, host=self.general_config['instances']['oereb'], db=self.general_config['db_work_pg'], port=self.general_config['port_pg'], db_user=self.general_config['users']['oereb']['username'], pw=self.general_config['users']['oereb']['password'], sql_query=oereb_tables_sql, fetch=True, fetchall=True)
         for table in tables:
             tbl_dict = {}
             tbl_dict['tablename'] = table[0]
@@ -443,7 +444,7 @@ class Generierung(TemplateFunction):
 
     def __get_oereb_liefereinheiten(self, oereb_liefereinheiten_sql):
         oereb_liefereinheiten = []
-        liefereinheiten = OracleHelper.readOracleSQL(self.general_config['instances']['work'], self.general_config['users']['oereb2']['username'], self.general_config['users']['oereb2']['password'], oereb_liefereinheiten_sql)
+        liefereinheiten = PostgresHelper.db_sql(self=self, host=self.general_config['instances']['oereb'], db=self.general_config['db_work_pg'], port=self.general_config['port_pg'], db_user=self.general_config['users']['oereb']['username'], pw=self.general_config['users']['oereb']['password'], sql_query=oereb_liefereinheiten_sql, fetch=True, fetchall=True)
         for liefereinheit in liefereinheiten:
             oereb_liefereinheiten.append(unicode(liefereinheit[0]))
         
@@ -451,7 +452,7 @@ class Generierung(TemplateFunction):
 
     def __get_oereb_schemas(self, oereb_schemas_sql):
         oereb_schemas = []
-        schemas = OracleHelper.readOracleSQL(self.general_config['instances']['work'], self.general_config['users']['oereb2']['username'], self.general_config['users']['oereb2']['password'], oereb_schemas_sql)
+        schemas = PostgresHelper.db_sql(self=self, host=self.general_config['instances']['oereb'], db=self.general_config['db_work_pg'], port=self.general_config['port_pg'], db_user=self.general_config['users']['oereb']['username'], pw=self.general_config['users']['oereb']['password'], sql_query=oereb_schemas_sql, fetch=True, fetchall=True)
         for schema in schemas:
             oereb_schemas.append(schema[0])
         
@@ -461,17 +462,17 @@ class Generierung(TemplateFunction):
         self.oereb_dict = {}
         self.logger.info("ÖREBK-Infos werden geholt.")
         # Tabellen der Oracle-Transferstruktur werden geholt
-        oereb_tables_ora_sql = "select ebecode, filter_field from gpr where GPRCODE='OEREB' ORDER BY EBEORDER ASC"
+        oereb_tables_ora_sql = "select ebecode, filter_field from oereb.gpr where gprcode='OEREB' ORDER BY EBEORDER ASC"
         oereb_tables_ora = self.__get_oereb_tables(oereb_tables_ora_sql)
         # Tabellen der PostGIS-Transferstruktur werden geholt
-        oereb_tables_ora_sql = "select ebecode, filter_field from gpr where GPRCODE='OEREB_PG' ORDER BY EBEORDER ASC"
+        oereb_tables_ora_sql = "select ebecode, filter_field from oereb.gpr where gprcode='OEREB_PG' ORDER BY EBEORDER ASC"
         oereb_tables_pg = self.__get_oereb_tables(oereb_tables_ora_sql)
         # Liefereinheiten werden geholt und als String formatiert, der
         # in einer WHERE-Clause (IN) verwendet werden kann.
-        oereb_liefereinheiten_sql = "select distinct ticket.liefereinheit from ticket left join liefereinheit on ticket.liefereinheit=liefereinheit.id left join workflow_gpr on liefereinheit.workflow=workflow_gpr.workflow where status=4 and workflow_gpr.gprcode='%s'" % (self.gpr)
+        oereb_liefereinheiten_sql = "select distinct ticket.liefereinheit from oereb.ticket left join oereb.liefereinheit on ticket.liefereinheit=liefereinheit.id left join oereb.workflow_gpr on liefereinheit.workflow=workflow_gpr.workflow where status=4 and oereb.workflow_gpr.gprcode='%s'" % (self.gpr)
         liefereinheiten = self.__get_oereb_liefereinheiten(oereb_liefereinheiten_sql)
         # Schemas werden geholt
-        oereb_schemas_sql = "select distinct workflow_schema.schema from ticket left join liefereinheit on ticket.liefereinheit=liefereinheit.id left join workflow_gpr on liefereinheit.workflow=workflow_gpr.workflow left join workflow_schema on liefereinheit.workflow=workflow_schema.workflow where status=4 and workflow_gpr.gprcode='%s'" % (self.gpr)
+        oereb_schemas_sql = "select distinct workflow_schema.schema from oereb.ticket left join oereb.liefereinheit on ticket.liefereinheit=liefereinheit.id left join oereb.workflow_gpr on liefereinheit.workflow=workflow_gpr.workflow left join oereb.workflow_schema on liefereinheit.workflow=workflow_schema.workflow where status=4 and workflow_gpr.gprcode='%s'" % (self.gpr)
         schemas = self.__get_oereb_schemas(oereb_schemas_sql)
         # Config-Dictionary wird gefüllt.
         self.oereb_dict['tabellen_ora'] = oereb_tables_ora
