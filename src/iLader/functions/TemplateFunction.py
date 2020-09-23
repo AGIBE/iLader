@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function, unicode_literals
 import json
-from iLader.helpers import OracleHelper
 import logging
 import codecs
-import cx_Oracle
 
 class TemplateFunction(object):
     '''

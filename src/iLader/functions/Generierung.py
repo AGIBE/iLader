@@ -25,12 +25,10 @@ class Generierung(TemplateFunction):
         '''
         Constructor
         :param task_config: Vom Usecase initialisierte task_config (Dictionary)
+        :param general_config: Allgemeine Config (v.a. DB-Connections)
         '''
         self.name = "Generierung"
         TemplateFunction.__init__(self, task_config, general_config)
-
-        self.task_config = task_config
-        self.general_config = general_config
 
         # Wenn die JSON-Datei existiert und der Parameter task_config_load_from_JSON True ist,
         # wird die Task-Config aus der JSON-Datei geladen. In diesem Fall wird die eigentliche
