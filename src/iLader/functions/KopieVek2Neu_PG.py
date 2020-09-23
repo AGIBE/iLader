@@ -32,13 +32,13 @@ class KopieVek2Neu_PG(TemplateFunction):
     Auf das explizite Berechnen des räumlichen Indexes wird verzichtet.
     '''
 
-    def __init__(self, task_config):
+    def __init__(self, task_config, general_config):
         '''
         Constructor
         :param task_config: Vom Usecase initialisierte task_config (Dictionary)
         '''
         self.name = "KopieVek2Neu_PG"
-        TemplateFunction.__init__(self, task_config)
+        TemplateFunction.__init__(self, task_config, general_config)
 
         if self.name in self.task_config['ausgefuehrte_funktionen'
                                          ] and self.task_config[

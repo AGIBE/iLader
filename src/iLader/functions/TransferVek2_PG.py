@@ -16,13 +16,13 @@ class TransferVek2_PG(TemplateFunction):
     ÖREBK-Transferstruktur gar nicht kopiert.
     '''
 
-    def __init__(self, task_config):
+    def __init__(self, task_config, general_config):
         '''
         Constructor
         :param task_config: Vom Usecase initialisierte task_config (Dictionary)
         '''
         self.name = "TransferVek2_PG"
-        TemplateFunction.__init__(self, task_config)
+        TemplateFunction.__init__(self, task_config, general_config)
         
         if self.name in self.task_config['ausgefuehrte_funktionen'] and self.task_config['task_config_load_from_JSON']:
             self.logger.info("Funktion " + self.name + " wird ausgelassen.")

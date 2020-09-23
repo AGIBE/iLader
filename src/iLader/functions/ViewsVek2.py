@@ -21,13 +21,13 @@ class ViewsVek2(TemplateFunction):
 
     '''
 
-    def __init__(self, task_config):
+    def __init__(self, task_config, general_config):
         '''
         Constructor
         :param task_config: Vom Usecase initialisierte task_config (Dictionary)
         '''
         self.name = "ViewsVek2"
-        TemplateFunction.__init__(self, task_config)
+        TemplateFunction.__init__(self, task_config, general_config)
 
         # Der Zugriff auf das Config-File ist für die Verbindungs-Infos notwendig.
         self.general_config = iLader.helpers.Helpers.init_generalconfig()

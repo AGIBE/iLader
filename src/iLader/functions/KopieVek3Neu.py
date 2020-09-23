@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function, unicode_literals
 from .TemplateFunction import TemplateFunction
+import iLader.helpers.Statistics
 import arcpy
 
 class KopieVek3Neu(TemplateFunction):
@@ -28,13 +29,13 @@ class KopieVek3Neu(TemplateFunction):
     
     Auf das explizite Berechnen des räumlichen Indexes wird verzichtet.
     '''
-    def __init__(self, task_config):
+    def __init__(self, task_config, general_config):
         '''
         Constructor
         :param task_config: Vom Usecase initialisierte task_config (Dictionary)
         '''
         self.name = "KopieVek3Ne"
-        TemplateFunction.__init__(self, task_config)
+        TemplateFunction.__init__(self, task_config, general_config)
         
         if self.name in self.task_config['ausgefuehrte_funktionen'] and self.task_config['task_config_load_from_JSON']:
             self.logger.info("Funktion " + self.name + " wird ausgelassen.")
@@ -87,7 +88,7 @@ class KopieVek3Neu(TemplateFunction):
         # Statistiken neu berechnen
         self.logger.info("Statistiken werden neu berechnet in VEK3.")
         try:
-            TemplateFunction.renew_statistics(self,'vek3')
+            iLader.helpers.Statistics.renew_statistics(self.general_config['connections']['VEK3_GEODB_ORA'])
         except Exception as e:
             self.logger.warn("Fehler beim Erstellen der Statistik auf VEK3.")
             self.logger.warn(e)

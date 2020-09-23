@@ -3,8 +3,8 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 from .TemplateFunction import TemplateFunction
 import os
 import json
+import codecs
 import cx_Oracle as ora
-from iLader.helpers.Crypter import Crypter
 from iLader.helpers import OracleHelper
 from iLader.helpers import PostgresHelper
 
@@ -27,7 +27,7 @@ class Generierung(TemplateFunction):
         :param task_config: Vom Usecase initialisierte task_config (Dictionary)
         '''
         self.name = "Generierung"
-        TemplateFunction.__init__(self, task_config)
+        TemplateFunction.__init__(self, task_config, general_config)
 
         self.task_config = task_config
         self.general_config = general_config
@@ -541,11 +541,10 @@ class Generierung(TemplateFunction):
         '''
         Lädt die Task-Config aus der JSON-Datei.
         '''
-        f = open(self.task_config['task_config_file'], "r")
-        js = json.load(f)
-        f.close
+        with codecs.open(self.task_config['task_config_file'], "r", "utf-8") as json_file:
+            json_content = json.load(json_file)
                 
-        if len(js) > 0:
+        if len(json_content) > 0:
                 # die Variable js darf nicht einfach self.task_config
                 # zugewiesen werden, da damit ein neues Objekt erzeugt
                 # wird. self.task_config  ist dann in den Usecases nicht
@@ -553,10 +552,4 @@ class Generierung(TemplateFunction):
                 # wird das bestehende geleert (clear) und dann mit den
                 # Inhalten aus der Variable js gefüllt.
                 self.task_config.clear()
-                self.task_config.update(js)
-                # Alle Passwörter im JSON-File sind verschlüsselt.
-                # Sie müssen deshalb entschlüsselt werden.
-                crypter = Crypter()
-                for key, value in self.task_config['users'].iteritems():
-                    self.task_config['users'][key] = crypter.decrypt(value)
-                
+                self.task_config.update(json_content)                
