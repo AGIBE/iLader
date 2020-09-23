@@ -5,6 +5,6 @@
 build/*
 dist/*
 docs/_build/*
-iLader.egg-info/*
+src/iLader.egg-info/*
 *.code-workspace
 .vscode/*
