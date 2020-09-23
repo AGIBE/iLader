@@ -22,7 +22,7 @@ setup(
       packages = find_packages(where="src"),
       version = get_version("src/iLader/__init__.py"),
       # .fmw-Files werden von Python nicht erkannt. Deshalb müssen sie explizit als Package-Inhalt aufgelistet werden.
-      package_data={'': ["*.fmw"]},
+      package_data={'': ["esri/toolboxes/*.*","*.fmw"]},
       package_dir = {"": "src"},
       # Abhängigkeiten
       install_requires = ["AGILib>=1.2.2"],
