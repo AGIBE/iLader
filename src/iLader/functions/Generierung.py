@@ -4,9 +4,7 @@ from .TemplateFunction import TemplateFunction
 import os
 import json
 import codecs
-import cx_Oracle as ora
-from iLader.helpers import OracleHelper
-from iLader.helpers import PostgresHelper
+import sys
 
 class Generierung(TemplateFunction):
     '''
@@ -17,10 +15,6 @@ class Generierung(TemplateFunction):
     - ÖREB-Kataster
     Die Informationen werden in die task_config geschrieben.
     '''
-# TODO: Parameter einfügen für task_config: bestehende Daten überschreiben, per Default = JA
-# Parameter kann in task_config manuell angepasst werden, falls doch mal nicht überschrieben werdeK:\Anwend\GeoDB\P3_Applikation\Neukonzeption\Importn soll
-# z.B. bei grossen Rasterdaten
-
     def __init__(self, task_config, general_config):
         '''
         Constructor
@@ -41,148 +35,137 @@ class Generierung(TemplateFunction):
             self.finish()
         else:
             self.__execute()
-
-    def __db_connect(self, instance, usergroup, sql_name):
-        #TODO: Parameter einführen (true, false) für fetchall bzw. fetchone; anschliessend ausführen
-        self.sql_name = sql_name
-        self.instance = instance
-        self.usergroup = usergroup
-        self.username = self.general_config['users'][self.usergroup]['username']
-        self.password = self.general_config['users'][self.usergroup]['password']
-        self.db = self.general_config['instances'][self.instance]
-        self.logger.info("Username: " + self.username)
-        self.logger.info("Verbindung herstellen mit der Instanz " + self.db)
-        self.result = OracleHelper.readOracleSQL(self.db, self.username, self.password, self.sql_name)  
     
-    def __get_importe_dd(self):
-        self.task_id = unicode(self.task_config['task_id'])
-        self.logger.info(self.task_id)
-        self.sql_dd_importe = "select a.gzs_objectid from geodb_dd.tb_task a where a.task_objectid = '" + self.task_id + "'"
-        self.__db_connect('team', 'geodb_dd', self.sql_dd_importe)
-        for row in self.result:
-            self.gzs_objectid = unicode(row[0])
-
+    def __get_gzsobjectid_from_task(self):
+        self.logger.info("Hole GZS_OBJECTID aus TB_TASK")
+        gzs_objectid_sql = "select gzs_objectid from geodb_dd.tb_task where task_objectid=%s" % (unicode(self.task_config['task_id']))
+        gzs_objectid_results = self.general_config.connections['TEAM_GEODB_DD_ORA'].db_read(gzs_objectid_sql)
+        if len(gzs_objectid_results) == 1:
+            return gzs_objectid_results[0][0]
+        else:
+            self.logger.error("In TB_TASK wurde kein GZS_OBJECTID gefunden!")
+            sys.exit()
     
-    def __get_gpr_info(self):
+    def __get_gprinfo_from_dd(self):
         '''
         Diese Funktion sucht die Informationen auf Stufe Geoprodukt aus dem DD der GeoDB
         und aus GeoDBprozess zusammen
         DD GeoDB: Geoproduktcode, Jahr, Version
         GeoDBprozess: Rolle, sofern eine definiert ist, ansonsten Standardrolle
+        Ausserdem werden ein paar Parameter aus der Config in die Task-Config übernommen
         '''
-        self.sql_dd_gpr = "SELECT a.gpr_bezeichnung, b.gzs_jahr, b.gzs_version, a.gpr_viewer_freigabe from geodb_dd.tb_geoprodukt_zeitstand b join geodb_dd.tb_geoprodukt a on b.gpr_objectid = a.gpr_objectid where b.gzs_objectid = '" + self.gzs_objectid + "'"
-        self.__db_connect('team', 'geodb_dd', self.sql_dd_gpr)
-        for row in self.result:
-            self.gpr = row[0].decode('cp1252')
-            self.jahr = unicode(row[1]).decode('cp1252')
-            self.version = unicode(row[2]).decode('cp1252')
-            self.version = self.version.zfill(2)
-            self.zeitstand = self.jahr + "_" + self.version        
-        self.sql_gpr_role = "SELECT a.db_rollen from gdbp.geoprodukte a where a.code = '" + self.gpr + "'"
-        self.__db_connect('work', 'gdbp', self.sql_gpr_role)
-        for row in self.result:
-            if row[0]:
-                self.gpr_role_gdbp = row[0].decode('cp1252')
-                self.rolle_freigabe = self.gpr_role_gdbp
+        self.logger.info("Hole Infos aus DD (Geoprodukt-Code, Zeitstand)")
+        geoprodukt_dd_sql = "SELECT a.gpr_bezeichnung, b.gzs_jahr, b.gzs_version, a.gpr_viewer_freigabe from geodb_dd.tb_geoprodukt_zeitstand b join geodb_dd.tb_geoprodukt a on b.gpr_objectid = a.gpr_objectid where b.gzs_objectid = %s" % (self.gzs_objectid)
+        geoprodukt_dd_results = self.general_config.connections['TEAM_GEODB_DD_ORA'].db_read(geoprodukt_dd_sql)
+        if len(geoprodukt_dd_results) == 1:
+            self.gpr = geoprodukt_dd_results[0]
+            self.jahr = unicode(geoprodukt_dd_results[1])
+            self.version = unicode(geoprodukt_dd_results[2]).zfill(2)
+            self.zeitstand = "%s_%s" % (self.jahr, self.version)
+        else:
+            self.logger.error("Infos in TB_GEOPRODUKT konnten nicht gefunden werden.")
+            self.logger.error("Anzahl zurückgegebene Records: %s" % (unicode(len(geoprodukt_dd_results))))
+            sys.exit()
+        
+        self.logger.info("Lese Rolle aus GeoDBProzess aus.")
+        gdpb_rolle_sql = "SELECT a.db_rollen from gdbp.geoprodukte a where a.code = '%s'" % (self.gpr)
+        gdbp_rolle_results = self.general_config.connections['WORK_GDBP_ORA'].db_read(gdpb_rolle_sql)
+        if len(gdbp_rolle_results) == 1:
+            if gdbp_rolle_results[0][0]:
+                self.rolle_freigabe = gdbp_rolle_results[0][0]
             else:
                 self.rolle_freigabe = self.general_config['standard_rolle']
+        else:
+            self.logger.info("Infos in GDBP konnten nicht gefunden werden.")
+            self.logger.info("Anzahl zurückgegebene Records: %s" % (unicode(len(gdbp_rolle_results))))
+            sys.exit()
+
+        self.logger("Übernehme Parameter aus der Config")
         self.default_tolerance = self.general_config['default_tolerance']  
         self.default_resolution = self.general_config['default_resolution']
         self.spatial_reference = self.general_config['spatial_reference']
         self.quelle_begleitdatenraster = os.path.join(self.general_config['quelle_begleitdaten'], self.gpr, 'work', 'symbol','Rasterdataset')
-       
     
-    def __get_ebe_dd(self):
-        self.sql_dd_ebe = "SELECT a.gpr_bezeichnung, c.ebe_bezeichnung, b.gzs_jahr, b.gzs_version, g.dat_bezeichnung_de, d.EZS_OBJECTID from geodb_dd.tb_ebene_zeitstand d join geodb_dd.tb_ebene c on d.ebe_objectid = c.ebe_objectid join geodb_dd.tb_geoprodukt_zeitstand b on d.gzs_objectid = b.gzs_objectid join geodb_dd.tb_geoprodukt a on b.gpr_objectid = a.gpr_objectid join geodb_dd.tb_datentyp g on c.dat_objectid = g.dat_objectid where b.gzs_objectid = '" + self.gzs_objectid + "'"   
-        self.__db_connect('team', 'geodb_dd', self.sql_dd_ebe)
-        for row in self.result:
-            self.logger.info(row)
-            ebeVecDict = {}
-            ebeRasDict = {}
-            ebeCacheDict = {}
-            gpr = row[0].decode('cp1252')
-            ebe = row[1].decode('cp1252')
-            ezs_objectid = unicode(row[5])
-            jahr = unicode(row[2]).decode('cp1252')
-            version = unicode(row[3]).decode('cp1252')
-            version = version.zfill(2)
-            datentyp = row[4].decode('cp1252')            
-            zeitstand = jahr + "_" + version
-            gpr_ebe = unicode(gpr) + "_" + unicode(ebe)
-            quelle_schema_gpr_ebe = self.schema_norm + "." + gpr_ebe
-            quelle = os.path.join(self.sde_conn_norm, quelle_schema_gpr_ebe)
-            ziel_schema_gpr_ebe = self.schema_geodb + "." + gpr_ebe
-            ziel_schema_gpr_ebe_zs = ziel_schema_gpr_ebe + "_" + zeitstand     
-            ziel_vek1 = os.path.join(self.sde_conn_vek1, ziel_schema_gpr_ebe)
-            ziel_vek2 = os.path.join(self.sde_conn_vek2, ziel_schema_gpr_ebe)
-            ziel_vek3 = os.path.join(self.sde_conn_vek3, ziel_schema_gpr_ebe_zs)
-            ziel_ras1_akt = os.path.join(self.sde_conn_ras1, ziel_schema_gpr_ebe) 
-            ziel_ras1_zs = os.path.join(self.sde_conn_ras1, ziel_schema_gpr_ebe_zs)
-            ziel_ras2 = os.path.join(self.sde_conn_ras2, ziel_schema_gpr_ebe)
-            if datentyp != 'Rastermosaik' and datentyp != 'Rasterkatalog' and datentyp != 'Mosaicdataset' and datentyp != 'Cache':
-                self.sql_ind_gdbp = "SELECT b.felder, b." + '"unique"' + " from gdbp.index_attribut b join gdbp.geoprodukte a on b.id_geoprodukt = a.id_geoprodukt where a.code = '" + gpr + "' and b.ebene = '" + ebe + "'"
-                self.__db_connect('work', 'gdbp', self.sql_ind_gdbp)
-                self.indList = []
-                for row in self.result:
-                    indDict = {}
-                    ind_attr = row[0].decode('cp1252')
-                    indextyp = unicode(row[1]).decode('cp1252')
-                    if indextyp == "1":
-                        ind_unique = "True"
-                    elif indextyp == "2":
-                        ind_unique = "False"
-                    indDict['attribute'] = ind_attr
-                    indDict['unique'] = ind_unique            
-                    self.indList.append(indDict)
-                ebeVecDict['indices'] = self.indList
-                ebeVecDict['datentyp']= datentyp
-                ebeVecDict['gpr_ebe'] = gpr_ebe
-                ebeVecDict['quelle'] = quelle
-                ebeVecDict['ziel_vek1'] = ziel_vek1
-                ebeVecDict['ziel_vek2'] = ziel_vek2
-                ebeVecDict['ziel_vek3'] = ziel_vek3
-                
-                # Wertetabellen-Infos auslesen
-                # Muss pro Ebene geschehen, da die View-Erstellung den Bezug zur Ebene braucht.
-                wertetabellenList = []
-                sql_wertetabellen = "select w.WTB_BEZEICHNUNG, w.WTB_JOIN_FOREIGNKEY, w.WTB_JOIN_PRIMARYKEY, w.wtb_join_typ from TB_WERTETABELLE w where w.EZS_OBJECTID=" + ezs_objectid
-                wertetabellen_results = OracleHelper.readOracleSQL(self.general_config['instances']['team'], self.general_config['users']['geodb_dd']['username'], self.general_config['users']['geodb_dd']['password'], sql_wertetabellen)
-                wertetabellenDict = {}
-                for wt in wertetabellen_results:
-                    wertetabellenDict = {
-                        "wtb_code": wt[0],
-                        "wtb_foreignkey": wt[1],
-                        "wtb_primarykey": wt[2],
-                        "wtb_jointype": wt[3]
+    def __get_ebeinfo_from_dd(self):
+        '''
+        Holt die Infos zu den Ebenen aus dem DD (Bezeichnungen, Datentyp, Wertetabellen etc.)
+        '''
+        self.logger("Hole Ebenen-Infos aus dem DD.")
+        ebene_dd_sql = "SELECT a.gpr_bezeichnung, c.ebe_bezeichnung, b.gzs_jahr, b.gzs_version, g.dat_bezeichnung_de, d.EZS_OBJECTID from geodb_dd.tb_ebene_zeitstand d join geodb_dd.tb_ebene c on d.ebe_objectid = c.ebe_objectid join geodb_dd.tb_geoprodukt_zeitstand b on d.gzs_objectid = b.gzs_objectid join geodb_dd.tb_geoprodukt a on b.gpr_objectid = a.gpr_objectid join geodb_dd.tb_datentyp g on c.dat_objectid = g.dat_objectid where b.gzs_objectid = %s" % (self.gzs_objectid)
+        ebene_dd_results = self.general_config.connections['TEAM_GEODB_DD_ORA'].db_read(ebene_dd_sql)
+        if len(ebene_dd_results) == 0:
+            self.logger.info("Es wurden im DD keine Ebenen-Informationen gefunden.")
+            sys.exit()
+        else:
+            for ebene_dd_result in ebene_dd_results:
+                ebe = ebene_dd_result[1]
+                self.logger("Hole Infos für Ebene %s" % (ebe))
+                ezs_objectid = unicode(ebene_dd_result[5])
+                datentyp = ebene_dd_result[4]
+                gpr_ebe = unicode(self.gpr) + "_" + unicode(ebe)
+                quelle_schema_gpr_ebe = self.schema_norm + "." + gpr_ebe
+                quelle = os.path.join(self.sde_conn_norm, quelle_schema_gpr_ebe)
+                ziel_schema_gpr_ebe = self.schema_geodb + "." + gpr_ebe
+                ziel_schema_gpr_ebe_zs = ziel_schema_gpr_ebe + "_" + self.zeitstand     
+                if datentyp not in ('Rastermosaik', 'Rasterkatalog', 'Mosaicdataset', 'Cache'):
+                    self.logger.info("Ebenen ist eine Vektor-Ebene.")
+                    self.logger.info("Deshalb werden nun die Index-Informationen geholt.")
+                    ebene_index_gdbp_sql = 'SELECT b.felder, DECODE(b."unique", 1, \'True\', 2, \'False\') "unique" from gdbp.index_attribut b join gdbp.geoprodukte a on b.id_geoprodukt = a.id_geoprodukt where a.code = \'%s\' and b.ebene = \'%s\'' % (self.gpr, ebe)
+                    ebene_index_gdbp_results = self.general_config.connections['WORK_GDBP_ORA'].db_read(ebene_index_gdbp_sql)
+                    self.indList = []
+                    for ebene_index_gdbp_result in ebene_index_gdbp_results:
+                        indDict = {
+                            'attribute': ebene_index_gdbp_result[0],
+                            'unique': ebene_index_gdbp_result[1]
+                        }
+                        self.indList.append(indDict)
+                    ebeVecDict = {
+                        'indices': self.indList,
+                        'datentyp': datentyp,
+                        'gpr_ebe': gpr_ebe,
+                        'quelle': quelle,
+                        'ziel_vek1': os.path.join(self.sde_conn_vek1, ziel_schema_gpr_ebe),
+                        'ziel_vek2': os.path.join(self.sde_conn_vek2, ziel_schema_gpr_ebe),
+                        'ziel_vek3': os.path.join(self.sde_conn_vek3, ziel_schema_gpr_ebe_zs)
                     }
-                    wertetabellenList.append(wertetabellenDict)
-                
-                ebeVecDict['wertetabellen'] = wertetabellenList
+                    
+                    # Wertetabellen-Infos auslesen
+                    # Muss pro Ebene geschehen, da die View-Erstellung den Bezug zur Ebene braucht.
+                    self.logger.info("Infos zu den Wertetabellen werden geholt.")
+                    wertetabellenList = []
+                    ebene_wertetabellen_sql = "select w.WTB_BEZEICHNUNG, w.WTB_JOIN_FOREIGNKEY, w.WTB_JOIN_PRIMARYKEY, w.wtb_join_typ from TB_WERTETABELLE w where w.EZS_OBJECTID=%s" % (ezs_objectid)
+                    ebene_wertetabellen_results = self.general_config.connections['TEAM_GEODB_DD_ORA'].db_read(ebene_wertetabellen_sql)
+                    for ebene_wertetabelle in ebene_wertetabellen_results:
+                        wertetabellenList.append({
+                            "wtb_code": ebene_wertetabelle[0],
+                            "wtb_foreignkey": ebene_wertetabelle[1],
+                            "wtb_primarykey": ebene_wertetabelle[2],
+                            "wtb_jointype": ebene_wertetabelle[3]
+                        })
+                    ebeVecDict['wertetabellen'] = wertetabellenList
+                    self.ebeVecList.append(ebeVecDict)            
 
-                self.ebeVecList.append(ebeVecDict)            
-            elif datentyp == 'Rastermosaik': #TODO: ev. später Rasterdataset
-                ebeRasDict['datentyp'] = datentyp
-                ebeRasDict['gpr_ebe'] = gpr_ebe
-                ebeRasDict['quelle'] = quelle
-                ebeRasDict['ziel_ras1']= ziel_ras1_akt
-                ebeRasDict['ziel_ras1_zs']= ziel_ras1_zs
-                self.ebeRasList.append(ebeRasDict)
-            # Cache-Ebenen kommen nicht in die Liste der Vektor-Ebenen
-            # Damit werden diese Ebenen automatisch nirgends kopiert
-            elif datentyp == "Cache":
-                ebeCacheDict['gpr_ebe'] = gpr_ebe
-                ebeCacheDict['datentyp'] = datentyp
-                self.ebeCacheList.append(ebeCacheDict)
-#             elif datentyp == 'Rasterkatalog' or datentyp == 'Mosaicdataset':
-#                 ebeRasDict['datentyp'] = datentyp
-#                 ebeRasDict['gpr_ebe'] = gpr_ebe
-#                 rasterkacheln_pfad = os.path.join(self.general_config['quelle_begleitdaten'], gpr, self.general_config['quelle_begleitdaten_work'], self.general_config['raster']['quelle_rasterkacheln'], self.general_config['raster']['historisch'])
-#                 rasterkacheln_csv = gpr_ebe + "_" + zeitstand + ".csv"
-#                 ebeRasDict['quelle'] = os.path.join(rasterkacheln_pfad, rasterkacheln_csv)
-#                 ebeRasDict['ziel_ras2'] = ziel_ras2
-#                 self.ebeRasList.append(ebeRasDict)          
-                         
-                
+                elif datentyp == 'Rastermosaik': #TODO: ev. später Rasterdataset
+                    self.logger.info("Ebene ist eine Rasterebene.")
+                    ebeRasDict = {
+                        'datentyp': datentyp,
+                        'gpr_ebe': gpr_ebe,
+                        'quelle': quelle,
+                        'ziel_ras1': os.path.join(self.sde_conn_ras1, ziel_schema_gpr_ebe),
+                        'ziel_ras1_zs': os.path.join(self.sde_conn_ras1, ziel_schema_gpr_ebe_zs)
+                    }
+                    self.ebeRasList.append(ebeRasDict)
+
+                # Cache-Ebenen kommen nicht in die Liste der Vektor-Ebenen
+                # Damit werden diese Ebenen automatisch nirgends kopiert
+                elif datentyp == "Cache":
+                    self.logger.info("Ebene ist eine Cache-Ebene")
+                    ebeCacheDict = {
+                        'gpr_ebe': gpr_ebe,
+                        'datentyp': datentyp
+                    }
+                    self.ebeCacheList.append(ebeCacheDict)
+                    
     def __get_leg_dd(self):
         '''
         Diese Funktion definiert die Legendenfiles für alle Ebenen gemäss den Einträgen im DataDictionary
@@ -348,9 +331,6 @@ class Generierung(TemplateFunction):
                
     def __define_qs(self):
         self.qsDict = {}
-        #TODO: self.sql_dd_importe = "select * from geodb_dd.tb_importe_geodb"
-        #TODO: self.__db_connect('dd_connection', self.sql_dd_importe)
-        #TODO: dma_erlaubt für qs auslesen und 'dma_erlaubt' übergeben
         self.qsDict['dma_erlaubt'] = 'false'
         self.qsDict['checkskript_passed'] = 'undefined'
         self.qsDict['deltachecker_passed'] = 'undefined'
@@ -493,10 +473,10 @@ class Generierung(TemplateFunction):
         self.mxdList = []
         self.styleList = []
         self.fontList = []
-        self.__define_connections()               
-        self.__get_importe_dd()
-        self.__get_gpr_info()
-        self.__get_ebe_dd()
+        self.__define_connections()
+        self.gzs_objectid = self.__get_gzsobjectid_from_task()             
+        self.__get_gprinfo_from_dd()
+        self.__get_ebeinfo_from_dd()
         self.__get_wtb_dd()
         self.__define_quelle_ziel_begleitdaten()
         self.__get_mxd_dd("DE")
