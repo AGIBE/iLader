@@ -35,12 +35,10 @@ class Fonts(TemplateFunction):
         werden. Ob die Files alle vorhanden sind, wird in der
         Funktion CheckscriptNormierung bereits überprüft.
         '''
-        
-        # Fonts
         self.logger.info("Fonts kopieren")
-        if self.task_config["font"] > 0:
+        if len(self.task_config["font"]) > 0:
             for font in self.task_config["font"]:
-                self.logger.info("Font " + font["name"] + " wird kopiert.")
+                self.logger.info("Font %s wird kopiert." % (font["name"]))
                 shutil.copyfile(font["quelle"], font["ziel_akt"])
                 shutil.copyfile(font["quelle"], font["ziel_zs"])
         else:

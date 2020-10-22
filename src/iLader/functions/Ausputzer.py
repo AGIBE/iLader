@@ -8,6 +8,7 @@ class Ausputzer(TemplateFunction):
     Diese Funktion führt am Ende eines Imports/Tasks bestimmte
     Aufräumarbeiten aus:
     - Connection-Files löschen
+    - Logging herunterfahren
     '''
 
     def __init__(self, task_config, general_config):
@@ -18,14 +19,6 @@ class Ausputzer(TemplateFunction):
         self.name = "Ausputzer"
         TemplateFunction.__init__(self, task_config, general_config)
         
-        # Der Abschnitt kann wahrscheinlich entfallen, da die Funktion
-        # immer ausgeführt wird.
-        # if self.name in self.task_config['ausgefuehrte_funktionen'] and self.task_config['task_config_load_from_JSON']:
-        #     self.logger.info("Funktion " + self.name + " wird ausgelassen.")
-        # else:
-        #     self.logger.info("Funktion " + self.name + " wird ausgeführt.")
-        #     self.start()
-        
         self.__execute()
         
 
@@ -34,6 +27,12 @@ class Ausputzer(TemplateFunction):
         Führt den eigentlichen Funktionsablauf aus
         '''
         self.finish()
+
+        self.logger.info("Lösche alle temporären SDE-Connectionfiles")
+        for v in self.general_config['connections'].values():
+            for cf in v.connection_files:
+                self.logger.info(cf)
+            v.delete_all_sde_connections()
 
         # Das Schliessen der Handler muss ganz am Schluss passieren,
         # damit danach keine Zugriffe darauf erfolgen und es zu Fehlern
@@ -45,3 +44,4 @@ class Ausputzer(TemplateFunction):
         self.logger.info("Die Applikation wird beendet.")
         for hdl in self.logger.handlers:
             hdl.close()
+

@@ -38,9 +38,9 @@ class GPOrdner(TemplateFunction):
         '''
 
         if os.path.exists(sub_dir):
-            self.logger.info("Das Unterverzeichnis" + sub_dir + "existiert bereits. Es wird nicht neu angelegt.")
+            self.logger.info("Das Unterverzeichnis %s existiert bereits. Es wird nicht neu angelegt." % (sub_dir))
         else:
-            self.logger.info("Das Unterverzeichnis" + sub_dir + "existiert noch nicht. Es wird neu angelegt.")
+            self.logger.info("Das Unterverzeichnis %s existiert noch nicht. Es wird neu angelegt." % (sub_dir))
             os.makedirs(sub_dir)
         
 
@@ -55,11 +55,11 @@ class GPOrdner(TemplateFunction):
         
         # Prüfen ob das Geoprodukt-Verzeichnis existiert
         if os.path.exists(gpr_dir):
-            self.logger.info("Das Geoprodukt-Verzeichnis " + gpr_dir + " existiert bereits. Es wird nicht neu angelegt.")
+            self.logger.info("Das Geoprodukt-Verzeichnis %s existiert bereits. Es wird nicht neu angelegt." % (gpr_dir))
             self.__check_and_create_subdir(mxd_dir)
             self.__check_and_create_subdir(symbol_dir)
         else:
-            self.logger.info("Das Geoprodukt-Verzeichnis " + gpr_dir + " existiert noch nicht. Es wird neu angelegt.")
+            self.logger.info("Das Geoprodukt-Verzeichnis %s existiert noch nicht. Es wird neu angelegt." % (gpr_dir))
             os.makedirs(gpr_dir)
             self.__check_and_create_subdir(mxd_dir)
             self.__check_and_create_subdir(symbol_dir)

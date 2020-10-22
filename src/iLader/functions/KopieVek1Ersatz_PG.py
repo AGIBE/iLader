@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function, unicode_literals
 from .TemplateFunction import TemplateFunction
+import iLader.helpers.Helpers
+import AGILib
 import arcpy
 import os
-from iLader.helpers import PostgresHelper
-from iLader.helpers import FME_helper
-
 
 class KopieVek1Ersatz_PG(TemplateFunction):
     '''
@@ -46,12 +45,12 @@ class KopieVek1Ersatz_PG(TemplateFunction):
         '''
         Fuehrt den eigentlichen Funktionsablauf aus
         '''
-        db = self.task_config['db_vek1_pg']
-        port = self.task_config['port_pg']
-        host = self.task_config['instances']['oereb']
-        db_user = 'geodb'
-        schema = self.task_config['schema']['geodb']
-        pw = self.task_config['users']['geodb']
+        db = self.general_config['connections']['VEK1_GEODB_PG'].db
+        port = self.general_config['connections']['VEK1_GEODB_PG'].port
+        host = self.general_config['connections']['VEK1_GEODB_PG'].host
+        db_user = self.general_config['connections']['VEK1_GEODB_PG'].username
+        schema = db_user
+        pw = self.general_config['connections']['VEK1_GEODB_PG'].password
         source_sde = self.task_config['connections']['sde_conn_norm']
         fme_script = os.path.abspath(
                 os.path.join(os.path.dirname(__file__), '..')
@@ -81,12 +80,10 @@ class KopieVek1Ersatz_PG(TemplateFunction):
 
             # Pruefen ob es die target Tabelle gibt
             table_sp = table.split('.')
-            sql_query = "SELECT 1 FROM information_schema.tables WHERE table_schema = '" + table_sp[
-                    0] + "' AND table_name = '" + table_sp[1] + "'"
-            result_vek1 = PostgresHelper.db_sql(
-                    self, host, db, db_user, port, pw, sql_query, True
-            )
-            if result_vek1 is None:
+            table_exist_sql = "SELECT 1 FROM information_schema.tables WHERE table_schema = '%s' AND table_name = '%s'" % (table_sp[0], table_sp[1])
+            table_exist_results = self.general_config['connections']['VEK1_GEODB_PG'].db_read(table_exist_sql)
+
+            if table_exist_results is None:
                 # Gibt es die Ziel-Ebene noch nicht, Abbruch mit Fehlermeldung und Exception
                 self.logger.error("Ziel-Ebene " + table + " existiert nicht!")
                 raise Exception
@@ -106,47 +103,43 @@ class KopieVek1Ersatz_PG(TemplateFunction):
             # Daten kopieren
             # Copy-Script, Table Handling auf Truncate umstellen, damit Tabelle nicht gelöscht wird
             self.logger.info(
-                    "Ebene " + host + "/" + db + " " + table +
-                    " wird geleert (Truncate) und aufgefuellt (Insert)."
+                    "Ebene %s/%s %s wird geleert (Truncate) und aufgefuellt (Insert)." % (host, db, table)
             )
             # Extra truncate bei 0 Quell-Records, da FME bei 0 Quelldaten kein Truncate macht.
             if count_source == 0:
-                sql_query = 'TRUNCATE ' + table
-                PostgresHelper.db_sql(
-                        self, host, db, db_user, port, pw, sql_query
-                )
+                truncate_sql = 'TRUNCATE %s' % (table)
+                self.general_config['connections']['VEK1_GEODB_PG'].db_write(truncate_sql)
 
-            fme_logfile = FME_helper.prepare_fme_log(
-                    fme_script, (self.task_config['log_file']).rsplit('\\',
-                                                                      1)[0]
-            )
-            # Der FMEWorkspaceRunner akzeptiert keine Unicode-Strings!
-            # Daher muessen workspace und parameters umgewandelt werden!
-            parameters = {
-                    'TABELLEN': str(source_table),
-                    'POSTGIS_DB': str(db),
-                    'POSTGIS_HOST': str(host),
-                    'POSTGIS_PORT': str(port),
-                    'POSTGIS_USER': str(db_user),
-                    'SCHEMA_NAME': str(schema),
-                    'POSTGIS_PASSWORD': str(pw),
-                    'LOGFILE': str(fme_logfile),
-                    'INPUT_SDE': str(source_sde),
+            fme_logfile = iLader.helpers.Helpers.prepare_fme_log(fme_script, (self.task_config['log_file']).rsplit('\\',))
+
+            fme_parameters = {
+                    'TABELLEN': source_table,
+                    'POSTGIS_DB': db,
+                    'POSTGIS_HOST': host,
+                    'POSTGIS_PORT': port,
+                    'POSTGIS_USER': db_user,
+                    'SCHEMA_NAME': schema,
+                    'POSTGIS_PASSWORD': pw,
+                    'LOGFILE': fme_logfile,
+                    'INPUT_SDE': source_sde,
                     'TABLE_HANDLING': "TRUNCATE_EXISTING",
-                    'DATEFIELDS': str(dfield),
-                    'TABELLENTYP': str(tabellentyp)
+                    'DATEFIELDS': dfield,
+                    'TABELLENTYP': tabellentyp
             }
-            # FME-Skript starten
-            FME_helper.fme_runner(self, str(fme_script), parameters)
+            
+            fmerunner = AGILib.FMERunner(fme_workbench=fme_script, fme_workbench_parameters=fme_parameters, fme_logfile=fme_logfile, fme_logfile_archive=False)
+            fmerunner.run()
+            if fmerunner.returncode != 0:
+                self.logger.error("FME-Script %s abgebrochen." % (fme_script))
+                raise RuntimeError("FME-Script %s abgebrochen." % (fme_script))
 
             # Check ob in Quelle und Ziel die gleiche Anzahl Records vorhanden sind
             self.logger.info(
                     "Anzahl Objekte in Quell-Ebene: " + unicode(count_source)
             )
-            sql_query = 'SELECT COUNT(*) FROM ' + table
-            count_target = PostgresHelper.db_sql(
-                    self, host, db, db_user, port, pw, sql_query, True
-            )
+            count_target_sql = 'SELECT COUNT(*) FROM %s' % (table)
+            count_target_result = self.general_config['connections']['VEK1_GEODB_PG'].db_read(count_target_sql)
+            count_target = count_target_result[0][0]
             self.logger.info(
                     "Anzahl Objekte in Ziel-Ebene: " + unicode(count_target)
             )

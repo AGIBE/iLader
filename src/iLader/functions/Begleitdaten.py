@@ -39,7 +39,7 @@ class Begleitdaten(TemplateFunction):
         # Legenden
         self.logger.info("Legendenfiles kopieren")
         for legende in self.task_config["legende"]:
-            self.logger.info("Legende " + legende["name"] + " wird kopiert.")
+            self.logger.info("Legende %s wird kopiert." % (legende["name"]))
             shutil.copyfile(legende["quelle"], legende["ziel_akt"])
             shutil.copyfile(legende["quelle"], legende["ziel_zs"])
         
@@ -48,16 +48,15 @@ class Begleitdaten(TemplateFunction):
         self.logger.info("Legendenfiles für Rasterdatasets kopieren (falls vorhanden)")
         if os.path.exists(self.task_config['quelle_begleitdatenraster']):
             for f in os.listdir(self.task_config['quelle_begleitdatenraster']):
-                if f.endswith((".lyr",".LYR")):
-                    self.logger.info("Rasterdataset-Legende " + f + " wird kopiert.")
+                if f.upper().endswith(".LYR"):
+                    self.logger.info("Rasterdataset-Legende %s wird kopiert." % (f))
                     shutil.copyfile(os.path.join(self.task_config['quelle_begleitdatenraster'],f), os.path.join(self.task_config['ziel']['ziel_begleitdaten_symbol'], 'AKTUELL_' + f))
 
         # MXDs
         self.logger.info("MXD-Files kopieren")
         for mxd in self.task_config["mxd"]:
-            self.logger.info(mxd["name"] + " wird kopiert.")
+            self.logger.info("%s wird kopiert." % (mxd["name"]))
             shutil.copyfile(mxd["quelle"], mxd["ziel_akt"])
             shutil.copyfile(mxd["quelle"], mxd["ziel_zs"])
-        
        
         self.finish()

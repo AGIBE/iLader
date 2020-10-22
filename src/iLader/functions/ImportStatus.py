@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function, unicode_literals
 from .TemplateFunction import TemplateFunction
-from iLader.helpers import OracleHelper
 import time
 
 class ImportStatus(TemplateFunction):
@@ -33,16 +32,9 @@ class ImportStatus(TemplateFunction):
         '''
         Führt den eigentlichen Funktionsablauf aus
         '''
-        db = self.task_config['instances']['team']
-        schema = self.task_config['schema']['geodb_dd']
-        username = 'geodb_dd'
-        password = self.task_config['users'][username]
-        task_id = self.task_config['task_id']
         today = time.strftime("%d.%m.%y")
-        
-        sql = "UPDATE " + schema + ".TB_TASK SET TASK_STATUS=5, TASK_ENDE=TO_DATE('" + today + "', 'DD.MM.YY') WHERE TASK_OBJECTID=" + unicode(task_id)
-        self.logger.info("SQL-Update wird ausgeführt: " + sql)
-        
-        OracleHelper.writeOracleSQL_check(self, db, username, password, sql, "Status konnte nicht gesetzt werden.")
+        importstatus_sql = "UPDATE %s.TB_TASK SET TASK_STATUS=5, TASK_ENDE=TO_DATE('%s', 'DD.MM.YY') WHERE TASK_OBJECTID=%s" % (self.task_config['schema']['geodb_dd'], today, self.task_config['task_id'])
+        self.logger.info("SQL-Update wird ausgeführt: " + importstatus_sql)
+        self.general_config['connections'][['TEAM_GEODB_DD_ORA']].db_write(importstatus_sql)
 
         self.finish()

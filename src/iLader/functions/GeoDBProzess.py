@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function, unicode_literals
 from .TemplateFunction import TemplateFunction
-from iLader.helpers import OracleHelper
 
 class GeoDBProzess(TemplateFunction):
     '''
@@ -26,17 +25,9 @@ class GeoDBProzess(TemplateFunction):
         '''
         Führt den eigentlichen Funktionsablauf aus
         '''
-        db = self.task_config['instances']['work']
-        schema = self.task_config['schema']['gdbp']
-        username = 'gdbp'
-        password = self.task_config['users'][username]
-        
-        task_id = self.task_config['task_id']
-        gpr_code = self.task_config['gpr']
-        
-        sql = "UPDATE " + schema + ".GEOPRODUKTE SET TASK_ID=" + unicode(task_id) + " WHERE CODE='" + gpr_code + "'"
-        self.logger.info("SQL-Update wird ausgeführt: " + sql)
-        
-        OracleHelper.writeOracleSQL_check(self, db, username, password, sql, "Query hat keinen oder mehr als einen Record aktualisiert!", excep=False)
+        gdbp_sql = "UPDATE %s.GEOPRODUKTE SET TASK_ID=%s WHERE CODE='%s'" % (self.task_config['schema']['gdbp'], self.task_config['task_id'], self.task_config['gpr'])
+        self.logger.info("SQL-Update wird ausgeführt: ")
+        self.logger.info(gdbp_sql)
+        self.general_config['connections'][['TEAM_GEODB_DD_ORA']].db_write(gdbp_sql)
         
         self.finish()

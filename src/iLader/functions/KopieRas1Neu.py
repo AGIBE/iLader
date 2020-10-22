@@ -31,7 +31,7 @@ class KopieRas1Neu(TemplateFunction):
         Constructor
         :param task_config: Vom Usecase initialisierte task_config (Dictionary)
         '''
-        self.name = "KopieRas1Ne"
+        self.name = "KopieRas1Neu"
         TemplateFunction.__init__(self, task_config, general_config)
         
         if self.name in self.task_config['ausgefuehrte_funktionen'] and self.task_config['task_config_load_from_JSON']:

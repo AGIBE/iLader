@@ -3,7 +3,6 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 from .TemplateFunction import TemplateFunction
 import md5
 import arcpy
-from iLader.helpers import PostgresHelper
 
 class IndicesVek2_PG(TemplateFunction):
     '''
@@ -31,29 +30,29 @@ class IndicesVek2_PG(TemplateFunction):
             self.__execute()
             
         
-    def __delete_indices(self, host, db, db_user, port, pw, table):
+    def __delete_indices(self, table):
         '''
         Loescht alle attributiven Indices einer Tabelle. Nicht geloescht wird der raeumliche Index auf der Spalte shape sowie
         der attributive Index auf der Spalte objectid, der bereits beim Kopieren erstell wird.
         :param table: Vollstaendiger Pfad zur Tabelle bei der die Indices geloescht werden sollen.
         '''
         table_sp = table.split('.')
-        sql_query= "SELECT DISTINCT i.relname as index_name\
+        indices_sql= "SELECT DISTINCT i.relname as index_name\
                     FROM pg_class t, pg_class i, pg_index ix, pg_attribute a\
                     WHERE t.oid = ix.indrelid and i.oid = ix.indexrelid and a.attrelid = t.oid and a.attnum = ANY(ix.indkey) and t.relkind = 'r' \
                     AND t.relname in ('" + table_sp[1] + "') and a.attname not in ('shape') "
         
-        indices = PostgresHelper.db_sql(self, host, db, db_user, port, pw, sql_query, True, True)
+        indices_results = self.general_config['connections']['VEK2_GEODB_PG'].db_read(indices_sql)
         
-        if indices:
-            for index in indices:
-                self.logger.info("Loesche Index " + index[0])
+        if indices_results:
+            for index in indices_results:
+                self.logger.info("Loesche Index %s" % (index[0]))
                 # Pruefen ob Primary Key
                 if index[0].endswith('_pk'):
-                    sql_query = 'ALTER TABLE ' + table + ' DROP CONSTRAINT ' + index[0]
+                    delete_index_sql = 'ALTER TABLE %s DROP CONSTRAINT %s' % (table, index[0])
                 else:
-                    sql_query = 'DROP INDEX ' + index[0]
-                PostgresHelper.db_sql(self, host, db, db_user, port, pw, sql_query)
+                    delete_index_sql = 'DROP INDEX %s' % (index[0])
+                self.general_config['connections']['VEK2_GEODB_PG'].db_read(delete_index_sql)
 
 
     def __execute(self):
@@ -62,12 +61,6 @@ class IndicesVek2_PG(TemplateFunction):
         Iteriert durch alle Vektorebenen (inkl. Wertetabellen) und erstellt die dort
         aufgefuehrten Indizes fuer die Instanz vek2.
         '''
-        db = self.task_config['db_vek2_pg']
-        port = self.task_config['port_pg']
-        host = self.task_config['instances']['oereb']
-        db_user = 'geodb'
-        pw = self.task_config['users']['geodb']
-        
         for ebene in self.task_config['vektor_ebenen']:    
             table = ebene['ziel_vek1'].lower().rsplit('\\',1)[1]
             ebename = ebene['gpr_ebe'].lower()
@@ -80,23 +73,23 @@ class IndicesVek2_PG(TemplateFunction):
                     pk = index
             
             # Indices loeschen
-            self.logger.info("Loesche bestehende Indices fuer " + ebename + " im vek2.")
-            self.__delete_indices(host, db, db_user, port, pw, table)
+            self.logger.info("Loesche bestehende Indices fuer %s im vek2." % (ebename))
+            self.__delete_indices(table)
 
             # Primary Key erstellen
-            if pk is not False:
-                self.logger.info("Erstelle Primary Key fuer " + ebename + " im vek2.")
+            if not pk:
+                self.logger.info("Erstelle Primary Key fuer %s im vek2." % (ebename))
                 pk_attributes = pk.fields
                 if len(pk_attributes) == 1:
                     pk_attribute = pk_attributes[0].name.lower()
-                    sql_query = 'ALTER TABLE ' + table + ' ADD CONSTRAINT ' + ebename + '_' + pk_attribute + '_pk PRIMARY KEY (' + pk_attribute + ')'
-                    PostgresHelper.db_sql(self, host, db, db_user, port, pw, sql_query)
+                    createpk_sql = "ALTER TABLE %s ADD CONSTRAINT %s_%s_pk PRIMARY KEY (%s)" % (table, ebename, pk_attribute, pk_attribute)
+                    self.general_config['connections']['VEK2_GEODB_PG'].db_write(createpk_sql)
                 elif len(pk_attributes) > 1:
                     self.logger.error("Primary Key konnte nicht erstellt werden fuer " + ebename + ", da PK auf mehrere Spalten verteilt. " + str(pk.name))
             
             #Restliche Indizes erstellen
             if len(ebene["indices"]) > 0:
-                self.logger.info("Erstelle Index fuer " + ebename + " im vek2.")
+                self.logger.info("Erstelle Index fuer %s im vek2." % (ebename))
                 for index in ebene["indices"]:
                     # Jeden Index erstellen
                     index_attribute = index['attribute'].lower()
@@ -107,7 +100,7 @@ class IndicesVek2_PG(TemplateFunction):
                     elif index['unique'] == "True":
                         indextyp = 'UNIQUE'
                     self.logger.info("Index: " + index_attribute + ": " + indextyp) 
-                    sql_query = 'CREATE ' + indextyp + ' INDEX ' +indexname + ' ON ' + table + ' (' + index_attribute + ')'
-                    PostgresHelper.db_sql(self, host, db, db_user, port, pw, sql_query)
+                    createidx_sql = 'CREATE %s INDEX %s ON %s (%s)' % (indextyp, indexname, table, index_attribute)
+                    self.general_config['connections']['VEK2_GEODB_PG'].db_write(createidx_sql)
        
         self.finish()

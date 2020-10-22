@@ -15,7 +15,9 @@ def get_config():
     # Alle benötigten Connections erstellen
     connections['TEAM_GEODB_DD_ORA'] = AGILib.Connection(db=connection_infos['db']['team']['ora_db'], db_type='oracle', username=connection_infos['user']['geodb_dd']['username'], password=connection_infos['user']['geodb_dd']['password'])
     connections['VEK1_GEODB_ORA'] = AGILib.Connection(db=connection_infos['db']['vek1']['ora_db'], db_type='oracle', username=connection_infos['user']['geodb']['username'], password=connection_infos['user']['geodb']['password'])
+    connections['VEK1_GEODB_PG'] = AGILib.Connection(db=connection_infos['db']['vek1']['pg_db'], db_type='postgres', username=connection_infos['user']['geodb']['username'], password=connection_infos['user']['geodb']['password'], host=connection_infos['db']['geodb']['pg_host'], port=connection_infos['db']['geodb']['pg_port'])
     connections['VEK2_GEODB_ORA'] = AGILib.Connection(db=connection_infos['db']['vek2']['ora_db'], db_type='oracle', username=connection_infos['user']['geodb']['username'], password=connection_infos['user']['geodb']['password'])
+    connections['VEK2_GEODB_PG'] = AGILib.Connection(db=connection_infos['db']['vek2']['pg_db'], db_type='postgres', username=connection_infos['user']['geodb']['username'], password=connection_infos['user']['geodb']['password'], host=connection_infos['db']['geodb']['pg_host'], port=connection_infos['db']['geodb']['pg_port'])
     connections['VEK3_GEODB_ORA'] = AGILib.Connection(db=connection_infos['db']['vek3']['ora_db'], db_type='oracle', username=connection_infos['user']['geodb']['username'], password=connection_infos['user']['geodb']['password'])
     connections['WORK_GDBP_ORA'] = AGILib.Connection(db=connection_infos['db']['work']['ora_db'], db_type='oracle', username=connection_infos['user']['gdbp']['username'], password=connection_infos['user']['gdbp']['password'])
     connections['WORK_OEREB_PG'] = AGILib.Connection(db=connection_infos['db']['work']['pg_db'], db_type='postgres', username=connection_infos['user']['oereb']['username'], password=connection_infos['user']['oereb']['password'], host=connection_infos['db']['work']['pg_host'], port=connection_infos['db']['work']['pg_port'])
@@ -67,3 +69,10 @@ def get_import_tasks():
         tasks.append(parameter_string) 
     
     return tasks
+
+def prepare_fme_log(fme_script, log_directory):
+    prefix = os.path.splitext(os.path.basename(fme_script))[0]
+    fme_logfilename = prefix + "_fme" + datetime.datetime.now().strftime("_%Y_%m_%d_%H_%M_%S") + ".log"
+    fme_logfile = os.path.join(log_directory, fme_logfilename)
+    
+    return fme_logfile    

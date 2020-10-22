@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function, unicode_literals
 from .TemplateFunction import TemplateFunction
-from iLader.helpers import OracleHelper
 
 class AktuellerZeitstand(TemplateFunction):
     '''
@@ -29,16 +28,9 @@ class AktuellerZeitstand(TemplateFunction):
         '''
         Führt den eigentlichen Funktionsablauf aus
         '''
-        db = self.task_config['instances']['team']
-        schema = self.task_config['schema']['geodb_dd']
-        username = 'geodb_dd'
-        password = self.task_config['users'][username]
-        gzs_objectid = self.task_config['gzs_objectid']
-        gpr_code = self.task_config['gpr']
-        
-        sql = "UPDATE " + schema + ".TB_GEOPRODUKT SET GZS_OBJECTID=" + gzs_objectid + " WHERE GPR_BEZEICHNUNG='" + gpr_code + "'"
-        self.logger.info("SQL-Update wird ausgeführt: " + sql)
-        
-        OracleHelper.writeOracleSQL_check(self, db, username, password, sql, "Aktueller Zeitstand konnte nicht gesetzt werden.")
+        gzs_objectid_sql = "UPDATE %s.TB_GEOPRODUKT SET GZS_OBJECTID=%s WHERE GPR_BEZEICHNUNG='%s'" % (self.task_config['schema']['geodb_dd'], self.task_config['gzs_objectid'], self.task_config['gpr'])
+        self.logger.info("SQL-Update wird ausgeführt:")
+        self.logger.info(gzs_objectid_sql)
+        self.general_config['connections'][['TEAM_GEODB_DD_ORA']].db_write(gzs_objectid_sql)
        
         self.finish()
