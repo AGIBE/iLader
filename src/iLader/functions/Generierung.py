@@ -58,33 +58,29 @@ class Generierung(TemplateFunction):
         geoprodukt_dd_sql = "SELECT a.gpr_bezeichnung, b.gzs_jahr, b.gzs_version, a.gpr_viewer_freigabe from geodb_dd.tb_geoprodukt_zeitstand b join geodb_dd.tb_geoprodukt a on b.gpr_objectid = a.gpr_objectid where b.gzs_objectid = %s" % (self.gzs_objectid)
         geoprodukt_dd_results = self.general_config.connections['TEAM_GEODB_DD_ORA'].db_read(geoprodukt_dd_sql)
         if len(geoprodukt_dd_results) == 1:
-            self.gpr = geoprodukt_dd_results[0]
-            self.jahr = unicode(geoprodukt_dd_results[1])
-            self.version = unicode(geoprodukt_dd_results[2]).zfill(2)
-            self.zeitstand = "%s_%s" % (self.jahr, self.version)
+            gpr = geoprodukt_dd_results[0]
+            jahr = unicode(geoprodukt_dd_results[1])
+            version = unicode(geoprodukt_dd_results[2]).zfill(2)
+            zeitstand = "%s_%s" % (jahr, version)
         else:
             self.logger.error("Infos in TB_GEOPRODUKT konnten nicht gefunden werden.")
             self.logger.error("Anzahl zurückgegebene Records: %s" % (unicode(len(geoprodukt_dd_results))))
             sys.exit()
         
         self.logger.info("Lese Rolle aus GeoDBProzess aus.")
-        gdpb_rolle_sql = "SELECT a.db_rollen from gdbp.geoprodukte a where a.code = '%s'" % (self.gpr)
+        gdpb_rolle_sql = "SELECT a.db_rollen from gdbp.geoprodukte a where a.code = '%s'" % (gpr)
         gdbp_rolle_results = self.general_config.connections['WORK_GDBP_ORA'].db_read(gdpb_rolle_sql)
         if len(gdbp_rolle_results) == 1:
             if gdbp_rolle_results[0][0]:
-                self.rolle_freigabe = gdbp_rolle_results[0][0]
+                rolle_freigabe = gdbp_rolle_results[0][0]
             else:
-                self.rolle_freigabe = self.general_config['standard_rolle']
+                rolle_freigabe = self.general_config['standard_rolle']
         else:
             self.logger.info("Infos in GDBP konnten nicht gefunden werden.")
             self.logger.info("Anzahl zurückgegebene Records: %s" % (unicode(len(gdbp_rolle_results))))
             sys.exit()
 
-        self.logger("Übernehme Parameter aus der Config")
-        self.default_tolerance = self.general_config['default_tolerance']  
-        self.default_resolution = self.general_config['default_resolution']
-        self.spatial_reference = self.general_config['spatial_reference']
-        self.quelle_begleitdatenraster = os.path.join(self.general_config['quelle_begleitdaten'], self.gpr, 'work', 'symbol','Rasterdataset')
+        return (gpr, jahr, version, zeitstand, rolle_freigabe)
     
     def __get_ebeinfo_from_dd(self):
         '''
@@ -93,6 +89,7 @@ class Generierung(TemplateFunction):
         self.logger("Hole Ebenen-Infos aus dem DD.")
         ebene_dd_sql = "SELECT a.gpr_bezeichnung, c.ebe_bezeichnung, b.gzs_jahr, b.gzs_version, g.dat_bezeichnung_de, d.EZS_OBJECTID from geodb_dd.tb_ebene_zeitstand d join geodb_dd.tb_ebene c on d.ebe_objectid = c.ebe_objectid join geodb_dd.tb_geoprodukt_zeitstand b on d.gzs_objectid = b.gzs_objectid join geodb_dd.tb_geoprodukt a on b.gpr_objectid = a.gpr_objectid join geodb_dd.tb_datentyp g on c.dat_objectid = g.dat_objectid where b.gzs_objectid = %s" % (self.gzs_objectid)
         ebene_dd_results = self.general_config.connections['TEAM_GEODB_DD_ORA'].db_read(ebene_dd_sql)
+        ebeVecList, ebeRasList, ebeCacheList = [], [], []
         if len(ebene_dd_results) == 0:
             self.logger.info("Es wurden im DD keine Ebenen-Informationen gefunden.")
             sys.exit()
@@ -103,30 +100,30 @@ class Generierung(TemplateFunction):
                 ezs_objectid = unicode(ebene_dd_result[5])
                 datentyp = ebene_dd_result[4]
                 gpr_ebe = unicode(self.gpr) + "_" + unicode(ebe)
-                quelle_schema_gpr_ebe = self.schema_norm + "." + gpr_ebe
-                quelle = os.path.join(self.sde_conn_norm, quelle_schema_gpr_ebe)
-                ziel_schema_gpr_ebe = self.schema_geodb + "." + gpr_ebe
+                quelle_schema_gpr_ebe = self.schemaDict['norm'] + "." + gpr_ebe
+                quelle = os.path.join(self.connDict['sde_conn_norm'], quelle_schema_gpr_ebe)
+                ziel_schema_gpr_ebe = self.schemaDict['geodb'] + "." + gpr_ebe
                 ziel_schema_gpr_ebe_zs = ziel_schema_gpr_ebe + "_" + self.zeitstand     
                 if datentyp not in ('Rastermosaik', 'Rasterkatalog', 'Mosaicdataset', 'Cache'):
                     self.logger.info("Ebenen ist eine Vektor-Ebene.")
                     self.logger.info("Deshalb werden nun die Index-Informationen geholt.")
                     ebene_index_gdbp_sql = 'SELECT b.felder, DECODE(b."unique", 1, \'True\', 2, \'False\') "unique" from gdbp.index_attribut b join gdbp.geoprodukte a on b.id_geoprodukt = a.id_geoprodukt where a.code = \'%s\' and b.ebene = \'%s\'' % (self.gpr, ebe)
                     ebene_index_gdbp_results = self.general_config.connections['WORK_GDBP_ORA'].db_read(ebene_index_gdbp_sql)
-                    self.indList = []
+                    indList = []
                     for ebene_index_gdbp_result in ebene_index_gdbp_results:
                         indDict = {
                             'attribute': ebene_index_gdbp_result[0],
                             'unique': ebene_index_gdbp_result[1]
                         }
-                        self.indList.append(indDict)
+                        indList.append(indDict)
                     ebeVecDict = {
-                        'indices': self.indList,
+                        'indices': indList,
                         'datentyp': datentyp,
                         'gpr_ebe': gpr_ebe,
                         'quelle': quelle,
-                        'ziel_vek1': os.path.join(self.sde_conn_vek1, ziel_schema_gpr_ebe),
-                        'ziel_vek2': os.path.join(self.sde_conn_vek2, ziel_schema_gpr_ebe),
-                        'ziel_vek3': os.path.join(self.sde_conn_vek3, ziel_schema_gpr_ebe_zs)
+                        'ziel_vek1': os.path.join(self.connDict['sde_conn_vek1'], ziel_schema_gpr_ebe),
+                        'ziel_vek2': os.path.join(self.connDict['sde_conn_vek2'], ziel_schema_gpr_ebe),
+                        'ziel_vek3': os.path.join(self.connDict['sde_conn_vek3'], ziel_schema_gpr_ebe_zs)
                     }
                     
                     # Wertetabellen-Infos auslesen
@@ -143,7 +140,7 @@ class Generierung(TemplateFunction):
                             "wtb_jointype": ebene_wertetabelle[3]
                         })
                     ebeVecDict['wertetabellen'] = wertetabellenList
-                    self.ebeVecList.append(ebeVecDict)            
+                    ebeVecList.append(ebeVecDict)            
 
                 elif datentyp == 'Rastermosaik': #TODO: ev. später Rasterdataset
                     self.logger.info("Ebene ist eine Rasterebene.")
@@ -151,10 +148,10 @@ class Generierung(TemplateFunction):
                         'datentyp': datentyp,
                         'gpr_ebe': gpr_ebe,
                         'quelle': quelle,
-                        'ziel_ras1': os.path.join(self.sde_conn_ras1, ziel_schema_gpr_ebe),
-                        'ziel_ras1_zs': os.path.join(self.sde_conn_ras1, ziel_schema_gpr_ebe_zs)
+                        'ziel_ras1': os.path.join(self.connDict['sde_conn_ras1'], ziel_schema_gpr_ebe),
+                        'ziel_ras1_zs': os.path.join(self.connDict['sde_conn_ras1'], ziel_schema_gpr_ebe_zs)
                     }
-                    self.ebeRasList.append(ebeRasDict)
+                    ebeRasList.append(ebeRasDict)
 
                 # Cache-Ebenen kommen nicht in die Liste der Vektor-Ebenen
                 # Damit werden diese Ebenen automatisch nirgends kopiert
@@ -164,7 +161,8 @@ class Generierung(TemplateFunction):
                         'gpr_ebe': gpr_ebe,
                         'datentyp': datentyp
                     }
-                    self.ebeCacheList.append(ebeCacheDict)
+                    ebeCacheList.append(ebeCacheDict)
+        return (ebeVecList, ebeRasList, ebeCacheList)
                     
     def __get_leg_dd(self):
         '''
@@ -180,264 +178,241 @@ class Generierung(TemplateFunction):
         - der Import der Rasterkacheln erfolgt direkt nach RAS2P (Effizienz) 
         - ein Umhängen der Datenquelle von MosaicDatasets lässt diese ihre Symbolisierungsinformationen verschwinden
         '''
-        self.sql_dd_ebe = "SELECT a.gpr_bezeichnung, c.ebe_bezeichnung, b.gzs_jahr, b.gzs_version, f.leg_bezeichnung, h.spr_kuerzel, g.dat_objectid from geodb_dd.tb_ebene_zeitstand d join geodb_dd.tb_ebene c on d.ebe_objectid = c.ebe_objectid join geodb_dd.tb_geoprodukt_zeitstand b on d.gzs_objectid = b.gzs_objectid join geodb_dd.tb_geoprodukt a on b.gpr_objectid = a.gpr_objectid join geodb_dd.tb_datentyp g on c.dat_objectid = g.dat_objectid JOIN geodb_dd.tb_legende f on f.ezs_objectid = d.ezs_objectid JOIN geodb_dd.tb_sprache h on h.spr_objectid = f.spr_objectid where b.gzs_objectid = '" + self.gzs_objectid + "'"   
-        self.__db_connect('team', 'geodb_dd', self.sql_dd_ebe)
-        for row in self.result:
-            self.legDict = {}
-            self.logger.info('Legendendetails')
-            self.logger.info(row)
-            self.gpr = row[0].decode('cp1252')
-            self.ebe = row[1].decode('cp1252')
-            self.jahr = unicode(row[2])
-            self.version = unicode(row[3])
-            self.version = self.version.zfill(2)           
-            self.zeitstand = self.jahr + "_" + self.version
-            self.leg = row[4].decode('cp1252')
-            self.spr = row[5].decode('cp1252')
-            self.datentyp = row[6]
-            self.symbol_name = self.gpr + "_" + self.ebe + "_" + self.leg + "_" + self.spr + ".lyr"
-            self.symbol_name_akt = "AKTUELL_" + self.gpr + "_" + self.ebe + "_" + self.leg + "_" + self.spr + ".lyr"
-            self.symbol_name_zs = self.gpr + "_" + self.ebe + "_" + self.zeitstand + "_" + self.leg + "_" + self.spr + ".lyr"
-            self.logger.info(self.symbol_name)
-            self.quelle_symbol =  os.path.join(self.quelle_begleitdaten_symbol, self.symbol_name)
-            self.ziel_symbol_akt = os.path.join(self.ziel_begleitdaten_symbol, self.symbol_name_akt)
-            self.ziel_symbol_zs = os.path.join(self.ziel_begleitdaten_symbol, self.symbol_name_zs)
-            self.legDict['name'] = self.symbol_name.lower()
-            self.legDict['quelle'] = self.quelle_symbol.lower()
-            self.legDict['ziel_akt'] = self.ziel_symbol_akt.upper()
-            self.legDict['ziel_zs'] = self.ziel_symbol_zs.upper()
-            self.legList.append(self.legDict)
-            if self.datentyp == 9:
-                self.symbol_name = self.gpr + "_" + self.ebe + "_" + self.zeitstand + "_" + self.leg + "_" + self.spr + ".lyr"
-                self.symbol_name_zs = self.gpr + "_" + self.ebe + "_" + self.zeitstand + "_" + self.leg + "_" + self.spr + ".lyr"
-                self.symbol_name_akt = "DELETE_" + self.gpr + "_" + self.ebe + "_" + self.leg + "_" + self.spr + ".lyr"
-                self.legDict['name'] = self.symbol_name.lower()
-                self.quelle_symbol =  os.path.join(self.quelle_begleitdaten_symbol, self.symbol_name)
-                self.ziel_symbol_akt = os.path.join(self.ziel_begleitdaten_symbol, self.symbol_name_akt)
-                self.ziel_symbol_zs = os.path.join(self.ziel_begleitdaten_symbol, self.symbol_name_zs)
-                self.legDict['quelle'] = self.quelle_symbol.lower()
-                self.legDict['ziel_akt'] = self.ziel_symbol_akt.upper()
-                self.legDict['ziel_zs'] = self.ziel_symbol_zs.upper()
+        self.logger("Legendeninfos werden aus dem DD geholt.")
+        legenden_dd_sql = "SELECT a.gpr_bezeichnung, c.ebe_bezeichnung, b.gzs_jahr, b.gzs_version, f.leg_bezeichnung, h.spr_kuerzel, g.dat_objectid from geodb_dd.tb_ebene_zeitstand d join geodb_dd.tb_ebene c on d.ebe_objectid = c.ebe_objectid join geodb_dd.tb_geoprodukt_zeitstand b on d.gzs_objectid = b.gzs_objectid join geodb_dd.tb_geoprodukt a on b.gpr_objectid = a.gpr_objectid join geodb_dd.tb_datentyp g on c.dat_objectid = g.dat_objectid JOIN geodb_dd.tb_legende f on f.ezs_objectid = d.ezs_objectid JOIN geodb_dd.tb_sprache h on h.spr_objectid = f.spr_objectid where b.gzs_objectid = %s" % (self.gzs_objectid)
+        legenden_dd_results = self.general_config.connections['TEAM_GEODB_DD_ORA'].db_read(legenden_dd_sql)
+        legends = []
+        for legende in legenden_dd_results:
+            ebe_code = legende[1]
+            leg_code = legende[4]
+            leg_lang = legende[5]
+            leg_datentyp = legende[6]
 
+            # Mosaic Datasets müssen anders behandelt werden
+            if leg_datentyp != 9:
+                symbol_name = "%s_%s_%s_%s.lyr" % (self.gpr, ebe_code, leg_code, leg_lang)
+                symbol_name_akt = "AKTUELL_%s_%s_%s_%s.lyr" % (self.gpr, ebe_code, leg_code, leg_lang)
+                symbol_name_zs = "%s_%s_%s_%s_%s.lyr" % (self.gpr, ebe_code, self.zeitstand, leg_code, leg_lang)
+                quelle_symbol =  os.path.join(self.quelle_begleitdaten_symbol, symbol_name)
+                ziel_symbol_akt = os.path.join(self.ziel_begleitdaten_symbol, symbol_name_akt)
+                ziel_symbol_zs = os.path.join(self.ziel_begleitdaten_symbol, symbol_name_zs)
+            else:
+                symbol_name = "%s_%s_%s_%s_%s.lyr" % (self.gpr, ebe_code, self.zeitstand, leg_code, leg_lang)
+                symbol_name_zs = symbol_name
+                symbol_name_akt = "DELETE_%s_%s_%s_%s.lyr" % (self.gpr, ebe_code, leg_code, leg_lang)
+                quelle_symbol =  os.path.join(self.quelle_begleitdaten_symbol, symbol_name)
+                ziel_symbol_akt = os.path.join(self.ziel_begleitdaten_symbol, symbol_name_akt)
+                ziel_symbol_zs = os.path.join(self.ziel_begleitdaten_symbol, symbol_name_zs)
+
+            legDict = {
+                'name': symbol_name.lower(),
+                'quelle': quelle_symbol.lower(),
+                'ziel_akt': ziel_symbol_akt.upper(),
+                'ziel_zs': ziel_symbol_zs.upper()
+            }
+            legends.append(legDict)
+
+        return legends
     
     def __get_mxd_dd(self, lang):
-            self.mxdDict = {}
-            self.lang = lang
-            self.mxd_lang = self.gpr + "_" + self.lang + ".mxd"
-            self.quelle_mxd_lang = os.path.join(self.quelle_begleitdaten_mxd, self.mxd_lang)
-            self.mxd_lang_akt = "AKTUELL_" + self.gpr + "_" + self.gpr + "_" + self.lang + ".mxd"
-            self.ziel_mxd_lang_akt = os.path.join(self.ziel_begleitdaten_mxd, self.mxd_lang_akt)
-            self.mxd_lang_zs = self.gpr + "_" + self.zeitstand + "_" + self.gpr + "_" + self.lang + ".mxd"
-            self.ziel_mxd_lang_zs = os.path.join(self.ziel_begleitdaten_mxd, self.mxd_lang_zs)
-            self.mxdDict['name'] = self.mxd_lang
-            self.mxdDict['quelle'] = self.quelle_mxd_lang
-            self.mxdDict['ziel_akt'] = self.ziel_mxd_lang_akt.upper()
-            self.mxdDict['ziel_zs'] = self.ziel_mxd_lang_zs.upper()             
-            self.mxdList.append(self.mxdDict)
+        '''
+        Diese Funktion bildet die notwendigen MXD-Namen und Pfade in einer Sprache.
+        Die Sprache muss übergeben werden.
+        '''
+        mxd_lang = "%s_%s.mxd" % (self.gpr, lang)
+        quelle_mxd_lang = os.path.join(self.quelle_begleitdaten_mxd, mxd_lang)
+        mxd_lang_akt = "AKTUELL_%s_%s_%s.mxd" % (self.gpr, self.gpr, lang)
+        ziel_mxd_lang_akt = os.path.join(self.ziel_begleitdaten_mxd, mxd_lang_akt)
+        mxd_lang_zs = "%s_%s_%s_%s.mxd" % (self.gpr, self.zeitstand, self.gpr, lang)
+        ziel_mxd_lang_zs = os.path.join(self.ziel_begleitdaten_mxd, mxd_lang_zs)
+        mxdDict = {
+            'name': mxd_lang,
+            'quelle': quelle_mxd_lang,
+            'ziel_akt': ziel_mxd_lang_akt.upper(),
+            'ziel_zs': ziel_mxd_lang_zs.upper()             
+        }
+        return mxdDict
     
     def __get_fak_begleitdaten(self):
-        # Es wird nur im SYMBOL-Verzeichnis gesucht. Unterverzeichnisse werden ignoriert.
+        """
+        Diese Funktion sucht alle übrigen Begleit-dDaten im Symbol-Verzeichnis zusammen.
+        Dies können sein: Style-Files, Fonts
+        Lyr-Files werden ausgelassen. Sie werden an anderer Stelle bearbeitet.
+        Es wird nur im SYMBOL-Verzeichnis gesucht. Unterverzeichnisse werden ignoriert.
+        """
+        self.logger.info("Suche übrige Begleitdaten (Styles, Fonts)")
         symbol_dir_files = [f for f in os.listdir(self.quelle_begleitdaten_symbol) if os.path.isfile(os.path.join(self.quelle_begleitdaten_symbol, f))]
+        stylesList, fontsList = [], []
         for symbol_dir_file in symbol_dir_files:
+            self.logger.info(symbol_dir_file)
+            style_ziel_akt = os.path.join(self.ziel_begleitdaten_symbol, self.gpr + "_" + symbol_dir_file)
+            style_zs = os.path.join(self.ziel_begleitdaten_symbol, self.gpr + "_" + self.zeitstand + "_" + symbol_dir_file)
+            fileDict = {
+                'name': symbol_dir_file,
+                'quelle': os.path.join(self.quelle_begleitdaten_symbol, symbol_dir_file),
+                'ziel_akt': style_ziel_akt.upper(),
+                'ziel_zs': style_zs.upper()
+            }
             if symbol_dir_file.lower().endswith('.style'):
-                self.logger.info(symbol_dir_file)
-                styleDict = {}
-                styleDict['name'] = symbol_dir_file
-                styleDict['quelle'] = os.path.join(self.quelle_begleitdaten_symbol, symbol_dir_file)
-                self.style_ziel_akt = os.path.join(self.ziel_begleitdaten_symbol, self.gpr + "_" + symbol_dir_file)
-                styleDict['ziel_akt'] = self.style_ziel_akt.upper()
-                self.style_zs = os.path.join(self.ziel_begleitdaten_symbol, self.gpr + "_" + self.zeitstand + "_" + symbol_dir_file)
-                styleDict['ziel_zs'] = self.style_zs.upper()
-                self.styleList.append(styleDict)
+                stylesList.append(fileDict)
             elif symbol_dir_file.lower().endswith('.ttf'):
-                self.logger.info(symbol_dir_file)
-                fontDict = {}
-                fontDict['name'] = symbol_dir_file
-                fontDict['quelle'] = os.path.join(self.quelle_begleitdaten_symbol, symbol_dir_file)
-                self.font_akt = os.path.join(self.ziel_begleitdaten_symbol, self.gpr + "_" + symbol_dir_file)
-                fontDict['ziel_akt'] = self.font_akt.upper()
-                self.font_zs = os.path.join(self.ziel_begleitdaten_symbol, self.gpr + "_" + self.zeitstand + "_" + symbol_dir_file)
-                fontDict['ziel_zs'] = self.font_zs.upper()
-                self.fontList.append(fontDict)      
+                fontsList.append(fileDict)
+            
+        return stylesList, fontsList
     
     def __get_fak_zusatzdaten(self):
+        '''
+        Diese Funktion prüft, ob das Zusatzdaten-Verzeichnis vorhanden ist.
+        Ist das der Fall, wird es in die Task-Config aufgenommen, damit es
+        dann kopiert wird.
+        '''
         self.logger.info("Prüfe ob Zusatzdaten vorhanden auf:")
-        self.zusatzDict = {}
+        zusatzDict = {}
         if os.path.exists(self.quelle_begleitdaten_zusatzdaten):
             self.logger.info("Zusatzdaten vorhanden")
-            self.zusatzDict['quelle'] = os.path.join(self.quelle_begleitdaten_gpr, self.general_config['quelle_begleitdaten_zusatzdaten'])
-            self.zusatzDict['ziel'] = os.path.join(self.ziel_begleitdaten_gpr, self.general_config['ziel_begleitdaten_zusatzdaten'], self.zeitstand)
+            zusatzDict['quelle'] = os.path.join(self.quelle_begleitdaten_gpr, self.general_config['quelle_begleitdaten_zusatzdaten'])
+            zusatzDict['ziel'] = os.path.join(self.ziel_begleitdaten_gpr, self.general_config['ziel_begleitdaten_zusatzdaten'], self.zeitstand)
+        return zusatzDict
             
     def __define_quelle_ziel_begleitdaten(self):
-            self.zielDict = {}
-            self.quelle_begleitdaten_gpr = os.path.join(self.general_config['quelle_begleitdaten'], self.gpr, self.general_config['quelle_begleitdaten_work'])
-            self.quelle_begleitdaten_mxd = os.path.join(self.quelle_begleitdaten_gpr, self.general_config['quelle_begleitdaten_mxd'])
-            self.quelle_begleitdaten_symbol = os.path.join(self.quelle_begleitdaten_gpr, self.general_config['quelle_begleitdaten_symbol'])
-            self.quelle_begleitdaten_zusatzdaten = os.path.join(self.quelle_begleitdaten_gpr, self.general_config['quelle_begleitdaten_zusatzdaten'])
-            self.ziel_begleitdaten_gpr = os.path.join(self.general_config['ziel_begleitdaten'], self.gpr)
-            self.ziel_begleitdaten_mxd = os.path.join(self.ziel_begleitdaten_gpr, self.general_config['ziel_begleitdaten_mxd'])
-            self.ziel_begleitdaten_symbol = os.path.join(self.ziel_begleitdaten_gpr, self.general_config['ziel_begleitdaten_symbol'])
-            self.ziel_begleitdaten_zusatzdaten = os.path.join(self.ziel_begleitdaten_gpr, self.general_config['ziel_begleitdaten_zusatzdaten'])
-            self.zielDict['ziel_begleitdaten_gpr'] = self.ziel_begleitdaten_gpr
-            self.zielDict['ziel_begleitdaten_mxd'] = self.ziel_begleitdaten_mxd
-            self.zielDict['ziel_begleitdaten_symbol'] = self.ziel_begleitdaten_symbol
-            self.zielDict['ziel_begleitdaten_zusatzdaten'] = self.ziel_begleitdaten_zusatzdaten
-      
+        """
+        Diese Funktion definiert verschiedene Pfade in Bezug auf die Begleitdaten
+        """
+        zielDict = {}
+        self.quelle_begleitdaten_gpr = os.path.join(self.general_config['quelle_begleitdaten'], self.gpr, self.general_config['quelle_begleitdaten_work'])
+        self.quelle_begleitdaten_mxd = os.path.join(self.quelle_begleitdaten_gpr, self.general_config['quelle_begleitdaten_mxd'])
+        self.quelle_begleitdaten_symbol = os.path.join(self.quelle_begleitdaten_gpr, self.general_config['quelle_begleitdaten_symbol'])
+        self.quelle_begleitdaten_zusatzdaten = os.path.join(self.quelle_begleitdaten_gpr, self.general_config['quelle_begleitdaten_zusatzdaten'])
+        self.ziel_begleitdaten_gpr = os.path.join(self.general_config['ziel_begleitdaten'], self.gpr)
+        self.ziel_begleitdaten_mxd = os.path.join(self.ziel_begleitdaten_gpr, self.general_config['ziel_begleitdaten_mxd'])
+        self.ziel_begleitdaten_symbol = os.path.join(self.ziel_begleitdaten_gpr, self.general_config['ziel_begleitdaten_symbol'])
+        self.ziel_begleitdaten_zusatzdaten = os.path.join(self.ziel_begleitdaten_gpr, self.general_config['ziel_begleitdaten_zusatzdaten'])
+        zielDict = {
+            'ziel_begleitdaten_gpr': self.ziel_begleitdaten_gpr,
+            'ziel_begleitdaten_mxd': self.ziel_begleitdaten_mxd,
+            'ziel_begleitdaten_symbol': self.ziel_begleitdaten_symbol,
+            'ziel_begleitdaten_zusatzdaten': self.ziel_begleitdaten_zusatzdaten
+        }
+        return zielDict    
          
     def __get_wtb_dd(self):
-        self.sql_dd_wtb = "SELECT a.gpr_bezeichnung, c.ebe_bezeichnung, b.gzs_jahr, b.gzs_version, e.wtb_bezeichnung from geodb_dd.tb_wertetabelle e join geodb_dd.tb_ebene_zeitstand d on e.ezs_objectid = d.ezs_objectid join geodb_dd.tb_ebene c on d.ebe_objectid = c.ebe_objectid join geodb_dd.tb_geoprodukt_zeitstand b on d.gzs_objectid = b.gzs_objectid join geodb_dd.tb_geoprodukt a on b.gpr_objectid = a.gpr_objectid where b.gzs_objectid = '" + self.gzs_objectid + "'"
-        self.__db_connect('team', 'geodb_dd', self.sql_dd_wtb)
-        for row in self.result:
-            wtbDict = {}
-            self.logger.info(row)
-            gpr = row[0].decode('cp1252')
-            self.logger.info(type(gpr))
-            wtb = row[4].decode('cp1252')
-            jahr = unicode(row[2]).decode('cp1252')
-            version = unicode(row[3]).decode('cp1252')
-            version = version.zfill(2)
-            zeitstand = jahr + "_" + version
-            gpr_wtb = unicode(gpr) + "_" + unicode(wtb)            
-            quelle_schema_gpr_wtb = self.schema_norm + "." + gpr_wtb
-            quelle = os.path.join(self.sde_conn_norm, quelle_schema_gpr_wtb)
-            ziel_schema_gpr_wtb = self.schema_geodb + "." + gpr_wtb
-            ziel_schema_gpr_wtb_zs = ziel_schema_gpr_wtb + "_" + zeitstand                
-            ziel_vek1 = os.path.join(self.sde_conn_vek1, ziel_schema_gpr_wtb)
-            ziel_vek2 = os.path.join(self.sde_conn_vek2, ziel_schema_gpr_wtb)
-            ziel_vek3 = os.path.join(self.sde_conn_vek3, ziel_schema_gpr_wtb_zs)
+        """
+        Diese Funktion ermittelt alle Wertetabellen und schreibt diese so in
+        die Task-Config, damit sie danach wie andere Vektor-Ebenen kopiert werden.
+        Jede Wertetabellen wird genau einmal übernommen, auch wenn sie mehrmals
+        im DD als Wertetabellen genutzt wird. Das reduziert die Importzeiten.
+        """
+        self.logger.info("Wertetabellen-Infos werden geholt.")
+        wtbList = []
+        wertetabellen_dd_sql = "SELECT DISTINCT e.wtb_bezeichnung from geodb_dd.tb_wertetabelle e join geodb_dd.tb_ebene_zeitstand d on e.ezs_objectid = d.ezs_objectid join geodb_dd.tb_ebene c on d.ebe_objectid = c.ebe_objectid join geodb_dd.tb_geoprodukt_zeitstand b on d.gzs_objectid = b.gzs_objectid join geodb_dd.tb_geoprodukt a on b.gpr_objectid = a.gpr_objectid where b.gzs_objectid = %s ORDER BY e.WTB_BEZEICHNUNG" % (self.gzs_objectid)
+        wertetabellen_dd_results = self.general_config.connections['TEAM_GEODB_DD_ORA'].db_read(wertetabellen_dd_sql)
+        for wertetabelle in wertetabellen_dd_results:
+            wtb_code = wertetabelle[0]
+            self.logger.info("Wertetabelle %s" % (wtb_code))
+            gpr_wtb =  "%s_%s" % (self.gpr, wtb_code)
+            quelle = os.path.join(self.connDict['sde_conn_norm'], self.schemaDict['norm'] + "." + gpr_wtb)
+            ziel_schema_gpr_wtb = self.schemaDict['geodb'] + "." + gpr_wtb
+            ziel_vek1 = os.path.join(self.connDict['sde_conn_vek1'], ziel_schema_gpr_wtb)
+            ziel_vek2 = os.path.join(self.connDict['sde_conn_vek2'], ziel_schema_gpr_wtb)
+            ziel_vek3 = os.path.join(self.connDict['sde_conn_vek3'], ziel_schema_gpr_wtb + "_" + self.zeitstand)
             
-            self.sql_ind_gdbp = "SELECT b.felder, b." + '"unique"' + " from gdbp.index_attribut b join gdbp.geoprodukte a on b.id_geoprodukt = a.id_geoprodukt where a.code = '" + gpr + "' and b.ebene = '" + wtb + "'"
-            self.__db_connect('work', 'gdbp', self.sql_ind_gdbp)
-            self.indList = []
-            for row in self.result:
-                indDict = {}
-                ind_attr = row[0].decode('cp1252')
-                indextyp = unicode(row[1]).decode('cp1252')
-                if indextyp == "1":
-                    ind_unique = "True"
-                elif indextyp == "2":
-                    ind_unique = "False"
-                indDict['attribute'] = ind_attr
-                indDict['unique'] = ind_unique            
-                self.indList.append(indDict)
-            wtbDict['indices'] = self.indList
-            wtbDict['datentyp']= "Wertetabelle"
-            wtbDict['gpr_ebe'] = gpr_wtb
-            wtbDict['quelle'] = quelle
-            wtbDict['ziel_vek1'] = ziel_vek1
-            wtbDict['ziel_vek2'] = ziel_vek2
-            wtbDict['ziel_vek3'] = ziel_vek3
-            self.ebeVecList.append(wtbDict)
+            # Wertetabellen können u.U. auch Indizes haben
+            wertetabelle_index_gdbp_sql = 'SELECT b.felder, DECODE(b."unique", 1, \'True\', 2, \'False\') "unique" from gdbp.index_attribut b join gdbp.geoprodukte a on b.id_geoprodukt = a.id_geoprodukt where a.code = \'%s\' and b.ebene = \'%s\'' % (self.gpr, wtb_code)
+            wertetabelle_index_gdbp_results = self.general_config.connections['WORK_GDBP_ORA'].db_read(wertetabelle_index_gdbp_sql)
+            indList = []
+            for wertetabelle_index_gdbp_result in wertetabelle_index_gdbp_results:
+                indDict = {
+                    'attribute': wertetabelle_index_gdbp_result[0],
+                    'unique': wertetabelle_index_gdbp_result[1]
+                }
+                indList.append(indDict)
+            wtbDict = {
+                'indices': indList,
+                'datentyp': "Wertetabelle",
+                'gpr_ebe': gpr_wtb,
+                'quelle': quelle,
+                'ziel_vek1': ziel_vek1,
+                'ziel_vek2': ziel_vek2,
+                'ziel_vek3': ziel_vek3
+            }
+            wtbList.append(wtbDict)
+        
+        return wtbList
                
-    def __define_qs(self):
-        self.qsDict = {}
-        self.qsDict['dma_erlaubt'] = 'false'
-        self.qsDict['checkskript_passed'] = 'undefined'
-        self.qsDict['deltachecker_passed'] = 'undefined'
-        self.qsDict['qa_framework_passed'] = 'undefined'
-        self.qsDict['qs_gesamt_passed'] = 'undefined'
-        
-  
-        
     def __define_connections(self):
-        self.connDict = {}
-        self.config_secret = os.environ['GEODBIMPORTSECRET']
-        self.sde_connection_directory = os.path.join(self.config_secret, 'connections')
-        self.sde_conn_team_dd = os.path.join(self.sde_connection_directory, 'team_dd.sde')
-        self.sde_conn_vek1 = os.path.join(self.sde_connection_directory, 'vek1.sde')
-        self.sde_conn_vek2 = os.path.join(self.sde_connection_directory, 'vek2.sde')
-        self.sde_conn_vek3 = os.path.join(self.sde_connection_directory, 'vek3.sde')
-        self.sde_conn_ras1 = os.path.join(self.sde_connection_directory, 'ras1.sde')
-        self.sde_conn_ras2 = os.path.join(self.sde_connection_directory, 'ras2.sde')
-        self.sde_conn_norm = os.path.join(self.sde_connection_directory, 'norm.sde')
-        self.sde_conn_vek1_geo = os.path.join(self.sde_connection_directory, 'vek1_geo.sde')
-        self.sde_conn_vek2_geo = os.path.join(self.sde_connection_directory, 'vek2_geo.sde')
-        self.sde_conn_vek3_geo = os.path.join(self.sde_connection_directory, 'vek3_geo.sde')
-        self.sde_conn_ras1_geo = os.path.join(self.sde_connection_directory, 'ras1_geo.sde')        
-        self.sde_conn_team_oereb2 = os.path.join(self.sde_connection_directory, 'team_oereb2.sde')
-        self.sde_conn_vek1_oereb2 = os.path.join(self.sde_connection_directory, 'vek1_oereb2.sde')
-        self.sde_conn_vek2_oereb2 = os.path.join(self.sde_connection_directory, 'vek2_oereb2.sde')
-        self.connDict['sde_conn_team_dd'] = self.sde_conn_team_dd
-        self.connDict['sde_conn_vek1'] = self.sde_conn_vek1
-        self.connDict['sde_conn_vek2'] = self.sde_conn_vek2
-        self.connDict['sde_conn_vek3'] = self.sde_conn_vek3
-        self.connDict['sde_conn_ras1'] = self.sde_conn_ras1
-        self.connDict['sde_conn_ras2'] = self.sde_conn_ras2
-        self.connDict['sde_conn_norm'] = self.sde_conn_norm
-        self.connDict['sde_conn_vek1_geo'] = self.sde_conn_vek1_geo
-        self.connDict['sde_conn_vek2_geo'] = self.sde_conn_vek2_geo
-        self.connDict['sde_conn_vek3_geo'] = self.sde_conn_vek3_geo
-        self.connDict['sde_conn_ras1_geo'] = self.sde_conn_ras1_geo
-        self.connDict['sde_conn_team_oereb2'] = self.sde_conn_team_oereb2
-        self.connDict['sde_conn_vek1_oereb2'] = self.sde_conn_vek1_oereb2
-        self.connDict['sde_conn_vek2_oereb2'] = self.sde_conn_vek2_oereb2       
+        sde_connection_directory = os.path.join(os.environ['GEODBIMPORTSECRET'], 'connections')
+        connDict = {
+            'sde_conn_team_dd': os.path.join(sde_connection_directory, 'team_dd.sde'),
+            'sde_conn_vek1': os.path.join(sde_connection_directory, 'vek1.sde'),
+            'sde_conn_vek2': os.path.join(sde_connection_directory, 'vek2.sde'),
+            'sde_conn_vek3': os.path.join(sde_connection_directory, 'vek3.sde'),
+            'sde_conn_ras1': os.path.join(sde_connection_directory, 'ras1.sde'),
+            'sde_conn_ras2': os.path.join(sde_connection_directory, 'ras2.sde'),
+            'sde_conn_norm': os.path.join(sde_connection_directory, 'norm.sde'),
+            'sde_conn_vek1_geo': os.path.join(sde_connection_directory, 'vek1_geo.sde'),
+            'sde_conn_vek2_geo': os.path.join(sde_connection_directory, 'vek2_geo.sde'),
+            'sde_conn_vek3_geo': os.path.join(sde_connection_directory, 'vek3_geo.sde'),
+            'sde_conn_ras1_geo': os.path.join(sde_connection_directory, 'ras1_geo.sde'),
+            'sde_conn_team_oereb2': os.path.join(sde_connection_directory, 'team_oereb2.sde'),
+            'sde_conn_vek1_oereb2': os.path.join(sde_connection_directory, 'vek1_oereb2.sde'),
+            'sde_conn_vek2_oereb2': os.path.join(sde_connection_directory, 'vek2_oereb2.sde')
+        }  
         
-        self.instanceDict = {}
-        self.instanceDict['team'] = self.general_config['instances']['team']
-        self.instanceDict['vek1'] = self.general_config['instances']['vek1']
-        self.instanceDict['vek2'] = self.general_config['instances']['vek2']
-        self.instanceDict['vek3'] = self.general_config['instances']['vek3']
-        self.instanceDict['ras1'] = self.general_config['instances']['ras1']
-        self.instanceDict['ras2'] = self.general_config['instances']['ras2']
-        self.instanceDict['work'] = self.general_config['instances']['work']
-        self.instanceDict['oereb'] = self.general_config['instances']['oereb']
-        self.schemaDict = {}
-        self.schema_geodb = self.general_config['users']['geodb']['schema']
-        self.schema_geodb_dd = self.general_config['users']['geodb_dd']['schema']
-        self.schema_norm = self.general_config['users']['norm']['schema']
-        self.schema_oereb = self.general_config['users']['oereb']['schema']
-        self.schema_oereb2 = self.general_config['users']['oereb2']['schema']
-        self.schema_gdbp = self.general_config['users']['gdbp']['schema']
-        self.schema_sysoem = self.general_config['users']['sysoem']['schema']
-        self.schemaDict['geodb'] = self.schema_geodb
-        self.schemaDict['geodb_dd'] = self.schema_geodb_dd
-        self.schemaDict['norm'] = self.schema_norm
-        self.schemaDict['oereb'] = self.schema_oereb
-        self.schemaDict['oereb2'] = self.schema_oereb2
-        self.schemaDict['gdbp'] = self.schema_gdbp
-        self.schemaDict['sysoem'] = self.schema_sysoem
-        self.userpwDict = {}
-        self.userpwDict['norm'] = self.general_config['users']['norm']['password']
-        self.userpwDict['oereb'] = self.general_config['users']['oereb']['password']
-        self.userpwDict['oereb2'] = self.general_config['users']['oereb2']['password']
-        self.userpwDict['geodb'] = self.general_config['users']['geodb']['password']
-        self.userpwDict['geodb_dd'] = self.general_config['users']['geodb_dd']['password']
-        self.userpwDict['gdbp'] = self.general_config['users']['gdbp']['password']
-        self.userpwDict['sysoem'] = self.general_config['users']['sysoem']['password']
-        self.task_config['db_vek1_pg'] = self.general_config['db_vek1_pg']
-        self.task_config['db_vek2_pg'] = self.general_config['db_vek2_pg']
-        self.task_config['db_team_pg'] = self.general_config['db_team_pg']
-        self.task_config['port_pg'] = self.general_config['port_pg']
+        instanceDict = {
+            'team': self.general_config['connection_infos']['db']['team']['ora_db'],
+            'vek1': self.general_config['connection_infos']['db']['vek1']['ora_db'],
+            'vek2': self.general_config['connection_infos']['db']['vek2']['ora_db'],
+            'vek3': self.general_config['connection_infos']['db']['vek3']['ora_db'],
+            'ras1': self.general_config['connection_infos']['db']['ras1']['ora_db'],
+            'ras2': self.general_config['connection_infos']['db']['ras2']['ora_db'],
+            'work': self.general_config['connection_infos']['db']['work']['ora_db'],
+            'oereb': self.general_config['connection_infos']['db']['team']['pg_host']
+        }
+        
+        schemaDict = {
+            'geodb': self.general_config['connection_infos']['user']['geodb']['username'],
+            'geodb_dd': self.general_config['connection_infos']['user']['geodb_dd']['username'],
+            'norm': self.general_config['connection_infos']['user']['norm']['username'],
+            'oereb': self.general_config['connection_infos']['user']['oereb']['username'],
+            'oereb2': self.general_config['connection_infos']['user']['oereb2']['username'],
+            'gdbp': self.general_config['connection_infos']['user']['gdbp']['username'],
+            'sysoem': self.general_config['connection_infos']['user']['sysoem']['username']
+        }
+        
+        userpwDict = {
+            'norm': self.general_config['connection_infos']['user']['norm']['password'],
+            'oereb': self.general_config['connection_infos']['user']['oereb']['password'],
+            'oereb2': self.general_config['connection_infos']['user']['oereb2']['password'],
+            'geodb': self.general_config['connection_infos']['user']['geodb']['password'],
+            'geodb_dd': self.general_config['connection_infos']['user']['geodb_dd']['password'],
+            'gdbp': self.general_config['connection_infos']['user']['gdbp']['password'],
+            'sysoem': self.general_config['connection_infos']['user']['sysoem']['password']
+        }
+
+        return (connDict, instanceDict, schemaDict, userpwDict)
+
 
     def __get_oereb_tables(self, oereb_tables_sql):
         oereb_tables = []
-        tables = PostgresHelper.db_sql(self=self, host=self.general_config['instances']['oereb'], db=self.general_config['db_work_pg'], port=self.general_config['port_pg'], db_user=self.general_config['users']['oereb']['username'], pw=self.general_config['users']['oereb']['password'], sql_query=oereb_tables_sql, fetch=True, fetchall=True)
-        for table in tables:
-            tbl_dict = {}
-            tbl_dict['tablename'] = table[0]
-            tbl_dict['filter_field'] =  table[1]
+        oereb_tables_results = self.general_config['connections']['WORK_OEREB_PG'].db_read(oereb_tables_sql)
+        for oereb_table in oereb_tables_results:
+            tbl_dict = {
+                'tablename': oereb_table[0],
+                'filter_field':  oereb_table[1]
+            }
             oereb_tables.append(tbl_dict)
         
         return oereb_tables
 
     def __get_oereb_liefereinheiten(self, oereb_liefereinheiten_sql):
-        oereb_liefereinheiten = []
-        liefereinheiten = PostgresHelper.db_sql(self=self, host=self.general_config['instances']['oereb'], db=self.general_config['db_work_pg'], port=self.general_config['port_pg'], db_user=self.general_config['users']['oereb']['username'], pw=self.general_config['users']['oereb']['password'], sql_query=oereb_liefereinheiten_sql, fetch=True, fetchall=True)
-        for liefereinheit in liefereinheiten:
-            oereb_liefereinheiten.append(unicode(liefereinheit[0]))
-        
-        return oereb_liefereinheiten
+        oereb_liefereinheiten_results = self.general_config['connections']['WORK_OEREB_PG'].db_read(oereb_liefereinheiten_sql)
+        return [unicode(le[0]) for le in oereb_liefereinheiten_results]
 
     def __get_oereb_schemas(self, oereb_schemas_sql):
-        oereb_schemas = []
-        schemas = PostgresHelper.db_sql(self=self, host=self.general_config['instances']['oereb'], db=self.general_config['db_work_pg'], port=self.general_config['port_pg'], db_user=self.general_config['users']['oereb']['username'], pw=self.general_config['users']['oereb']['password'], sql_query=oereb_schemas_sql, fetch=True, fetchall=True)
-        for schema in schemas:
-            oereb_schemas.append(schema[0])
-        
-        return oereb_schemas
+        oereb_schemas_results = self.general_config['connections']['WORK_OEREB_PG'].db_read(oereb_schemas_sql)
+        return [schema[0] for schema in oereb_schemas_results]
 
     def __get_oereb_infos(self):
-        self.oereb_dict = {}
         self.logger.info("ÖREBK-Infos werden geholt.")
         # Tabellen der Oracle-Transferstruktur werden geholt
         oereb_tables_ora_sql = "select ebecode, filter_field from oereb.gpr where gprcode='OEREB' ORDER BY EBEORDER ASC"
@@ -453,10 +428,14 @@ class Generierung(TemplateFunction):
         oereb_schemas_sql = "select distinct workflow_schema.schema from oereb.ticket left join oereb.liefereinheit on ticket.liefereinheit=liefereinheit.id left join oereb.workflow_gpr on liefereinheit.workflow=workflow_gpr.workflow left join oereb.workflow_schema on liefereinheit.workflow=workflow_schema.workflow where status=4 and workflow_gpr.gprcode='%s'" % (self.gpr)
         schemas = self.__get_oereb_schemas(oereb_schemas_sql)
         # Config-Dictionary wird gefüllt.
-        self.oereb_dict['tabellen_ora'] = oereb_tables_ora
-        self.oereb_dict['tabellen_pg'] = oereb_tables_pg
-        self.oereb_dict['liefereinheiten'] = "(" + ",".join(liefereinheiten) + ")"
-        self.oereb_dict['schemas'] = schemas
+        oerebDict = {
+            'tabellen_ora': oereb_tables_ora,
+            'tabellen_pg': oereb_tables_pg,
+            'liefereinheiten': "(" + ",".join(liefereinheiten) + ")",
+            'schemas': schemas
+        }
+
+        return oerebDict
                 
     def __execute(self):
         '''
@@ -466,53 +445,51 @@ class Generierung(TemplateFunction):
         if not self.task_config.has_key("ausgefuehrte_funktionen"):
             self.task_config['ausgefuehrte_funktionen'] = []
 
-        self.ebeVecList = []
-        self.ebeRasList = []
-        self.ebeCacheList = []
-        self.legList = []
-        self.mxdList = []
-        self.styleList = []
-        self.fontList = []
-        self.__define_connections()
-        self.gzs_objectid = self.__get_gzsobjectid_from_task()             
-        self.__get_gprinfo_from_dd()
-        self.__get_ebeinfo_from_dd()
-        self.__get_wtb_dd()
-        self.__define_quelle_ziel_begleitdaten()
-        self.__get_mxd_dd("DE")
-        self.__get_mxd_dd("FR")
-        self.__get_leg_dd()        
-        self.__get_fak_begleitdaten()
-        self.__get_fak_zusatzdaten()
-        self.__define_qs()
-        self.__get_oereb_infos()
-        
+        self.connDict, self.instanceDict, self.schemaDict, self.userpwDict = self.__define_connections()
         self.task_config['connections'] = self.connDict
         self.task_config['instances'] = self.instanceDict
         self.task_config['schema'] = self.schemaDict
         self.task_config['users'] = self.userpwDict
-        self.task_config['gpr'] = self.gpr
+
+        self.gzs_objectid = self.__get_gzsobjectid_from_task()             
         self.task_config['gzs_objectid'] = self.gzs_objectid
+
+        self.gpr, self.jahr, self.version, self.zeitstand, self.rolle_freigabe = self.__get_gprinfo_from_dd()
+        self.task_config['gpr'] = self.gpr
         self.task_config['zeitstand'] = self.zeitstand
         self.task_config['zeitstand_jahr'] = self.jahr
         self.task_config['zeitstand_version'] = self.version
         self.task_config['rolle'] = self.rolle_freigabe
-        self.task_config['vektor_ebenen'] = self.ebeVecList
-        self.task_config['raster_ebenen'] = self.ebeRasList
-        self.task_config['cache_ebenen'] = self.ebeCacheList
-        self.task_config['legende'] = self.legList
-        self.task_config['mxd'] = self.mxdList
-        self.task_config['ziel'] = {'ziel_begleitdaten_gpr': self.ziel_begleitdaten_gpr, 'ziel_begleitdaten_mxd': self.ziel_begleitdaten_mxd, 'ziel_begleitdaten_symbol': self.ziel_begleitdaten_symbol, 'ziel_begleitdaten_zusatzdaten': self.ziel_begleitdaten_zusatzdaten}
-        self.task_config['style'] = self.styleList
-        self.task_config['font'] = self.fontList
-        self.task_config['zusatzdaten'] = self.zusatzDict
+
+        ebeVecList, ebeRasList, ebeCacheList = self.__get_ebeinfo_from_dd()
+        ebeVecList.extend(self.__get_wtb_dd())
+        self.task_config['vektor_ebenen'] = ebeVecList
+        self.task_config['raster_ebenen'] = ebeRasList
+        self.task_config['cache_ebenen'] = ebeCacheList
+
+        self.zielDict = self.__define_quelle_ziel_begleitdaten()
         self.task_config['ziel'] = self.zielDict
-        self.task_config['quelle_begleitdatenraster'] = self.quelle_begleitdatenraster
-        self.task_config['qs'] = self.qsDict
-        self.task_config['default_tolerance'] = self.default_tolerance
-        self.task_config['default_resolution'] = self.default_resolution
-        self.task_config['spatial_reference'] = self.spatial_reference
-        self.task_config['oereb'] = self.oereb_dict
+
+        self.task_config['mxd'] = [self.__get_mxd_dd("DE"), self.__get_mxd_dd("FR")]
+
+        self.task_config['legende'] = self.__get_leg_dd()
+
+        self.task_config['style'], self.task_config['font'] = self.__get_fak_begleitdaten()
+
+        self.task_config['zusatzdaten'] = self.__get_fak_zusatzdaten()
+
+        self.task_config['oereb'] = self.__get_oereb_infos()
+
+        # Verschiedene Parameter direkt aus der Config übernommen
+        self.task_config['quelle_begleitdatenraster'] = os.path.join(self.general_config['quelle_begleitdaten'], self.gpr, 'work', 'symbol','Rasterdataset')
+        self.task_config['default_tolerance'] = self.general_config['default_tolerance']
+        self.task_config['default_resolution'] = self.general_config['default_resolution']
+        self.task_config['spatial_reference'] = self.general_config['spatial_reference']
+        self.task_config['db_vek1_pg'] = self.general_config['connection_infos']['db']['vek1']['pg_db']
+        self.task_config['db_vek2_pg'] = self.general_config['connection_infos']['db']['vek2']['pg_db']
+        self.task_config['db_team_pg'] = self.general_config['connection_infos']['db']['team']['pg_db']
+        self.task_config['port_pg'] = self.general_config['connection_infos']['db']['vek1']['pg_port']
+
         self.finish()  
        
     def __load_task_config(self):

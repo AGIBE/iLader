@@ -18,6 +18,7 @@ def get_config():
     connections['VEK2_GEODB_ORA'] = AGILib.Connection(db=connection_infos['db']['vek2']['ora_db'], db_type='oracle', username=connection_infos['user']['geodb']['username'], password=connection_infos['user']['geodb']['password'])
     connections['VEK3_GEODB_ORA'] = AGILib.Connection(db=connection_infos['db']['vek3']['ora_db'], db_type='oracle', username=connection_infos['user']['geodb']['username'], password=connection_infos['user']['geodb']['password'])
     connections['WORK_GDBP_ORA'] = AGILib.Connection(db=connection_infos['db']['work']['ora_db'], db_type='oracle', username=connection_infos['user']['gdbp']['username'], password=connection_infos['user']['gdbp']['password'])
+    connections['WORK_OEREB_PG'] = AGILib.Connection(db=connection_infos['db']['work']['pg_db'], db_type='postgres', username=connection_infos['user']['oereb']['username'], password=connection_infos['user']['oereb']['password'], host=connection_infos['db']['work']['pg_host'], port=connection_infos['db']['work']['pg_port'])
 
     # Alle benötigten Connection-Files erstellen
     connection_files['VEK1_GEODB_ORA'] = connections['VEK1_GEODB_ORA'].create_sde_connection()
@@ -26,6 +27,7 @@ def get_config():
 
     config['connections'] = connections
     config['connection_files'] = connection_files
+    config['connection_infos'] = connection_infos
     return config
 
 def register_installations(general_config, logger):
