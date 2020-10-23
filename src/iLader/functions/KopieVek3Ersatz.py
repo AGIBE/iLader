@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function, unicode_literals
 from .TemplateFunction import TemplateFunction
-import iLader.helpers.Statistics
+from iLader.helpers.Helpers import renew_statistics
 import arcpy
 
 class KopieVek3Ersatz(TemplateFunction):
@@ -85,7 +85,7 @@ class KopieVek3Ersatz(TemplateFunction):
         # Statistiken neu berechnen
         self.logger.info("Statistiken werden neu berechnet in VEK3.")
         try:
-            iLader.helpers.Statistics.renew_statistics(self.general_config['connections']['VEK3_GEODB_ORA'])
+            renew_statistics(self.general_config['connections']['VEK3_GEODB_ORA'])
         except Exception as e:
             self.logger.warn("Fehler beim Erstellen der Statistik auf VEK3.")
             self.logger.warn(e)

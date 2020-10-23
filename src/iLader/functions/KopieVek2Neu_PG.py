@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function, unicode_literals
 from .TemplateFunction import TemplateFunction
+import AGILib
 import arcpy
 import os
-from iLader.helpers import PostgresHelper, FME_helper, DummyHandler
-
+from iLader.helpers.Helpers import prepare_fme_log
+from iLader.helpers.Helpers import create_dummy
+from iLader.helpers.Helpers import delete_dummy
 
 class KopieVek2Neu_PG(TemplateFunction):
     '''
@@ -54,13 +56,13 @@ class KopieVek2Neu_PG(TemplateFunction):
         Führt den eigentlichen Funktionsablauf aus
         '''
         rolle = self.task_config['rolle']
-        db = self.task_config['db_vek2_pg']
-        port = self.task_config['port_pg']
-        host = self.task_config['instances']['oereb']
-        db_user = 'geodb'
-        pw = self.task_config['users']['geodb']
-        schema = self.task_config['schema']['geodb']
-        source_sde = self.task_config['connections']['sde_conn_norm']
+        db = self.general_config['connections']['VEK2_GEODB_PG'].db
+        port = self.general_config['connections']['VEK2_GEODB_PG'].port
+        host = self.general_config['connections']['VEK2_GEODB_PG'].host
+        db_user = self.general_config['connections']['VEK2_GEODB_PG'].username
+        pw = self.general_config['connections']['VEK2_GEODB_PG'].password
+        schema = db_user
+        source_sde = self.general_config['connection_files']['TEAM_NORM_ORA']
         fme_script = os.path.abspath(
                 os.path.join(os.path.dirname(__file__), '..')
         ) + "\\helpers\\" + "EsriGeodatabase2PostGIS.fmw"
@@ -95,7 +97,7 @@ class KopieVek2Neu_PG(TemplateFunction):
                         "Quell-Ebene " + source +
                         " ist leer. Es wird ein Dummy-Eintrag erstellt."
                 )
-                DummyHandler.create_dummy(source)
+                create_dummy(source)
                 dummy_entry = True
 
             # Eine Liste der Attribute mit Typ Date erstellen (FME braucht diese Info, damit leere Datumsfelder fuer Postgres richtig gesetzt werden koennen)
@@ -109,34 +111,38 @@ class KopieVek2Neu_PG(TemplateFunction):
 
             # Daten kopieren
             # Copy-Script
-            fme_logfile = FME_helper.prepare_fme_log(
+            fme_logfile = prepare_fme_log(
                     fme_script, (self.task_config['log_file']).rsplit('\\',
                                                                       1)[0]
             )
             # Der FMEWorkspaceRunner akzeptiert keine Unicode-Strings!
             # Daher müssen workspace und parameters umgewandelt werden!
-            parameters = {
-                    'TABELLEN': str(source_table),
-                    'POSTGIS_DB': str(db),
-                    'POSTGIS_HOST': str(host),
-                    'POSTGIS_PORT': str(port),
-                    'POSTGIS_USER': str(db_user),
-                    'SCHEMA_NAME': str(schema),
-                    'POSTGIS_PASSWORD': str(pw),
-                    'LOGFILE': str(fme_logfile),
-                    'INPUT_SDE': str(source_sde),
+            fme_parameters = {
+                    'TABELLEN': source_table,
+                    'POSTGIS_DB': db,
+                    'POSTGIS_HOST': host,
+                    'POSTGIS_PORT': port,
+                    'POSTGIS_USER': db_user,
+                    'SCHEMA_NAME': schema,
+                    'POSTGIS_PASSWORD': pw,
+                    'LOGFILE': fme_logfile,
+                    'INPUT_SDE': source_sde,
                     'TABLE_HANDLING': "DROP_CREATE",
-                    'DATEFIELDS': str(dfield),
-                    'TABELLENTYP': str(tabellentyp)
+                    'DATEFIELDS': dfield,
+                    'TABELLENTYP': tabellentyp
             }
-            # FME-Skript starten
-            FME_helper.fme_runner(self, str(fme_script), parameters)
+
+            fmerunner = AGILib.FMERunner(fme_workbench=fme_script, fme_workbench_parameters=fme_parameters, fme_logfile=fme_logfile, fme_logfile_archive=False)
+            fmerunner.run()
+            if fmerunner.returncode != 0:
+                self.logger.error("FME-Script %s abgebrochen." % (fme_script))
+                raise RuntimeError("FME-Script %s abgebrochen." % (fme_script))
 
             # Dummy-Eintrag entfernen
             if dummy_entry:
                 self.logger.info("Dummy-Eintrag wird wieder entfernt.")
-                DummyHandler.delete_dummy(
-                        self, source, table, host, db, db_user, port, pw
+                delete_dummy(
+                        source, table, self.general_config['connections']['VEK2_GEODB_PG']
                 )
 
             # Berechtigungen setzen
@@ -144,18 +150,17 @@ class KopieVek2Neu_PG(TemplateFunction):
                     "Berechtigungen für Ebene " + table +
                     " wird gesetzt: Rolle " + rolle
             )
-            sql_query = 'GRANT SELECT ON ' + table + ' TO ' + rolle
-            PostgresHelper.db_sql(self, host, db, db_user, port, pw, sql_query)
+            grant_sql = 'GRANT SELECT ON ' + table + ' TO ' + rolle
+            self.general_config['connections']['VEK2_GEODB_PG'].db_write(grant_sql)
 
             # Check ob in Quelle und Ziel die gleiche Anzahl Records vorhanden sind
             count_source = int(arcpy.GetCount_management(source)[0])
             self.logger.info(
                     "Anzahl Objekte in Quell-Ebene: " + unicode(count_source)
             )
-            sql_query = 'SELECT COUNT(*) FROM ' + table
-            count_target = PostgresHelper.db_sql(
-                    self, host, db, db_user, port, pw, sql_query, True
-            )
+            count_target_sql = 'SELECT COUNT(*) FROM %s' % (table)
+            count_target_result = self.general_config['connections']['VEK2_GEODB_PG'].db_read(count_target_sql)
+            count_target = count_target_result[0][0]
             self.logger.info(
                     "Anzahl Objekte in Ziel-Ebene: " + unicode(count_target)
             )

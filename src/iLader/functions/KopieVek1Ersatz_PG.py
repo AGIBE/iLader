@@ -51,7 +51,7 @@ class KopieVek1Ersatz_PG(TemplateFunction):
         db_user = self.general_config['connections']['VEK1_GEODB_PG'].username
         schema = db_user
         pw = self.general_config['connections']['VEK1_GEODB_PG'].password
-        source_sde = self.task_config['connections']['sde_conn_norm']
+        source_sde = self.general_config['connection_files']['TEAM_NORM_ORA']
         fme_script = os.path.abspath(
                 os.path.join(os.path.dirname(__file__), '..')
         ) + "\\helpers\\" + "EsriGeodatabase2PostGIS.fmw"

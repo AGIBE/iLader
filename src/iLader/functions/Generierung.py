@@ -39,7 +39,7 @@ class Generierung(TemplateFunction):
     def __get_gzsobjectid_from_task(self):
         self.logger.info("Hole GZS_OBJECTID aus TB_TASK")
         gzs_objectid_sql = "select gzs_objectid from geodb_dd.tb_task where task_objectid=%s" % (unicode(self.task_config['task_id']))
-        gzs_objectid_results = self.general_config.connections['TEAM_GEODB_DD_ORA'].db_read(gzs_objectid_sql)
+        gzs_objectid_results = self.general_config['connections']['TEAM_GEODB_DD_ORA'].db_read(gzs_objectid_sql)
         if len(gzs_objectid_results) == 1:
             return gzs_objectid_results[0][0]
         else:
@@ -56,7 +56,7 @@ class Generierung(TemplateFunction):
         '''
         self.logger.info("Hole Infos aus DD (Geoprodukt-Code, Zeitstand)")
         geoprodukt_dd_sql = "SELECT a.gpr_bezeichnung, b.gzs_jahr, b.gzs_version, a.gpr_viewer_freigabe from geodb_dd.tb_geoprodukt_zeitstand b join geodb_dd.tb_geoprodukt a on b.gpr_objectid = a.gpr_objectid where b.gzs_objectid = %s" % (self.gzs_objectid)
-        geoprodukt_dd_results = self.general_config.connections['TEAM_GEODB_DD_ORA'].db_read(geoprodukt_dd_sql)
+        geoprodukt_dd_results = self.general_config['connections']['TEAM_GEODB_DD_ORA'].db_read(geoprodukt_dd_sql)
         if len(geoprodukt_dd_results) == 1:
             gpr = geoprodukt_dd_results[0]
             jahr = unicode(geoprodukt_dd_results[1])
@@ -69,7 +69,7 @@ class Generierung(TemplateFunction):
         
         self.logger.info("Lese Rolle aus GeoDBProzess aus.")
         gdpb_rolle_sql = "SELECT a.db_rollen from gdbp.geoprodukte a where a.code = '%s'" % (gpr)
-        gdbp_rolle_results = self.general_config.connections['WORK_GDBP_ORA'].db_read(gdpb_rolle_sql)
+        gdbp_rolle_results = self.general_config['connections']['WORK_GDBP_ORA'].db_read(gdpb_rolle_sql)
         if len(gdbp_rolle_results) == 1:
             if gdbp_rolle_results[0][0]:
                 rolle_freigabe = gdbp_rolle_results[0][0]
@@ -88,7 +88,7 @@ class Generierung(TemplateFunction):
         '''
         self.logger("Hole Ebenen-Infos aus dem DD.")
         ebene_dd_sql = "SELECT a.gpr_bezeichnung, c.ebe_bezeichnung, b.gzs_jahr, b.gzs_version, g.dat_bezeichnung_de, d.EZS_OBJECTID from geodb_dd.tb_ebene_zeitstand d join geodb_dd.tb_ebene c on d.ebe_objectid = c.ebe_objectid join geodb_dd.tb_geoprodukt_zeitstand b on d.gzs_objectid = b.gzs_objectid join geodb_dd.tb_geoprodukt a on b.gpr_objectid = a.gpr_objectid join geodb_dd.tb_datentyp g on c.dat_objectid = g.dat_objectid where b.gzs_objectid = %s" % (self.gzs_objectid)
-        ebene_dd_results = self.general_config.connections['TEAM_GEODB_DD_ORA'].db_read(ebene_dd_sql)
+        ebene_dd_results = self.general_config['connections']['TEAM_GEODB_DD_ORA'].db_read(ebene_dd_sql)
         ebeVecList, ebeRasList, ebeCacheList = [], [], []
         if len(ebene_dd_results) == 0:
             self.logger.info("Es wurden im DD keine Ebenen-Informationen gefunden.")
@@ -100,15 +100,15 @@ class Generierung(TemplateFunction):
                 ezs_objectid = unicode(ebene_dd_result[5])
                 datentyp = ebene_dd_result[4]
                 gpr_ebe = unicode(self.gpr) + "_" + unicode(ebe)
-                quelle_schema_gpr_ebe = self.schemaDict['norm'] + "." + gpr_ebe
-                quelle = os.path.join(self.connDict['sde_conn_norm'], quelle_schema_gpr_ebe)
-                ziel_schema_gpr_ebe = self.schemaDict['geodb'] + "." + gpr_ebe
+                quelle_schema_gpr_ebe = 'norm' + "." + gpr_ebe
+                quelle = os.path.join(self.general_config['connection_files']['TEAM_NORM_ORA'], quelle_schema_gpr_ebe)
+                ziel_schema_gpr_ebe = 'geodb' + "." + gpr_ebe
                 ziel_schema_gpr_ebe_zs = ziel_schema_gpr_ebe + "_" + self.zeitstand     
                 if datentyp not in ('Rastermosaik', 'Rasterkatalog', 'Mosaicdataset', 'Cache'):
                     self.logger.info("Ebenen ist eine Vektor-Ebene.")
                     self.logger.info("Deshalb werden nun die Index-Informationen geholt.")
                     ebene_index_gdbp_sql = 'SELECT b.felder, DECODE(b."unique", 1, \'True\', 2, \'False\') "unique" from gdbp.index_attribut b join gdbp.geoprodukte a on b.id_geoprodukt = a.id_geoprodukt where a.code = \'%s\' and b.ebene = \'%s\'' % (self.gpr, ebe)
-                    ebene_index_gdbp_results = self.general_config.connections['WORK_GDBP_ORA'].db_read(ebene_index_gdbp_sql)
+                    ebene_index_gdbp_results = self.general_config['connections']['WORK_GDBP_ORA'].db_read(ebene_index_gdbp_sql)
                     indList = []
                     for ebene_index_gdbp_result in ebene_index_gdbp_results:
                         indDict = {
@@ -121,9 +121,9 @@ class Generierung(TemplateFunction):
                         'datentyp': datentyp,
                         'gpr_ebe': gpr_ebe,
                         'quelle': quelle,
-                        'ziel_vek1': os.path.join(self.connDict['sde_conn_vek1'], ziel_schema_gpr_ebe),
-                        'ziel_vek2': os.path.join(self.connDict['sde_conn_vek2'], ziel_schema_gpr_ebe),
-                        'ziel_vek3': os.path.join(self.connDict['sde_conn_vek3'], ziel_schema_gpr_ebe_zs)
+                        'ziel_vek1': os.path.join(self.general_config['connection_infos']['VEK1_GEODB_ORA'], ziel_schema_gpr_ebe),
+                        'ziel_vek2': os.path.join(self.general_config['connection_infos']['VEK2_GEODB_ORA'], ziel_schema_gpr_ebe),
+                        'ziel_vek3': os.path.join(self.general_config['connection_infos']['VEK3_GEODB_ORA'], ziel_schema_gpr_ebe_zs)
                     }
                     
                     # Wertetabellen-Infos auslesen
@@ -131,7 +131,7 @@ class Generierung(TemplateFunction):
                     self.logger.info("Infos zu den Wertetabellen werden geholt.")
                     wertetabellenList = []
                     ebene_wertetabellen_sql = "select w.WTB_BEZEICHNUNG, w.WTB_JOIN_FOREIGNKEY, w.WTB_JOIN_PRIMARYKEY, w.wtb_join_typ from TB_WERTETABELLE w where w.EZS_OBJECTID=%s" % (ezs_objectid)
-                    ebene_wertetabellen_results = self.general_config.connections['TEAM_GEODB_DD_ORA'].db_read(ebene_wertetabellen_sql)
+                    ebene_wertetabellen_results = self.general_config['connections']['TEAM_GEODB_DD_ORA'].db_read(ebene_wertetabellen_sql)
                     for ebene_wertetabelle in ebene_wertetabellen_results:
                         wertetabellenList.append({
                             "wtb_code": ebene_wertetabelle[0],
@@ -148,8 +148,8 @@ class Generierung(TemplateFunction):
                         'datentyp': datentyp,
                         'gpr_ebe': gpr_ebe,
                         'quelle': quelle,
-                        'ziel_ras1': os.path.join(self.connDict['sde_conn_ras1'], ziel_schema_gpr_ebe),
-                        'ziel_ras1_zs': os.path.join(self.connDict['sde_conn_ras1'], ziel_schema_gpr_ebe_zs)
+                        'ziel_ras1': os.path.join(self.general_config['connection_files']['RAS1_GEODB_ORA'], ziel_schema_gpr_ebe),
+                        'ziel_ras1_zs': os.path.join(self.general_config['connection_files']['RAS1_GEODB_ORA'], ziel_schema_gpr_ebe_zs)
                     }
                     ebeRasList.append(ebeRasDict)
 
@@ -180,7 +180,7 @@ class Generierung(TemplateFunction):
         '''
         self.logger("Legendeninfos werden aus dem DD geholt.")
         legenden_dd_sql = "SELECT a.gpr_bezeichnung, c.ebe_bezeichnung, b.gzs_jahr, b.gzs_version, f.leg_bezeichnung, h.spr_kuerzel, g.dat_objectid from geodb_dd.tb_ebene_zeitstand d join geodb_dd.tb_ebene c on d.ebe_objectid = c.ebe_objectid join geodb_dd.tb_geoprodukt_zeitstand b on d.gzs_objectid = b.gzs_objectid join geodb_dd.tb_geoprodukt a on b.gpr_objectid = a.gpr_objectid join geodb_dd.tb_datentyp g on c.dat_objectid = g.dat_objectid JOIN geodb_dd.tb_legende f on f.ezs_objectid = d.ezs_objectid JOIN geodb_dd.tb_sprache h on h.spr_objectid = f.spr_objectid where b.gzs_objectid = %s" % (self.gzs_objectid)
-        legenden_dd_results = self.general_config.connections['TEAM_GEODB_DD_ORA'].db_read(legenden_dd_sql)
+        legenden_dd_results = self.general_config['connections']['TEAM_GEODB_DD_ORA'].db_read(legenden_dd_sql)
         legends = []
         for legende in legenden_dd_results:
             ebe_code = legende[1]
@@ -305,20 +305,20 @@ class Generierung(TemplateFunction):
         self.logger.info("Wertetabellen-Infos werden geholt.")
         wtbList = []
         wertetabellen_dd_sql = "SELECT DISTINCT e.wtb_bezeichnung from geodb_dd.tb_wertetabelle e join geodb_dd.tb_ebene_zeitstand d on e.ezs_objectid = d.ezs_objectid join geodb_dd.tb_ebene c on d.ebe_objectid = c.ebe_objectid join geodb_dd.tb_geoprodukt_zeitstand b on d.gzs_objectid = b.gzs_objectid join geodb_dd.tb_geoprodukt a on b.gpr_objectid = a.gpr_objectid where b.gzs_objectid = %s ORDER BY e.WTB_BEZEICHNUNG" % (self.gzs_objectid)
-        wertetabellen_dd_results = self.general_config.connections['TEAM_GEODB_DD_ORA'].db_read(wertetabellen_dd_sql)
+        wertetabellen_dd_results = self.general_config['connections']['TEAM_GEODB_DD_ORA'].db_read(wertetabellen_dd_sql)
         for wertetabelle in wertetabellen_dd_results:
             wtb_code = wertetabelle[0]
             self.logger.info("Wertetabelle %s" % (wtb_code))
             gpr_wtb =  "%s_%s" % (self.gpr, wtb_code)
-            quelle = os.path.join(self.connDict['sde_conn_norm'], self.schemaDict['norm'] + "." + gpr_wtb)
-            ziel_schema_gpr_wtb = self.schemaDict['geodb'] + "." + gpr_wtb
-            ziel_vek1 = os.path.join(self.connDict['sde_conn_vek1'], ziel_schema_gpr_wtb)
-            ziel_vek2 = os.path.join(self.connDict['sde_conn_vek2'], ziel_schema_gpr_wtb)
-            ziel_vek3 = os.path.join(self.connDict['sde_conn_vek3'], ziel_schema_gpr_wtb + "_" + self.zeitstand)
+            quelle = os.path.join(self.general_config['connection_files']['TEAM_NORM_ORA'], 'norm' + "." + gpr_wtb)
+            ziel_schema_gpr_wtb = 'geodb' + "." + gpr_wtb
+            ziel_vek1 = os.path.join(self.general_config['connection_infos']['VEK1_GEODB_ORA'], ziel_schema_gpr_wtb)
+            ziel_vek2 = os.path.join(self.general_config['connection_infos']['VEK2_GEODB_ORA'], ziel_schema_gpr_wtb)
+            ziel_vek3 = os.path.join(self.general_config['connection_infos']['VEK3_GEODB_ORA'], ziel_schema_gpr_wtb + "_" + self.zeitstand)
             
             # Wertetabellen können u.U. auch Indizes haben
             wertetabelle_index_gdbp_sql = 'SELECT b.felder, DECODE(b."unique", 1, \'True\', 2, \'False\') "unique" from gdbp.index_attribut b join gdbp.geoprodukte a on b.id_geoprodukt = a.id_geoprodukt where a.code = \'%s\' and b.ebene = \'%s\'' % (self.gpr, wtb_code)
-            wertetabelle_index_gdbp_results = self.general_config.connections['WORK_GDBP_ORA'].db_read(wertetabelle_index_gdbp_sql)
+            wertetabelle_index_gdbp_results = self.general_config['connections']['WORK_GDBP_ORA'].db_read(wertetabelle_index_gdbp_sql)
             indList = []
             for wertetabelle_index_gdbp_result in wertetabelle_index_gdbp_results:
                 indDict = {
@@ -338,59 +338,6 @@ class Generierung(TemplateFunction):
             wtbList.append(wtbDict)
         
         return wtbList
-               
-    def __define_connections(self):
-        sde_connection_directory = os.path.join(os.environ['GEODBIMPORTSECRET'], 'connections')
-        connDict = {
-            'sde_conn_team_dd': os.path.join(sde_connection_directory, 'team_dd.sde'),
-            'sde_conn_vek1': os.path.join(sde_connection_directory, 'vek1.sde'),
-            'sde_conn_vek2': os.path.join(sde_connection_directory, 'vek2.sde'),
-            'sde_conn_vek3': os.path.join(sde_connection_directory, 'vek3.sde'),
-            'sde_conn_ras1': os.path.join(sde_connection_directory, 'ras1.sde'),
-            'sde_conn_ras2': os.path.join(sde_connection_directory, 'ras2.sde'),
-            'sde_conn_norm': os.path.join(sde_connection_directory, 'norm.sde'),
-            'sde_conn_vek1_geo': os.path.join(sde_connection_directory, 'vek1_geo.sde'),
-            'sde_conn_vek2_geo': os.path.join(sde_connection_directory, 'vek2_geo.sde'),
-            'sde_conn_vek3_geo': os.path.join(sde_connection_directory, 'vek3_geo.sde'),
-            'sde_conn_ras1_geo': os.path.join(sde_connection_directory, 'ras1_geo.sde'),
-            'sde_conn_team_oereb2': os.path.join(sde_connection_directory, 'team_oereb2.sde'),
-            'sde_conn_vek1_oereb2': os.path.join(sde_connection_directory, 'vek1_oereb2.sde'),
-            'sde_conn_vek2_oereb2': os.path.join(sde_connection_directory, 'vek2_oereb2.sde')
-        }  
-        
-        instanceDict = {
-            'team': self.general_config['connection_infos']['db']['team']['ora_db'],
-            'vek1': self.general_config['connection_infos']['db']['vek1']['ora_db'],
-            'vek2': self.general_config['connection_infos']['db']['vek2']['ora_db'],
-            'vek3': self.general_config['connection_infos']['db']['vek3']['ora_db'],
-            'ras1': self.general_config['connection_infos']['db']['ras1']['ora_db'],
-            'ras2': self.general_config['connection_infos']['db']['ras2']['ora_db'],
-            'work': self.general_config['connection_infos']['db']['work']['ora_db'],
-            'oereb': self.general_config['connection_infos']['db']['team']['pg_host']
-        }
-        
-        schemaDict = {
-            'geodb': self.general_config['connection_infos']['user']['geodb']['username'],
-            'geodb_dd': self.general_config['connection_infos']['user']['geodb_dd']['username'],
-            'norm': self.general_config['connection_infos']['user']['norm']['username'],
-            'oereb': self.general_config['connection_infos']['user']['oereb']['username'],
-            'oereb2': self.general_config['connection_infos']['user']['oereb2']['username'],
-            'gdbp': self.general_config['connection_infos']['user']['gdbp']['username'],
-            'sysoem': self.general_config['connection_infos']['user']['sysoem']['username']
-        }
-        
-        userpwDict = {
-            'norm': self.general_config['connection_infos']['user']['norm']['password'],
-            'oereb': self.general_config['connection_infos']['user']['oereb']['password'],
-            'oereb2': self.general_config['connection_infos']['user']['oereb2']['password'],
-            'geodb': self.general_config['connection_infos']['user']['geodb']['password'],
-            'geodb_dd': self.general_config['connection_infos']['user']['geodb_dd']['password'],
-            'gdbp': self.general_config['connection_infos']['user']['gdbp']['password'],
-            'sysoem': self.general_config['connection_infos']['user']['sysoem']['password']
-        }
-
-        return (connDict, instanceDict, schemaDict, userpwDict)
-
 
     def __get_oereb_tables(self, oereb_tables_sql):
         oereb_tables = []
@@ -444,12 +391,6 @@ class Generierung(TemplateFunction):
         #Diverse Einträge im task_config generieren
         if not self.task_config.has_key("ausgefuehrte_funktionen"):
             self.task_config['ausgefuehrte_funktionen'] = []
-
-        self.connDict, self.instanceDict, self.schemaDict, self.userpwDict = self.__define_connections()
-        self.task_config['connections'] = self.connDict
-        self.task_config['instances'] = self.instanceDict
-        self.task_config['schema'] = self.schemaDict
-        self.task_config['users'] = self.userpwDict
 
         self.gzs_objectid = self.__get_gzsobjectid_from_task()             
         self.task_config['gzs_objectid'] = self.gzs_objectid

@@ -38,9 +38,9 @@ class Styles(TemplateFunction):
         
         # Styles
         self.logger.info("Styles kopieren")
-        if self.task_config["style"] > 0:
+        if len(self.task_config["style"]) > 0:
             for style in self.task_config["style"]:
-                self.logger.info("Style " + style["name"] + " wird kopiert.")
+                self.logger.info("Style %s wird kopiert." % (style["name"]))
                 shutil.copyfile(style["quelle"], style["ziel_akt"])
                 shutil.copyfile(style["quelle"], style["ziel_zs"])
         else:

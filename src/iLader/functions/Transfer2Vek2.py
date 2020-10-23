@@ -3,7 +3,6 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 from .TemplateFunction import TemplateFunction
 import arcpy
 import os
-from iLader.helpers import OracleHelper
 
 class Transfer2Vek2(TemplateFunction):
     '''
@@ -34,8 +33,8 @@ class Transfer2Vek2(TemplateFunction):
         Führt den eigentlichen Funktionsablauf aus
         '''
         self.logger.info("ÖREBK-Transferstruktur (OEREB2) wird nach VEK2 kopiert.")
-        source_connection = self.task_config['connections']['sde_conn_team_oereb2']
-        target_connection = self.task_config['connections']['sde_conn_vek2_oereb2']
+        source_connection = self.general_config['connection_infos']['TEAM_OEREB2_ORA']
+        target_connection = self.general_config['connection_infos']['VEK2_OEREB2_ORA']
         oereb_tables = self.task_config['oereb']['tabellen_ora']
         liefereinheiten = self.task_config['oereb']['liefereinheiten']
         
@@ -46,16 +45,14 @@ class Transfer2Vek2(TemplateFunction):
             for oereb_table in oereb_tables:
                 oereb_tablename = oereb_table['tablename']
                 oereb_table_filter_field = oereb_table['filter_field']
-                username = self.task_config['schema']['oereb2']
-                password = self.task_config['users']['oereb2']
-                db = self.task_config['instances']['vek2']
                 
                 oereb_delete_sql = "DELETE FROM %s WHERE %s IN %s" % (oereb_tablename, oereb_table_filter_field, liefereinheiten)
                 self.logger.info("Deleting...")
                 self.logger.info(oereb_delete_sql)
                 
-                OracleHelper.writeOracleSQL(db, username, password, oereb_delete_sql)
+                self.general_config['connection']['VEK2_OEREB2_ORA'].db_write(oereb_delete_sql)
                 
+                username = self.general_config['connection']['VEK2_OEREB2_ORA'].username
                 source = os.path.join(source_connection, username + "." + oereb_tablename)
                 source_layer = oereb_tablename + "_source_layer_vek2_2"
                 target = os.path.join(target_connection, username + "." + oereb_tablename)

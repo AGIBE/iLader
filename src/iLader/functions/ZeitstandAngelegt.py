@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function, unicode_literals
 from .TemplateFunction import TemplateFunction
-from iLader.helpers import OracleHelper
 
 class ZeitstandAngelegt(TemplateFunction):
     '''
@@ -30,15 +29,8 @@ class ZeitstandAngelegt(TemplateFunction):
         '''
         Führt den eigentlichen Funktionsablauf aus
         '''
-        db = self.task_config['instances']['team']
-        schema = self.task_config['schema']['geodb_dd']
-        username = 'geodb_dd'
-        password = self.task_config['users'][username]
-        gzs_objectid = self.task_config['gzs_objectid']
-        
-        sql = "UPDATE " + schema + ".TB_GEOPRODUKT_ZEITSTAND SET STA_OBJECTID=1 WHERE GZS_OBJECTID=" + gzs_objectid
+        sql = "UPDATE %s.TB_GEOPRODUKT_ZEITSTAND SET STA_OBJECTID=1 WHERE GZS_OBJECTID=%s" % (self.general_config['connections']['TEAM_GEODB_DD_ORA'].username, self.task_config['gzs_objectid'])
         self.logger.info("SQL-Update wird ausgeführt: " + sql)
-        
-        OracleHelper.writeOracleSQL_check(self, db, username, password, sql, "Status 'angelegt' konnte nicht gesetzt werden.")
+        self.general_config['connections']['TEAM_GEODB_DD_ORA'].db_write(sql)
            
         self.finish()

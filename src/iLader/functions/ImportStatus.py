@@ -33,8 +33,8 @@ class ImportStatus(TemplateFunction):
         Führt den eigentlichen Funktionsablauf aus
         '''
         today = time.strftime("%d.%m.%y")
-        importstatus_sql = "UPDATE %s.TB_TASK SET TASK_STATUS=5, TASK_ENDE=TO_DATE('%s', 'DD.MM.YY') WHERE TASK_OBJECTID=%s" % (self.task_config['schema']['geodb_dd'], today, self.task_config['task_id'])
+        importstatus_sql = "UPDATE %s.TB_TASK SET TASK_STATUS=5, TASK_ENDE=TO_DATE('%s', 'DD.MM.YY') WHERE TASK_OBJECTID=%s" % (self.general_config['connections']['TEAM_GEODB_DD_ORA'].username, today, self.task_config['task_id'])
         self.logger.info("SQL-Update wird ausgeführt: " + importstatus_sql)
-        self.general_config['connections'][['TEAM_GEODB_DD_ORA']].db_write(importstatus_sql)
+        self.general_config['connections']['TEAM_GEODB_DD_ORA'].db_write(importstatus_sql)
 
         self.finish()

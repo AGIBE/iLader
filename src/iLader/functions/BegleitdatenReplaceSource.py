@@ -34,7 +34,7 @@ class BegleitdatenReplaceSource(TemplateFunction):
             self.start()
             self.__execute()
             
-    def __replace(self, legende, sde_conn_vek, sde_conn_ras, sde_conn_norm, is_zeitstand, is_mxd):
+    def __replace(self, legende, sde_conn_vek, sde_conn_ras, sde_conn_norm, sde_conn_vek1_geo, is_zeitstand, is_mxd):
         '''
         Funktion, welche die Lyrfiles und mxd auf vek2, vek3 und ras1 umhaengt.
         arcpy.replaceDataSource aendert das Schema nicht von NORM zu GEODB, wenn umgehaengt werden soll
@@ -45,16 +45,12 @@ class BegleitdatenReplaceSource(TemplateFunction):
         :param sde_conn_vek: SDE-Connection fuer Vektordaten (VEK1 oder VEK3)
         :param sde_conn_ras: SDE-Connection fuer Rasterdaten (RAS1)
         :param sde_conn_norm: SDE-Connection fuer Vektordaten (TEAM)
+        :param sde_conn_vek1_geo: SDE-Connection fuer Vektordaten (VEK1)
         :param is_zeitstand: Gehoert das Objekt zu einem Zeitstand? true oder false. Dieser Parameter
         steuert die Parameter der Funktion arcpy.replaceDataSource.
         :param is_mxd: Ist das Objekt ein mxd? true oder false. Dieser Parameter war noetig, weil 
         die Legendenfiles in mxd's bereits gemappt sind.
         '''
-        legende = legende
-        sde_conn_vek = sde_conn_vek
-        sde_conn_ras = sde_conn_ras
-        is_zeitstand = is_zeitstand
-        is_mxd = is_mxd
         if not is_mxd:
             # Filter nach Lyr-Files (mxd's sind bereits mit arcpy.mapping im richtigen Datentyp)
             lyr = arcpy.mapping.Layer(legende)
@@ -68,7 +64,7 @@ class BegleitdatenReplaceSource(TemplateFunction):
                 change_src = False
         if lyr.supports("DATASOURCE") and lyr.supports("DATASETNAME") and change_src:
             gpr_ebe = lyr.datasetName
-            gpr_ebe_publ = gpr_ebe.replace(self.task_config['schema']['norm'], self.task_config['schema']['geodb'])
+            gpr_ebe_publ = gpr_ebe.replace('norm' 'geodb')
             if is_zeitstand:
                 gpr_ebe_publ = gpr_ebe_publ + "_" + self.task_config['zeitstand']
             # lyr.dataSource gibt die sde-Connection aus, mit welche Daten geladen wurden, diese existiert nicht immer
@@ -88,8 +84,8 @@ class BegleitdatenReplaceSource(TemplateFunction):
                             lyr.save()
                         if not is_zeitstand:
                             # Filter, damit nur die aktuellen Zeitst寤e nach auch noch auf vek1 umgeh寧t werden
-                            self.logger.info('Haenge Quelle nach ' + self.sde_conn_vek1_geo +' um.')
-                            lyr.replaceDataSource(self.sde_conn_vek1_geo, "SDE_WORKSPACE", gpr_ebe_publ, False)
+                            self.logger.info('Haenge Quelle nach ' + sde_conn_vek1_geo +' um.')
+                            lyr.replaceDataSource(sde_conn_vek1_geo, "SDE_WORKSPACE", gpr_ebe_publ, False)
                             if not is_mxd:
                                 lyr.save()
                         if not is_mxd and is_zeitstand:
@@ -132,18 +128,18 @@ class BegleitdatenReplaceSource(TemplateFunction):
         müssen auf ras1 zeigen.
         Vektoren zeigen auf vek1 bzw. vek3
         '''
-        self.sde_conn_vek1_geo = self.task_config['connections']['sde_conn_vek1_geo']
-        self.sde_conn_vek2_geo = self.task_config['connections']['sde_conn_vek2_geo']
-        self.sde_conn_vek3_geo = self.task_config['connections']['sde_conn_vek3_geo']
-        self.sde_conn_ras1_geo = self.task_config['connections']['sde_conn_ras1_geo']
-        self.sde_conn_norm = self.task_config['connections']['sde_conn_norm']
+        sde_conn_vek1_geo = self.general_config['connection_files']['VEK1_GEO_ORA']
+        sde_conn_vek2_geo = self.general_config['connection_files']['VEK2_GEO_ORA']
+        sde_conn_vek3_geo = self.general_config['connection_files']['VEK3_GEO_ORA']
+        sde_conn_ras1_geo = self.general_config['connection_files']['RAS1_GEO_ORA']
+        sde_conn_norm = self.general_config['connection_files']['TEAM_NORM_ORA']
         # Legenden
         self.logger.info("Legendenfiles bearbeiten")
         for legende in self.task_config["legende"]:
             self.logger.info("Legende %s wird bearbeitet." % (legende["ziel_akt"]))
-            self.__replace(legende["ziel_akt"], self.sde_conn_vek2_geo, self.sde_conn_ras1_geo, self.sde_conn_norm, False, False)
+            self.__replace(legende["ziel_akt"], sde_conn_vek2_geo, sde_conn_ras1_geo, sde_conn_norm, sde_conn_vek1_geo, False, False)
             self.logger.info("Legende %s wird bearbeitet." % (legende["ziel_zs"]))
-            self.__replace(legende["ziel_zs"], self.sde_conn_vek3_geo, self.sde_conn_ras1_geo, self.sde_conn_norm, True, False)   
+            self.__replace(legende["ziel_zs"], sde_conn_vek3_geo, sde_conn_ras1_geo, sde_conn_norm, sde_conn_vek1_geo, True, False)   
         self.logger.info("alle Legendenfiles sind umgehängt.")
         
         # Temporäre Raster-lyr-Files löschen
@@ -161,14 +157,14 @@ class BegleitdatenReplaceSource(TemplateFunction):
             lyrfiles = arcpy.mapping.ListLayers(mxd_mapping)
             for lyr in lyrfiles:
                 self.lyr = lyr
-                self.__replace(self.lyr, self.sde_conn_vek2_geo, self.sde_conn_ras1_geo, self.sde_conn_norm, False, True)
+                self.__replace(self.lyr, sde_conn_vek2_geo, sde_conn_ras1_geo, sde_conn_norm, sde_conn_vek1_geo, False, True)
             mxd_mapping.save()
             self.logger.info("%s wird bearbeitet." % (mxd["ziel_zs"]))    
             mxd_mapping = arcpy.mapping.MapDocument(mxd["ziel_zs"])
             lyrfiles = arcpy.mapping.ListLayers(mxd_mapping)
             for lyr in lyrfiles:
                 self.lyr = lyr
-                self.__replace(self.lyr, self.sde_conn_vek3_geo, self.sde_conn_ras1_geo, self.sde_conn_norm, True, True)
+                self.__replace(self.lyr, sde_conn_vek3_geo, sde_conn_ras1_geo, sde_conn_norm, sde_conn_vek1_geo, True, True)
             mxd_mapping.save()
         self.logger.info("alle MXD-Files sind umgehängt.")       
        

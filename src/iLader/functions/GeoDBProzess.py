@@ -25,9 +25,9 @@ class GeoDBProzess(TemplateFunction):
         '''
         Führt den eigentlichen Funktionsablauf aus
         '''
-        gdbp_sql = "UPDATE %s.GEOPRODUKTE SET TASK_ID=%s WHERE CODE='%s'" % (self.task_config['schema']['gdbp'], self.task_config['task_id'], self.task_config['gpr'])
+        gdbp_sql = "UPDATE %s.GEOPRODUKTE SET TASK_ID=%s WHERE CODE='%s'" % (self.general_config['connections']['WORK_GDBP_ORA'].username, self.task_config['task_id'], self.task_config['gpr'])
         self.logger.info("SQL-Update wird ausgeführt: ")
         self.logger.info(gdbp_sql)
-        self.general_config['connections'][['TEAM_GEODB_DD_ORA']].db_write(gdbp_sql)
+        self.general_config['connections']['WORK_GDBP_ORA'].db_write(gdbp_sql)
         
         self.finish()

@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function, unicode_literals
 from .TemplateFunction import TemplateFunction
-import iLader.helpers.OracleHelper
-import iLader.helpers.Helpers
 import arcpy
 import os
 
@@ -29,9 +27,6 @@ class ViewsVek2(TemplateFunction):
         self.name = "ViewsVek2"
         TemplateFunction.__init__(self, task_config, general_config)
 
-        # Der Zugriff auf das Config-File ist für die Verbindungs-Infos notwendig.
-        self.general_config = iLader.helpers.Helpers.init_generalconfig()
-        
         if self.name in self.task_config['ausgefuehrte_funktionen'] and self.task_config['task_config_load_from_JSON']:
             self.logger.info("Funktion " + self.name + " wird ausgelassen.")
         else:
@@ -39,35 +34,30 @@ class ViewsVek2(TemplateFunction):
             self.start()
             self.__execute()
 
-    def __getColumns(self, tablename, schema):
-        columns = []
-        column_sql = "select column_name from all_tab_columns where owner='" + schema + "' and table_name='" + tablename + "' ORDER BY COLUMN_ID"
-        
-        column_results = iLader.helpers.OracleHelper.readOracleSQL(self.general_config['instances']['vek2'], self.general_config['users']['geodb']['username'], self.general_config['users']['geodb']['password'], column_sql)
-        
-        for c in column_results:
-            columns.append(c[0])
-                
-        return columns        
+    def __getColumns(self, tablename, schema, connection):
+        column_sql = "select column_name from all_tab_columns where owner='%s' and table_name='%s' ORDER BY COLUMN_ID" % (schema, tablename)
+        column_results = connection.db_read(column_sql)
+        return [c[0] for c in column_results]
 
     def __execute(self):
         '''
         Führt den eigentlichen Funktionsablauf aus
         '''
         self.logger.info("Views in VEK2 werden erstellt.")
+        target_connection = self.general_config['connections']['VEK2_GEODB_ORA']
         rolle = self.task_config['rolle']
-        schema = self.task_config['schema']['geodb']
+        schema = target_connection.username
 
         for ebene in self.task_config['vektor_ebenen']:
             view_name = ebene['gpr_ebe'] + "_VW"
-            view_name_vek2 = os.path.join(self.task_config['connections']['sde_conn_vek2'], view_name)
+            view_name_vek2 = os.path.join(self.general_config['connection_infos']['VEK2_GEODB_ORA'], view_name)
             if arcpy.Exists(view_name_vek2):
                 self.logger.info("View existiert bereits. Er wird gelöscht.")
                 self.logger.info(view_name_vek2)
                 arcpy.Delete_management(view_name_vek2)
 
             if ebene['datentyp'] not in ['Wertetabelle', 'Annotation']:
-                self.logger.info("Für Ebene " + ebene['gpr_ebe'] + " wird ein View erstellt.")
+                self.logger.info("Für Ebene %s wird ein View erstellt." % (ebene['gpr_ebe']))
                 wertetabellen = ebene['wertetabellen']
                 
                 self.logger.info("View-Name: " + view_name)
@@ -85,12 +75,13 @@ class ViewsVek2(TemplateFunction):
                 # Wertetabellen.
                 processed_wertetabellen = []
                 
-                for c in self.__getColumns(ebene['gpr_ebe'], schema):
+                for c in self.__getColumns(ebene['gpr_ebe'], schema, target_connection):
                     # Jede Spalte der Feature Class wird im View auftauchen
                     full_columns.append(ebene_fullname + "." + c)
                     
                     # Prüfen, ob an dieser Spalte eine Wertetabelle angehängt wird.
                     for w in wertetabellen:
+                        # Relate-Wertetabellen werden ignoriert
                         if w['wtb_jointype'] not in ['Relate']:
                             wtb_name = self.task_config['gpr'] + "_" + w['wtb_code']
                             wtb_fullname = schema + "." + wtb_name
@@ -100,7 +91,7 @@ class ViewsVek2(TemplateFunction):
                                 elif w['wtb_jointype'].lower() == 'esrileftinnerjoin':
                                     join = " INNER JOIN"
                                 join_sql += join + " " + wtb_fullname + " ON " + ebene_fullname + "." + w['wtb_foreignkey'] + "=" + wtb_fullname + "." + w['wtb_primarykey'] + " "
-                                wtb_columns = self.__getColumns(wtb_name, schema)
+                                wtb_columns = self.__getColumns(wtb_name, schema, target_connection)
                                 
                                 # Wird die gleiche Wertetabelle mehr als einmal angehängt,
                                 # muss sie ab dem zweiten Mal ein anderes Prefix haben.
@@ -118,7 +109,7 @@ class ViewsVek2(TemplateFunction):
                                     if wc != "OBJECTID" and wc != w['wtb_primarykey']:
                                             full_columns.append(wtb_fullname + "." + wc + " AS " + w['wtb_code'] + counter + "_" + wc)
                         else:
-                            self.logger.info("Der Join zur Wertetabelle " + w['wtb_code'] + " ist ein Relate.")
+                            self.logger.info("Der Join zur Wertetabelle %s ist ein Relate." % (w['wtb_code']))
                             self.logger.info("Er wird nicht in den View integriert.")
                     
                 view_sql = "CREATE OR REPLACE VIEW " + view_name + " AS SELECT " + ",".join(full_columns) + " FROM " + ebene_fullname + join_sql + " WITH READ ONLY"
@@ -126,10 +117,10 @@ class ViewsVek2(TemplateFunction):
                 
                 self.logger.info("View-SQL: ")
                 self.logger.info(view_sql)
-                iLader.helpers.OracleHelper.writeOracleSQL(self.general_config['instances']['vek2'], self.general_config['users']['geodb']['username'], self.general_config['users']['geodb']['password'], view_sql)
+                target_connection.db_write(view_sql)
                 self.logger.info("Rechte für den View " + view_name + " werden gesetzt.")
                 self.logger.info(grant_sql)
-                iLader.helpers.OracleHelper.writeOracleSQL(self.general_config['instances']['vek2'], self.general_config['users']['geodb']['username'], self.general_config['users']['geodb']['password'], grant_sql)
+                target_connection.db_write(grant_sql)
 
             elif ebene['datentyp'] == 'Annotation':
                 self.logger.info("Für die Ebene " + ebene['gpr_ebe'] + " wird kein View erstellt, weil sie eine Annotation ist. Sie wird stattdessen kopiert.")
