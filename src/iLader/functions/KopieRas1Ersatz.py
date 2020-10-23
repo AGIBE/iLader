@@ -37,7 +37,7 @@ class KopieRas1Ersatz(TemplateFunction):
         self.name = "KopieRas1Ersatz"
         TemplateFunction.__init__(self, task_config, general_config)
         
-        if self.name in self.task_config['ausgefuehrte_funktionen'] and self.task_config['task_config_load_from_JSON']:
+        if self.name in self.task_config['ausgefuehrte_funktionen'] and self.task_config['resume']:
             self.logger.info("Funktion " + self.name + " wird ausgelassen.")
         else:
             self.logger.info("Funktion " + self.name + " wird ausgeführt.")

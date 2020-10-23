@@ -18,14 +18,14 @@ class Usecase():
     Sie werden in jedem Fall (d.h. in jedem Usecase) ausgeführt.
     '''
     
-    def __init__(self, task_id, task_config_load_from_JSON):
+    def __init__(self, task_id, resume):
         '''
         Constructor
         :param task_id: Eindeutige ID des auszuführenden Tasks, stammt aus TB_IMPORTE_GEODB.task_id
-        :param task_config_load_from_JSON: soll eine existierende Task-Config eingelesen (TRUE) oder neu erzeugt werden (FALSE)
+        :param resume: soll eine existierende Task-Config eingelesen (TRUE) oder neu erzeugt werden (FALSE)
         '''
         self.task_id = int(task_id)
-        self.task_config_load_from_JSON = task_config_load_from_JSON
+        self.resume = resume
         
         # Allgemeine und task-spezifische Konfiguration initialisieren
         self.general_config = iLader.helpers.Helpers.get_config()
@@ -39,6 +39,11 @@ class Usecase():
         
         # Installation registrieren
         iLader.helpers.Helpers.register_installations(self.general_config, self.logger)
+
+        # Connection-Files ausgeben
+        self.logger.info("Folgende Connection-Files wurden angelegt:")
+        for connection_file in self.general_config['connection_files'].values():
+            self.logger.info(connection_file)
         
         self.is_task_valid = self.__get_task_status()
             
@@ -60,7 +65,7 @@ class Usecase():
                 print("Import SUCCESSFUL!")
             except Exception as e:
                 print(e.message)
-                self.logger.error((e.message).decode('cp1252'))
+                self.logger.error(e.message)
         else:
             self.logger.error("Task-ID " + unicode(self.task_id) + " ist nicht gültig!")
             self.logger.error("Import wird abgebrochen")
@@ -100,7 +105,7 @@ class Usecase():
         '''
         d = {}
         d['task_id'] = self.task_id
-        d['task_config_load_from_JSON'] = self.task_config_load_from_JSON
+        d['resume'] = self.resume
         
         task_dir = os.path.join(self.general_config['task_verzeichnis'], unicode(self.task_id))
         # Task-Verzeichnis erstellen, falls es noch nicht existiert

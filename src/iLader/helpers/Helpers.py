@@ -11,7 +11,7 @@ import tempfile
 import sys
 import arcpy
 
-def get_config():
+def get_config(create_connection_files=True):
     config = AGILib.Configuration(configfile_envvar='GEODBIMPORTHOME').config
     connection_infos = AGILib.Configuration(configfile_path=config['agilib_connections']).config
     connections = {}
@@ -20,43 +20,51 @@ def get_config():
     # Oracle
     #VEK1
     connections['VEK1_GEODB_ORA'] = AGILib.Connection(db=connection_infos['db']['vek1']['ora_db'], db_type='oracle', username=connection_infos['user']['geodb']['username'], password=connection_infos['user']['geodb']['password'])
-    connection_files['VEK1_GEODB_ORA'] = connections['VEK1_GEODB_ORA'].create_sde_connection()
     connections['VEK1_GEO_ORA'] = AGILib.Connection(db=connection_infos['db']['vek1']['ora_db'], db_type='oracle', username=connection_infos['user']['geo']['username'], password=connection_infos['user']['geo']['password'])
-    connection_files['VEK1_GEO_ORA'] = connections['VEK1_GEO_ORA'].create_sde_connection()
     connections['VEK1_OEREB2_ORA'] = AGILib.Connection(db=connection_infos['db']['vek1']['ora_db'], db_type='oracle', username=connection_infos['user']['oereb2']['username'], password=connection_infos['user']['oereb2']['password'])
-    connection_files['VEK1_OEREB2_ORA'] = connections['VEK1_OEREB2_ORA'].create_sde_connection()
+    
     #VEK2
     connections['VEK2_GEODB_ORA'] = AGILib.Connection(db=connection_infos['db']['vek2']['ora_db'], db_type='oracle', username=connection_infos['user']['geodb']['username'], password=connection_infos['user']['geodb']['password'])
-    connection_files['VEK2_GEODB_ORA'] = connections['VEK2_GEODB_ORA'].create_sde_connection()
     connections['VEK2_GEO_ORA'] = AGILib.Connection(db=connection_infos['db']['vek2']['ora_db'], db_type='oracle', username=connection_infos['user']['geo']['username'], password=connection_infos['user']['geo']['password'])
-    connection_files['VEK2_GEO_ORA'] = connections['VEK2_GEO_ORA'].create_sde_connection()
     connections['VEK2_OEREB2_ORA'] = AGILib.Connection(db=connection_infos['db']['vek2']['ora_db'], db_type='oracle', username=connection_infos['user']['oereb2']['username'], password=connection_infos['user']['oereb2']['password'])
-    connection_files['VEK2_OEREB2_ORA'] = connections['VEK2_OEREB2_ORA'].create_sde_connection()
+    
     #VEK3
     connections['VEK3_GEODB_ORA'] = AGILib.Connection(db=connection_infos['db']['vek3']['ora_db'], db_type='oracle', username=connection_infos['user']['geodb']['username'], password=connection_infos['user']['geodb']['password'])
-    connection_files['VEK3_GEODB_ORA'] = connections['VEK3_GEODB_ORA'].create_sde_connection()
     connections['VEK3_GEO_ORA'] = AGILib.Connection(db=connection_infos['db']['vek3']['ora_db'], db_type='oracle', username=connection_infos['user']['geo']['username'], password=connection_infos['user']['geo']['password'])
-    connection_files['VEK3_GEO_ORA'] = connections['VEK3_GEO_ORA'].create_sde_connection()
+    
     #RAS1
     connections['RAS1_GEODB_ORA'] = AGILib.Connection(db=connection_infos['db']['ras1']['ora_db'], db_type='oracle', username=connection_infos['user']['geodb']['username'], password=connection_infos['user']['geodb']['password'])
-    connection_files['RAS1_GEODB_ORA'] = connections['RAS1_GEODB_ORA'].create_sde_connection()
     connections['RAS1_GEO_ORA'] = AGILib.Connection(db=connection_infos['db']['ras1']['ora_db'], db_type='oracle', username=connection_infos['user']['geo']['username'], password=connection_infos['user']['geo']['password'])
-    connection_files['RAS1_GEO_ORA'] = connections['RAS1_GEO_ORA'].create_sde_connection()
+    
     #RAS2
     connections['RAS2_GEODB_ORA'] = AGILib.Connection(db=connection_infos['db']['ras2']['ora_db'], db_type='oracle', username=connection_infos['user']['geodb']['username'], password=connection_infos['user']['geodb']['password'])
-    connection_files['RAS2_GEODB_ORA'] = connections['RAS2_GEODB_ORA'].create_sde_connection()
+    
     #TEAM
     connections['TEAM_GEODB_DD_ORA'] = AGILib.Connection(db=connection_infos['db']['team']['ora_db'], db_type='oracle', username=connection_infos['user']['geodb_dd']['username'], password=connection_infos['user']['geodb_dd']['password'])
     connections['TEAM_NORM_ORA'] = AGILib.Connection(db=connection_infos['db']['team']['ora_db'], db_type='oracle', username=connection_infos['user']['norm']['username'], password=connection_infos['user']['norm']['password'])
-    connection_files['TEAM_NORM_ORA'] = connections['TEAM_NORM_ORA'].create_sde_connection()
     connections['TEAM_OEREB2_ORA'] = AGILib.Connection(db=connection_infos['db']['team']['ora_db'], db_type='oracle', username=connection_infos['user']['oereb2']['username'], password=connection_infos['user']['oereb2']['password'])
-    connection_files['TEAM_OEREB2_ORA'] = connections['TEAM_OEREB2_ORA'].create_sde_connection()
+    
     #WORK
     connections['WORK_GDBP_ORA'] = AGILib.Connection(db=connection_infos['db']['work']['ora_db'], db_type='oracle', username=connection_infos['user']['gdbp']['username'], password=connection_infos['user']['gdbp']['password'])
 
+    if create_connection_files:
+        connection_files['VEK1_GEODB_ORA'] = connections['VEK1_GEODB_ORA'].create_sde_connection()
+        connection_files['VEK1_GEO_ORA'] = connections['VEK1_GEO_ORA'].create_sde_connection()
+        connection_files['VEK1_OEREB2_ORA'] = connections['VEK1_OEREB2_ORA'].create_sde_connection()
+        connection_files['VEK2_GEODB_ORA'] = connections['VEK2_GEODB_ORA'].create_sde_connection()
+        connection_files['VEK2_GEO_ORA'] = connections['VEK2_GEO_ORA'].create_sde_connection()
+        connection_files['VEK2_OEREB2_ORA'] = connections['VEK2_OEREB2_ORA'].create_sde_connection()
+        connection_files['VEK3_GEODB_ORA'] = connections['VEK3_GEODB_ORA'].create_sde_connection()
+        connection_files['VEK3_GEO_ORA'] = connections['VEK3_GEO_ORA'].create_sde_connection()
+        connection_files['RAS1_GEODB_ORA'] = connections['RAS1_GEODB_ORA'].create_sde_connection()
+        connection_files['RAS1_GEO_ORA'] = connections['RAS1_GEO_ORA'].create_sde_connection()
+        connection_files['RAS2_GEODB_ORA'] = connections['RAS2_GEODB_ORA'].create_sde_connection()
+        connection_files['TEAM_NORM_ORA'] = connections['TEAM_NORM_ORA'].create_sde_connection()
+        connection_files['TEAM_OEREB2_ORA'] = connections['TEAM_OEREB2_ORA'].create_sde_connection()
+    
     #PostgreSQL
-    connections['VEK1_GEODB_PG'] = AGILib.Connection(db=connection_infos['db']['vek1']['pg_db'], db_type='postgres', username=connection_infos['user']['geodb']['username'], password=connection_infos['user']['geodb']['password'], host=connection_infos['db']['geodb']['pg_host'], port=connection_infos['db']['geodb']['pg_port'])    
-    connections['VEK2_GEODB_PG'] = AGILib.Connection(db=connection_infos['db']['vek2']['pg_db'], db_type='postgres', username=connection_infos['user']['geodb']['username'], password=connection_infos['user']['geodb']['password'], host=connection_infos['db']['geodb']['pg_host'], port=connection_infos['db']['geodb']['pg_port'])
+    connections['VEK1_GEODB_PG'] = AGILib.Connection(db=connection_infos['db']['vek1']['pg_db'], db_type='postgres', username=connection_infos['user']['geodb']['username'], password=connection_infos['user']['geodb']['password'], host=connection_infos['db']['vek1']['pg_host'], port=connection_infos['db']['vek1']['pg_port'])    
+    connections['VEK2_GEODB_PG'] = AGILib.Connection(db=connection_infos['db']['vek2']['pg_db'], db_type='postgres', username=connection_infos['user']['geodb']['username'], password=connection_infos['user']['geodb']['password'], host=connection_infos['db']['vek2']['pg_host'], port=connection_infos['db']['vek2']['pg_port'])
     connections['VEK1_OEREB_PG'] = AGILib.Connection(db=connection_infos['db']['vek1']['pg_db'], db_type='postgres', username=connection_infos['user']['oereb']['username'], password=connection_infos['user']['oereb']['password'], host=connection_infos['db']['vek1']['pg_host'], port=connection_infos['db']['vek1']['pg_port'])
     connections['VEK2_OEREB_PG'] = AGILib.Connection(db=connection_infos['db']['vek2']['pg_db'], db_type='postgres', username=connection_infos['user']['oereb']['username'], password=connection_infos['user']['oereb']['password'], host=connection_infos['db']['vek2']['pg_host'], port=connection_infos['db']['vek2']['pg_port'])
     connections['TEAM_OEREB_PG'] = AGILib.Connection(db=connection_infos['db']['team']['pg_db'], db_type='postgres', username=connection_infos['user']['oereb']['username'], password=connection_infos['user']['oereb']['password'], host=connection_infos['db']['team']['pg_host'], port=connection_infos['db']['team']['pg_port'])
@@ -93,7 +101,7 @@ def register_installations(general_config, logger):
 def get_import_tasks():
     tasks = []
 
-    general_config = get_config()
+    general_config = get_config(create_connection_files=True)
 
     import_tasks_sql = "SELECT t.TASK_OBJECTID, u.UC_BEZEICHNUNG, g.GPR_BEZEICHNUNG, z.GZS_JAHR, z.GZS_VERSION FROM TB_TASK t LEFT JOIN TB_USECASE u ON t.UC_OBJECTID=u.UC_OBJECTID LEFT JOIN TB_GEOPRODUKT_ZEITSTAND z ON z.GZS_OBJECTID = t.GZS_OBJECTID LEFT JOIN TB_GEOPRODUKT g ON z.GPR_OBJECTID = g.GPR_OBJECTID WHERE t.TASK_STATUS=1 ORDER BY g.GPR_BEZEICHNUNG ASC"
     import_tasks_result = general_config['connections']['TEAM_GEODB_DD_ORA'].db_read(import_tasks_sql)

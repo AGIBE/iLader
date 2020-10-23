@@ -24,17 +24,15 @@ class Generierung(TemplateFunction):
         self.name = "Generierung"
         TemplateFunction.__init__(self, task_config, general_config)
 
-        # Wenn die JSON-Datei existiert und der Parameter task_config_load_from_JSON True ist,
-        # wird die Task-Config aus der JSON-Datei geladen. In diesem Fall wird die eigentliche
-        # Generierungsfunktion nicht ausgeführt.
-        if os.path.exists(self.task_config['task_config_file']) and self.task_config['task_config_load_from_JSON']:
-            self.__load_task_config()
-            # Dieser Wert muss explizit auf True gesetzt werden, da er im JSON-File
-            # auch auf False sein könnte.
-            self.task_config['task_config_load_from_JSON'] = True
-            self.finish()
-        else:
-            self.__execute()
+        # Wenn die JSON-Datei existiert und der Parameter resume True ist,
+        # werden die in einem früheren Versuch erfolgreich ausgeführten
+        # Funktionen aus der JSON-Datei geladen. Die Generierungs-Funktion
+        # wird dann ausgeführt. Im Anschluss dann aber nur noch die noch
+        # nicht ausgeführten Funktionen
+        executed_functions = []
+        if os.path.exists(self.task_config['task_config_file']) and self.task_config['resume']:
+            executed_functions = self.__load_executed_functions()
+        self.__execute(executed_functions)
     
     def __get_gzsobjectid_from_task(self):
         self.logger.info("Hole GZS_OBJECTID aus TB_TASK")
@@ -56,11 +54,12 @@ class Generierung(TemplateFunction):
         '''
         self.logger.info("Hole Infos aus DD (Geoprodukt-Code, Zeitstand)")
         geoprodukt_dd_sql = "SELECT a.gpr_bezeichnung, b.gzs_jahr, b.gzs_version, a.gpr_viewer_freigabe from geodb_dd.tb_geoprodukt_zeitstand b join geodb_dd.tb_geoprodukt a on b.gpr_objectid = a.gpr_objectid where b.gzs_objectid = %s" % (self.gzs_objectid)
+        self.logger.info(geoprodukt_dd_sql)
         geoprodukt_dd_results = self.general_config['connections']['TEAM_GEODB_DD_ORA'].db_read(geoprodukt_dd_sql)
         if len(geoprodukt_dd_results) == 1:
-            gpr = geoprodukt_dd_results[0]
-            jahr = unicode(geoprodukt_dd_results[1])
-            version = unicode(geoprodukt_dd_results[2]).zfill(2)
+            gpr = geoprodukt_dd_results[0][0]
+            jahr = unicode(geoprodukt_dd_results[0][1])
+            version = unicode(geoprodukt_dd_results[0][2]).zfill(2)
             zeitstand = "%s_%s" % (jahr, version)
         else:
             self.logger.error("Infos in TB_GEOPRODUKT konnten nicht gefunden werden.")
@@ -86,7 +85,7 @@ class Generierung(TemplateFunction):
         '''
         Holt die Infos zu den Ebenen aus dem DD (Bezeichnungen, Datentyp, Wertetabellen etc.)
         '''
-        self.logger("Hole Ebenen-Infos aus dem DD.")
+        self.logger.info("Hole Ebenen-Infos aus dem DD.")
         ebene_dd_sql = "SELECT a.gpr_bezeichnung, c.ebe_bezeichnung, b.gzs_jahr, b.gzs_version, g.dat_bezeichnung_de, d.EZS_OBJECTID from geodb_dd.tb_ebene_zeitstand d join geodb_dd.tb_ebene c on d.ebe_objectid = c.ebe_objectid join geodb_dd.tb_geoprodukt_zeitstand b on d.gzs_objectid = b.gzs_objectid join geodb_dd.tb_geoprodukt a on b.gpr_objectid = a.gpr_objectid join geodb_dd.tb_datentyp g on c.dat_objectid = g.dat_objectid where b.gzs_objectid = %s" % (self.gzs_objectid)
         ebene_dd_results = self.general_config['connections']['TEAM_GEODB_DD_ORA'].db_read(ebene_dd_sql)
         ebeVecList, ebeRasList, ebeCacheList = [], [], []
@@ -96,7 +95,7 @@ class Generierung(TemplateFunction):
         else:
             for ebene_dd_result in ebene_dd_results:
                 ebe = ebene_dd_result[1]
-                self.logger("Hole Infos für Ebene %s" % (ebe))
+                self.logger.info("Hole Infos für Ebene %s" % (ebe))
                 ezs_objectid = unicode(ebene_dd_result[5])
                 datentyp = ebene_dd_result[4]
                 gpr_ebe = unicode(self.gpr) + "_" + unicode(ebe)
@@ -121,9 +120,9 @@ class Generierung(TemplateFunction):
                         'datentyp': datentyp,
                         'gpr_ebe': gpr_ebe,
                         'quelle': quelle,
-                        'ziel_vek1': os.path.join(self.general_config['connection_infos']['VEK1_GEODB_ORA'], ziel_schema_gpr_ebe),
-                        'ziel_vek2': os.path.join(self.general_config['connection_infos']['VEK2_GEODB_ORA'], ziel_schema_gpr_ebe),
-                        'ziel_vek3': os.path.join(self.general_config['connection_infos']['VEK3_GEODB_ORA'], ziel_schema_gpr_ebe_zs)
+                        'ziel_vek1': os.path.join(self.general_config['connection_files']['VEK1_GEODB_ORA'], ziel_schema_gpr_ebe),
+                        'ziel_vek2': os.path.join(self.general_config['connection_files']['VEK2_GEODB_ORA'], ziel_schema_gpr_ebe),
+                        'ziel_vek3': os.path.join(self.general_config['connection_files']['VEK3_GEODB_ORA'], ziel_schema_gpr_ebe_zs)
                     }
                     
                     # Wertetabellen-Infos auslesen
@@ -178,7 +177,7 @@ class Generierung(TemplateFunction):
         - der Import der Rasterkacheln erfolgt direkt nach RAS2P (Effizienz) 
         - ein Umhängen der Datenquelle von MosaicDatasets lässt diese ihre Symbolisierungsinformationen verschwinden
         '''
-        self.logger("Legendeninfos werden aus dem DD geholt.")
+        self.logger.info("Legendeninfos werden aus dem DD geholt.")
         legenden_dd_sql = "SELECT a.gpr_bezeichnung, c.ebe_bezeichnung, b.gzs_jahr, b.gzs_version, f.leg_bezeichnung, h.spr_kuerzel, g.dat_objectid from geodb_dd.tb_ebene_zeitstand d join geodb_dd.tb_ebene c on d.ebe_objectid = c.ebe_objectid join geodb_dd.tb_geoprodukt_zeitstand b on d.gzs_objectid = b.gzs_objectid join geodb_dd.tb_geoprodukt a on b.gpr_objectid = a.gpr_objectid join geodb_dd.tb_datentyp g on c.dat_objectid = g.dat_objectid JOIN geodb_dd.tb_legende f on f.ezs_objectid = d.ezs_objectid JOIN geodb_dd.tb_sprache h on h.spr_objectid = f.spr_objectid where b.gzs_objectid = %s" % (self.gzs_objectid)
         legenden_dd_results = self.general_config['connections']['TEAM_GEODB_DD_ORA'].db_read(legenden_dd_sql)
         legends = []
@@ -312,9 +311,9 @@ class Generierung(TemplateFunction):
             gpr_wtb =  "%s_%s" % (self.gpr, wtb_code)
             quelle = os.path.join(self.general_config['connection_files']['TEAM_NORM_ORA'], 'norm' + "." + gpr_wtb)
             ziel_schema_gpr_wtb = 'geodb' + "." + gpr_wtb
-            ziel_vek1 = os.path.join(self.general_config['connection_infos']['VEK1_GEODB_ORA'], ziel_schema_gpr_wtb)
-            ziel_vek2 = os.path.join(self.general_config['connection_infos']['VEK2_GEODB_ORA'], ziel_schema_gpr_wtb)
-            ziel_vek3 = os.path.join(self.general_config['connection_infos']['VEK3_GEODB_ORA'], ziel_schema_gpr_wtb + "_" + self.zeitstand)
+            ziel_vek1 = os.path.join(self.general_config['connection_files']['VEK1_GEODB_ORA'], ziel_schema_gpr_wtb)
+            ziel_vek2 = os.path.join(self.general_config['connection_files']['VEK2_GEODB_ORA'], ziel_schema_gpr_wtb)
+            ziel_vek3 = os.path.join(self.general_config['connection_files']['VEK3_GEODB_ORA'], ziel_schema_gpr_wtb + "_" + self.zeitstand)
             
             # Wertetabellen können u.U. auch Indizes haben
             wertetabelle_index_gdbp_sql = 'SELECT b.felder, DECODE(b."unique", 1, \'True\', 2, \'False\') "unique" from gdbp.index_attribut b join gdbp.geoprodukte a on b.id_geoprodukt = a.id_geoprodukt where a.code = \'%s\' and b.ebene = \'%s\'' % (self.gpr, wtb_code)
@@ -384,13 +383,12 @@ class Generierung(TemplateFunction):
 
         return oerebDict
                 
-    def __execute(self):
+    def __execute(self, executed_functions):
         '''
         Führt den eigentlichen Funktionsablauf aus
         '''
         #Diverse Einträge im task_config generieren
-        if not self.task_config.has_key("ausgefuehrte_funktionen"):
-            self.task_config['ausgefuehrte_funktionen'] = []
+        self.task_config['ausgefuehrte_funktionen'] = executed_functions
 
         self.gzs_objectid = self.__get_gzsobjectid_from_task()             
         self.task_config['gzs_objectid'] = self.gzs_objectid
@@ -426,26 +424,13 @@ class Generierung(TemplateFunction):
         self.task_config['default_tolerance'] = self.general_config['default_tolerance']
         self.task_config['default_resolution'] = self.general_config['default_resolution']
         self.task_config['spatial_reference'] = self.general_config['spatial_reference']
-        self.task_config['db_vek1_pg'] = self.general_config['connection_infos']['db']['vek1']['pg_db']
-        self.task_config['db_vek2_pg'] = self.general_config['connection_infos']['db']['vek2']['pg_db']
-        self.task_config['db_team_pg'] = self.general_config['connection_infos']['db']['team']['pg_db']
-        self.task_config['port_pg'] = self.general_config['connection_infos']['db']['vek1']['pg_port']
 
         self.finish()  
        
-    def __load_task_config(self):
+    def __load_executed_functions(self):
         '''
-        Lädt die Task-Config aus der JSON-Datei.
+        Lädt die bereits ausgeführten Funktionen aus der JSON-Datei.
         '''
         with codecs.open(self.task_config['task_config_file'], "r", "utf-8") as json_file:
             json_content = json.load(json_file)
-                
-        if len(json_content) > 0:
-                # die Variable js darf nicht einfach self.task_config
-                # zugewiesen werden, da damit ein neues Objekt erzeugt
-                # wird. self.task_config  ist dann in den Usecases nicht
-                # mehr identisch. Damit kein neues Objekt erzeugt wird,
-                # wird das bestehende geleert (clear) und dann mit den
-                # Inhalten aus der Variable js gefüllt.
-                self.task_config.clear()
-                self.task_config.update(json_content)                
+            return json_content['ausgefuehrte_funktionen']

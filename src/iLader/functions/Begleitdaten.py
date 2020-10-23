@@ -2,6 +2,7 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 from .TemplateFunction import TemplateFunction
 import shutil
+import sys
 import os
 
 class Begleitdaten(TemplateFunction):
@@ -21,7 +22,7 @@ class Begleitdaten(TemplateFunction):
         self.name = "Begleitdaten"
         TemplateFunction.__init__(self, task_config, general_config)
         
-        if self.name in self.task_config['ausgefuehrte_funktionen'] and self.task_config['task_config_load_from_JSON']:
+        if self.name in self.task_config['ausgefuehrte_funktionen'] and self.task_config['resume']:
             self.logger.info("Funktion " + self.name + " wird ausgelassen.")
         else:
             self.logger.info("Funktion " + self.name + " wird ausgeführt.")
@@ -40,8 +41,13 @@ class Begleitdaten(TemplateFunction):
         self.logger.info("Legendenfiles kopieren")
         for legende in self.task_config["legende"]:
             self.logger.info("Legende %s wird kopiert." % (legende["name"]))
-            shutil.copyfile(legende["quelle"], legende["ziel_akt"])
-            shutil.copyfile(legende["quelle"], legende["ziel_zs"])
+            if os.path.exists(legende["quelle"]):
+                shutil.copyfile(legende["quelle"], legende["ziel_akt"])
+                shutil.copyfile(legende["quelle"], legende["ziel_zs"])
+            else:
+                self.logger.error("Legenden-File nicht vorhanden.")
+                self.logger.error(legende["quelle"])
+                sys.exit()
         
         # Legenden für Rasterdatasets
         # Kopiere lyr-Files für Rasterdatasets, die separat abgelegt sind
@@ -56,7 +62,12 @@ class Begleitdaten(TemplateFunction):
         self.logger.info("MXD-Files kopieren")
         for mxd in self.task_config["mxd"]:
             self.logger.info("%s wird kopiert." % (mxd["name"]))
-            shutil.copyfile(mxd["quelle"], mxd["ziel_akt"])
-            shutil.copyfile(mxd["quelle"], mxd["ziel_zs"])
+            if os.path.exists(mxd["quelle"]):
+                shutil.copyfile(mxd["quelle"], mxd["ziel_akt"])
+                shutil.copyfile(mxd["quelle"], mxd["ziel_zs"])
+            else:
+                self.logger.error("MXD nicht vorhanden.")
+                self.logger.error(legende["quelle"])
+                sys.exit()
        
         self.finish()

@@ -34,7 +34,7 @@ class KopieVek1Ersatz_PG(TemplateFunction):
 
         if self.name in self.task_config['ausgefuehrte_funktionen'
                                          ] and self.task_config[
-                                                 'task_config_load_from_JSON']:
+                                                 'resume']:
             self.logger.info("Funktion " + self.name + " wird ausgelassen.")
         else:
             self.logger.info("Funktion " + self.name + " wird ausgefuehrt.")

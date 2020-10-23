@@ -27,7 +27,7 @@ class ViewsVek2(TemplateFunction):
         self.name = "ViewsVek2"
         TemplateFunction.__init__(self, task_config, general_config)
 
-        if self.name in self.task_config['ausgefuehrte_funktionen'] and self.task_config['task_config_load_from_JSON']:
+        if self.name in self.task_config['ausgefuehrte_funktionen'] and self.task_config['resume']:
             self.logger.info("Funktion " + self.name + " wird ausgelassen.")
         else:
             self.logger.info("Funktion " + self.name + " wird ausgeführt.")
@@ -35,7 +35,8 @@ class ViewsVek2(TemplateFunction):
             self.__execute()
 
     def __getColumns(self, tablename, schema, connection):
-        column_sql = "select column_name from all_tab_columns where owner='%s' and table_name='%s' ORDER BY COLUMN_ID" % (schema, tablename)
+        column_sql = "select column_name from user_tab_columns where table_name='%s' ORDER BY COLUMN_ID" % (schema, tablename)
+        self.logger.info(column_sql)
         column_results = connection.db_read(column_sql)
         return [c[0] for c in column_results]
 
@@ -50,7 +51,7 @@ class ViewsVek2(TemplateFunction):
 
         for ebene in self.task_config['vektor_ebenen']:
             view_name = ebene['gpr_ebe'] + "_VW"
-            view_name_vek2 = os.path.join(self.general_config['connection_infos']['VEK2_GEODB_ORA'], view_name)
+            view_name_vek2 = os.path.join(self.general_config['connection_files']['VEK2_GEODB_ORA'], view_name)
             if arcpy.Exists(view_name_vek2):
                 self.logger.info("View existiert bereits. Er wird gelöscht.")
                 self.logger.info(view_name_vek2)

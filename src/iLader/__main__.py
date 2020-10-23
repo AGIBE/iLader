@@ -6,7 +6,7 @@ import iLader.helpers.Helpers
 from iLader.usecases.Usecase import Usecase
 
 def run_taskid(args):
-    uc = Usecase(args.TASKID, args.load_taskconfig)
+    uc = Usecase(args.TASKID, args.resume)
     uc.run()
 
 def list_taskids(args):
@@ -26,7 +26,7 @@ def main():
     # RUN-Befehl
     run_parser = subparsers.add_parser('run', help='fuehrt den angegebenen Task aus.')
     run_parser.add_argument("TASKID", type=int, help="auszufuehrende Task-ID.")
-    run_parser.add_argument("-l", "--load_taskconfig", help="liest die bestehende Task-Config ein.", action="store_true", required=False)
+    run_parser.add_argument("-r", "--resume", help="Setzt den Import an der abgebrochenen Stelle fort.", action="store_true", required=False)
     run_parser.set_defaults(func=run_taskid)
     
     args = parser.parse_args()

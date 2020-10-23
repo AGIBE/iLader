@@ -20,7 +20,7 @@ class Transfer2Vek1(TemplateFunction):
         self.name = "Transfer2Vek1"
         TemplateFunction.__init__(self, task_config, general_config)
         
-        if self.name in self.task_config['ausgefuehrte_funktionen'] and self.task_config['task_config_load_from_JSON']:
+        if self.name in self.task_config['ausgefuehrte_funktionen'] and self.task_config['resume']:
             self.logger.info("Funktion " + self.name + " wird ausgelassen.")
         else:
             self.logger.info("Funktion " + self.name + " wird ausgeführt.")
@@ -33,8 +33,8 @@ class Transfer2Vek1(TemplateFunction):
         Führt den eigentlichen Funktionsablauf aus
         '''
         self.logger.info("ÖREBK-Transferstruktur (OEREB2) wird nach VEK1 kopiert.")
-        source_connection = self.general_config['connection_infos']['TEAM_OEREB2_ORA']
-        target_connection = self.general_config['connection_infos']['VEK1_OEREB2_ORA']
+        source_connection = self.general_config['connection_files']['TEAM_OEREB2_ORA']
+        target_connection = self.general_config['connection_files']['VEK1_OEREB2_ORA']
         oereb_tables = self.task_config['oereb']['tabellen_ora']
         liefereinheiten = self.task_config['oereb']['liefereinheiten']
         
