@@ -50,9 +50,9 @@ class Transfer2Vek1(TemplateFunction):
                 self.logger.info("Deleting...")
                 self.logger.info(oereb_delete_sql)
                 
-                self.general_config['connection']['VEK1_OEREB2_ORA'].db_write(oereb_delete_sql)
+                self.general_config['connections']['VEK1_OEREB2_ORA'].db_write(oereb_delete_sql)
                 
-                username = self.general_config['connection']['VEK1_OEREB2_ORA'].username
+                username = self.general_config['connections']['VEK1_OEREB2_ORA'].username
                 source = os.path.join(source_connection, username + "." + oereb_tablename)
                 source_layer = oereb_tablename + "_source_layer_vek1_2"
                 target = os.path.join(target_connection, username + "." + oereb_tablename)

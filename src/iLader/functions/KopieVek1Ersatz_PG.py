@@ -5,6 +5,7 @@ import iLader.helpers.Helpers
 import AGILib
 import arcpy
 import os
+from iLader.helpers.Helpers import prepare_fme_log
 
 class KopieVek1Ersatz_PG(TemplateFunction):
     '''
@@ -110,7 +111,7 @@ class KopieVek1Ersatz_PG(TemplateFunction):
                 truncate_sql = 'TRUNCATE %s' % (table)
                 self.general_config['connections']['VEK1_GEODB_PG'].db_write(truncate_sql)
 
-            fme_logfile = iLader.helpers.Helpers.prepare_fme_log(fme_script, (self.task_config['log_file']).rsplit('\\',))
+            fme_logfile = prepare_fme_log(fme_script, (self.task_config['log_file']).rsplit('\\',1)[0])
 
             fme_parameters = {
                     'TABELLEN': source_table,
@@ -123,7 +124,7 @@ class KopieVek1Ersatz_PG(TemplateFunction):
                     'LOGFILE': fme_logfile,
                     'INPUT_SDE': source_sde,
                     'TABLE_HANDLING': "TRUNCATE_EXISTING",
-                    'DATEFIELDS': dfield,
+                    'DATEFIELDS': unicode(dfield),
                     'TABELLENTYP': tabellentyp
             }
             

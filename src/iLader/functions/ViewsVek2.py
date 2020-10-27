@@ -35,7 +35,7 @@ class ViewsVek2(TemplateFunction):
             self.__execute()
 
     def __getColumns(self, tablename, schema, connection):
-        column_sql = "select column_name from user_tab_columns where table_name='%s' ORDER BY COLUMN_ID" % (schema, tablename)
+        column_sql = "select column_name from user_tab_columns where table_name='%s' ORDER BY COLUMN_ID" % (tablename)
         self.logger.info(column_sql)
         column_results = connection.db_read(column_sql)
         return [c[0] for c in column_results]

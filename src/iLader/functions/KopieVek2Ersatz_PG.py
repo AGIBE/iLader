@@ -110,10 +110,7 @@ class KopieVek2Ersatz_PG(TemplateFunction):
 
             # Daten kopieren
             # Copy-Script
-            fme_logfile = prepare_fme_log(
-                    fme_script, (self.task_config['log_file']).rsplit('\\',
-                                                                      1)[0]
-            )
+            fme_logfile = prepare_fme_log(fme_script, (self.task_config['log_file']).rsplit('\\',1)[0])
             # Daher muessen workspace und parameters umgewandelt werden!
             # Gibt es die Ziel-Ebene bereits, muss sie geloescht werden (TABLE_HANDLING)
             fme_parameters = {
@@ -127,7 +124,7 @@ class KopieVek2Ersatz_PG(TemplateFunction):
                     'LOGFILE': fme_logfile,
                     'INPUT_SDE': source_sde,
                     'TABLE_HANDLING': "DROP_CREATE",
-                    'DATEFIELDS': dfield,
+                    'DATEFIELDS': unicode(dfield),
                     'TABELLENTYP': tabellentyp
             }
 

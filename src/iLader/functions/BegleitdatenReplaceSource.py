@@ -63,8 +63,8 @@ class BegleitdatenReplaceSource(TemplateFunction):
                 # Ist es eine Cache-Ebene? Dann müssen Datenquellen nicht umgehängt werden
                 change_src = False
         if lyr.supports("DATASOURCE") and lyr.supports("DATASETNAME") and change_src:
-            gpr_ebe = lyr.datasetName
-            gpr_ebe_publ = gpr_ebe.replace('norm' 'geodb')
+            gpr_ebe = lyr.datasetName.upper()
+            gpr_ebe_publ = gpr_ebe.replace('NORM', 'GEODB')
             if is_zeitstand:
                 gpr_ebe_publ = gpr_ebe_publ + "_" + self.task_config['zeitstand']
             # lyr.dataSource gibt die sde-Connection aus, mit welche Daten geladen wurden, diese existiert nicht immer
@@ -78,12 +78,12 @@ class BegleitdatenReplaceSource(TemplateFunction):
                 if datentyp == "FeatureClass":
                     try:
                         self.logger.info('Haenge Quelle nach ' + sde_conn_vek + ' um.')
-                        # Kniff: zuerst auf vek2 umhängen, wo die Quelle existiert (wenn Parameter=False wird Schema GEODB nicht ??nommmen.)
+                        # Kniff: zuerst auf vek2 umhängen, wo die Quelle existiert (wenn Parameter=False wird Schema GEODB nicht übernommmen.)
                         lyr.replaceDataSource(sde_conn_vek, "SDE_WORKSPACE", gpr_ebe_publ, True)
                         if not is_mxd:
                             lyr.save()
                         if not is_zeitstand:
-                            # Filter, damit nur die aktuellen Zeitst寤e nach auch noch auf vek1 umgeh寧t werden
+                            # Filter, damit nur die aktuellen Zeitstände nach auch noch auf vek1 umgehängt werden
                             self.logger.info('Haenge Quelle nach ' + sde_conn_vek1_geo +' um.')
                             lyr.replaceDataSource(sde_conn_vek1_geo, "SDE_WORKSPACE", gpr_ebe_publ, False)
                             if not is_mxd:

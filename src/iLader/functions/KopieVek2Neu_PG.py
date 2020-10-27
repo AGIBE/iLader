@@ -111,10 +111,7 @@ class KopieVek2Neu_PG(TemplateFunction):
 
             # Daten kopieren
             # Copy-Script
-            fme_logfile = prepare_fme_log(
-                    fme_script, (self.task_config['log_file']).rsplit('\\',
-                                                                      1)[0]
-            )
+            fme_logfile = prepare_fme_log(fme_script, (self.task_config['log_file']).rsplit('\\',1)[0])
             # Der FMEWorkspaceRunner akzeptiert keine Unicode-Strings!
             # Daher müssen workspace und parameters umgewandelt werden!
             fme_parameters = {
@@ -128,7 +125,7 @@ class KopieVek2Neu_PG(TemplateFunction):
                     'LOGFILE': fme_logfile,
                     'INPUT_SDE': source_sde,
                     'TABLE_HANDLING': "DROP_CREATE",
-                    'DATEFIELDS': dfield,
+                    'DATEFIELDS': unicode(dfield),
                     'TABELLENTYP': tabellentyp
             }
 
