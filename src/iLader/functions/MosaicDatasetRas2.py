@@ -3,6 +3,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 from .TemplateFunction import TemplateFunction
 import arcpy
 import os
+import sys
 
 class MosaicDatasetRas2(TemplateFunction):
     '''
@@ -94,6 +95,7 @@ class MosaicDatasetRas2(TemplateFunction):
                     except Exception as e:
                         self.logger.warn("Fehler beim Erfassen der alten Zeitstände")
                         self.logger.warn(e)
+                        sys.exit(99)
                 arcpy.AddMessage("Lade " + raster + "...")
                 arcpy.AddRastersToMosaicDataset_management(target, "Raster Dataset", raster, "UPDATE_CELL_SIZES", "UPDATE_BOUNDARY", "NO_OVERVIEWS", "#", "#", "#", "#", "#","#", "ALLOW_DUPLICATES", "NO_PYRAMIDS", "CALCULATE_STATISTICS", "NO_THUMBNAILS", "#", "#")
                 arcpy.CalculateField_management(target, "RASTERNAME", """(gpr + "_" + str(!NAME!)).upper()""", "PYTHON","#")    

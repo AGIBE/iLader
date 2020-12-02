@@ -3,6 +3,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 from .TemplateFunction import TemplateFunction
 import shutil
 import os
+import sys
 
 class Zusatzdaten(TemplateFunction):
     '''
@@ -50,6 +51,7 @@ class Zusatzdaten(TemplateFunction):
                 shutil.copytree(src_dir, target_dir)
             except OSError as e:
                 self.logger.error("Zusatzdaten konnten nicht kopiert werden: " + str(e))
+                sys.exit(99)
         else:
             self.logger.info("Keine Zusatzdaten vorhanden. Es wird nichts kopiert.")
         

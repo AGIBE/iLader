@@ -50,25 +50,22 @@ class Usecase():
     def run(self):
         if self.is_task_valid:
             self.logger.info("Start der Funktionsausführung")
-            try:            
-                f = Generierung(self.task_config, self.general_config)
-                self.logger.info("Funktion " + f.name + " wurde ausgeführt")
-        
-                auszufuehrende_funktionen = self.__get_functions_to_execute()
+            f = Generierung(self.task_config, self.general_config)
+            self.logger.info("Funktion " + f.name + " wurde ausgeführt")
+    
+            auszufuehrende_funktionen = self.__get_functions_to_execute()
+            
+            for funktion in auszufuehrende_funktionen:
+                funktionsklasse = globals()[funktion]
+                f = funktionsklasse(self.task_config, self.general_config)
+                self.logger.info("Usecase "+ self.name + ": Funktion " + f.name + " wurde ausgeführt")
                 
-                for funktion in auszufuehrende_funktionen:
-                    funktionsklasse = globals()[funktion]
-                    f = funktionsklasse(self.task_config, self.general_config)
-                    self.logger.info("Usecase "+ self.name + ": Funktion " + f.name + " wurde ausgeführt")
-                    
-                self.logger.info("Der Import-Task " + unicode(self.task_id) + " wurde erfolgreich durchgeführt!")
-                print("Import SUCCESSFUL!")
-            except Exception as e:
-                print(e.message)
-                self.logger.error(e.message)
+            self.logger.info("Der Import-Task " + unicode(self.task_id) + " wurde erfolgreich durchgeführt!")
+            print("Import SUCCESSFUL!")
         else:
             self.logger.error("Task-ID " + unicode(self.task_id) + " ist nicht gültig!")
             self.logger.error("Import wird abgebrochen")
+            raise ValueError("Task-ID ist nicht gültig!")
             
     def __get_task_status(self):
         '''

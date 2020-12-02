@@ -3,6 +3,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 from .TemplateFunction import TemplateFunction
 import md5
 import arcpy
+import sys
 
 class IndicesVek2(TemplateFunction):
     '''
@@ -46,6 +47,7 @@ class IndicesVek2(TemplateFunction):
                 except Exception as e:
                     self.logger.warn("Fehler beim Löschen des Index " + index.name)
                     self.logger.info(e)
+                    sys.exit(99)
 
     def __execute(self):
         '''
@@ -78,5 +80,6 @@ class IndicesVek2(TemplateFunction):
                         except Exception as e:
                             self.logger.info("Fehler bei der Erstellung des Index " + index_attribute + ", " + indextyp)
                             self.logger.info(e)
+                            sys.exit(99)
        
         self.finish()

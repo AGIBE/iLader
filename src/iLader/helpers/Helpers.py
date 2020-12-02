@@ -101,7 +101,7 @@ def register_installations(general_config, logger):
 def get_import_tasks():
     tasks = []
 
-    general_config = get_config(create_connection_files=True)
+    general_config = get_config(create_connection_files=False)
 
     import_tasks_sql = "SELECT t.TASK_OBJECTID, u.UC_BEZEICHNUNG, g.GPR_BEZEICHNUNG, z.GZS_JAHR, z.GZS_VERSION FROM TB_TASK t LEFT JOIN TB_USECASE u ON t.UC_OBJECTID=u.UC_OBJECTID LEFT JOIN TB_GEOPRODUKT_ZEITSTAND z ON z.GZS_OBJECTID = t.GZS_OBJECTID LEFT JOIN TB_GEOPRODUKT g ON z.GPR_OBJECTID = g.GPR_OBJECTID WHERE t.TASK_STATUS=1 ORDER BY g.GPR_BEZEICHNUNG ASC"
     import_tasks_result = general_config['connections']['TEAM_GEODB_DD_ORA'].db_read(import_tasks_sql)

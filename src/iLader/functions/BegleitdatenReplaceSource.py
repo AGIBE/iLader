@@ -4,6 +4,7 @@ from .TemplateFunction import TemplateFunction
 import arcpy
 import os
 import shutil
+import sys
 
 class BegleitdatenReplaceSource(TemplateFunction):
     '''
@@ -97,6 +98,7 @@ class BegleitdatenReplaceSource(TemplateFunction):
                     except Exception as e:
                         self.logger.warn('FEHLER: Die Datenquelle konnte nicht umgehaengt werden!')
                         self.logger.warn(e)
+                        sys.exit(99)
                     if not is_mxd:
                         lyr.save()    
                 elif datentyp == "RasterDataset":
@@ -115,6 +117,7 @@ class BegleitdatenReplaceSource(TemplateFunction):
                     except Exception as e:
                         self.logger.warn("FEHLER: Die Datenquelle konnte nicht umgehaengt werden!")
                         self.logger.warn(e)
+                        sys.exit(99)
             else:
                 self.logger.warn("Datenquelle nicht in der Instanz " + sde_conn_norm)
                 self.logger.warn("Die Quelle kann nicht umgehängt werden.")

@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 from .TemplateFunction import TemplateFunction
 from iLader.helpers.Helpers import renew_statistics
 import arcpy
-
+import sys
 class KopieVek3Ersatz(TemplateFunction):
     '''
     Kopiert sämtliche Vektorebenen aus der Instanz TEAM in die Instanz VEK3. Folgende Typen
@@ -89,6 +89,7 @@ class KopieVek3Ersatz(TemplateFunction):
         except Exception as e:
             self.logger.warn("Fehler beim Erstellen der Statistik auf VEK3.")
             self.logger.warn(e)
+            sys.exit(99)
         
         self.logger.info("Alle Ebenen wurden ersetzt.")       
 

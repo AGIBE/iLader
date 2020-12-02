@@ -3,6 +3,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 from .TemplateFunction import TemplateFunction
 from iLader.helpers.Helpers import renew_statistics
 import arcpy
+import sys
 
 class KopieVek2Ersatz(TemplateFunction):
     '''
@@ -97,6 +98,7 @@ class KopieVek2Ersatz(TemplateFunction):
         except Exception as e:
             self.logger.warn("Fehler beim Erstellen der Statistik auf VEK2.")
             self.logger.warn(e)
+            sys.exit(99)
             
         self.logger.info("Alle Ebenen wurden kopiert.")       
         self.finish()
