@@ -51,7 +51,7 @@ class Import(object):
             direction="Input"
         )
         
-        param2.value=False;
+        param2.value=False
         
         params = [param1, param2]
         return params
