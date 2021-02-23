@@ -96,9 +96,10 @@ class KopieVek2Ersatz(TemplateFunction):
         try:
             renew_statistics(self.general_config['connections']['VEK2_GEODB_ORA'])
         except Exception as e:
+            # Es wird nur Warning ausgegeben, da bei gleichzeitigem Imports z.T. Ressource belegt ist.
+            # Diese Statistiken werden dann beim nächsten Import nachgeholt
             self.logger.warn("Fehler beim Erstellen der Statistik auf VEK2.")
             self.logger.warn(e)
-            sys.exit(99)
             
         self.logger.info("Alle Ebenen wurden kopiert.")       
         self.finish()
