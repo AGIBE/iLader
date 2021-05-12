@@ -159,32 +159,38 @@ def oereb_copy_transferstruktur(target_connection, general_config, task_config, 
         for schema in oereb_pg_schemas:
             logger.info("Bearbeite Schema %s..." % (schema))
             for oereb_pg_table in oereb_pg_tables:
-                full_tablename = schema + "." + oereb_pg_table['tablename']
-                where_clause = "%s IN %s" % (oereb_pg_table['filter_field'], liefereinheiten)
-                delete_sql = "DELETE FROM %s WHERE %s" % (full_tablename, where_clause) 
-                logger.info("Deleting...")
-                logger.info(delete_sql)
-                target_connection.db_write(delete_sql)
+                if oereb_pg_table['tablename'] == 'data_integration':
+                    logger.info("In Tabelle %s wird nichts gelöscht." % (oereb_pg_table['tablename']))
+                else:
+                    full_tablename = schema + "." + oereb_pg_table['tablename']
+                    where_clause = "%s IN %s" % (oereb_pg_table['filter_field'], liefereinheiten)
+                    delete_sql = "DELETE FROM %s WHERE %s" % (full_tablename, where_clause) 
+                    logger.info("Deleting...")
+                    logger.info(delete_sql)
+                    target_connection.db_write(delete_sql)
 
             # Beim Einfügen muss die umgekehrte Tabellen-Reihenfolge als beim Löschen verwendet werden
             # Grund: Foreign Key-Constraints
             logger.info("Appending...")
             for oereb_pg_table in oereb_pg_tables_reversed:
-                full_tablename = schema + "." + oereb_pg_table['tablename']
-                where_clause = "%s IN %s" % (oereb_pg_table['filter_field'], liefereinheiten)
-                count_sql = "SELECT * FROM %s WHERE %s" % (full_tablename, where_clause)
-                logger.info(count_sql)
-                oereb_append_transferstruktur(source_connection.postgres_connection_string, target_connection.postgres_connection_string, count_sql, full_tablename)
-                # QS (Objekte zählen)
-                logger.info("Counting..")
-                source_count = len(source_connection.db_read(count_sql))
-                target_count = len(target_connection.db_read(count_sql))
-                logger.info("Anzahl Features im Quell-Layer: " + unicode(source_count))
-                logger.info("Anzahl Features im Ziel-Layer: " + unicode(target_count))
-                if source_count!=target_count:
-                    logger.error("Fehler beim Kopieren. Anzahl Features in der Quelle und im Ziel sind nicht identisch!")
-                    logger.error("Release wird abgebrochen!")
-                    sys.exit()
+                if oereb_pg_table['tablename'] == 'data_integration':
+                    logger.info("In Tabelle %s wird nichts importiert." % (oereb_pg_table['tablename']))
+                else:
+                    full_tablename = schema + "." + oereb_pg_table['tablename']
+                    where_clause = "%s IN %s" % (oereb_pg_table['filter_field'], liefereinheiten)
+                    count_sql = "SELECT * FROM %s WHERE %s" % (full_tablename, where_clause)
+                    logger.info(count_sql)
+                    oereb_append_transferstruktur(source_connection.postgres_connection_string, target_connection.postgres_connection_string, count_sql, full_tablename)
+                    # QS (Objekte zählen)
+                    logger.info("Counting..")
+                    source_count = len(source_connection.db_read(count_sql))
+                    target_count = len(target_connection.db_read(count_sql))
+                    logger.info("Anzahl Features im Quell-Layer: " + unicode(source_count))
+                    logger.info("Anzahl Features im Ziel-Layer: " + unicode(target_count))
+                    if source_count!=target_count:
+                        logger.error("Fehler beim Kopieren. Anzahl Features in der Quelle und im Ziel sind nicht identisch!")
+                        logger.error("Release wird abgebrochen!")
+                        sys.exit()
                 
                 logger.info("Die Tabelle %s wurde kopiert." % (full_tablename))
             logger.info("Das Schema %s wurde kopiert." % (schema))
